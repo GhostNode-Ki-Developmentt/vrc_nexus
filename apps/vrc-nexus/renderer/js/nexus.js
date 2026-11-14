@@ -1812,7 +1812,8 @@
     function renderGalKinds() {
         const cnt = k => k === 'inventory' ? (invTotal || '…') : Array.isArray(galData.gallery[k]) ? galData.gallery[k].length + (galData.limits[k] ? '/' + galData.limits[k] : '') : '!';
         $('#galKinds').innerHTML = Object.entries(GAL).map(([k, l]) => '<button type="button" class="chip' + (k === galKind ? ' on' : '') + '" data-gk="' + k + '">' + l + ' <small>' + cnt(k) + '</small></button>').join('');
-        $('#galUpload').hidden = !['photos', 'icons', 'emojis', 'stickers'].includes(galKind);
+        $('#galUpload').hidden = !['photos', 'icons', 'emojis', 'stickers', 'prints'].includes(galKind);
+        $('#galNote').hidden = galKind !== 'prints';
         $('#galAnim').hidden = galKind !== 'emojis';
     }
     function renderGallery() {

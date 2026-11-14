@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.3 – Prints hochladen
+
+- **Prints hochladen**: In Galerie & Inventar → Prints gibt es jetzt den Hochladen-Knopf mit optionaler **Notiz** (max. 32 Zeichen). Bist du gerade in einer Welt, wird sie mitgeschickt. Wie in VRChat selbst braucht das **VRC+**.
+
 ### Neu in 2.8.2 – Über-Reiter aufgeräumt
 
 - Einstellungen → ℹ️ Über aufgeräumt: der doppelte Block „Version & Updates“ ist weg. Version, Plattform, „zuletzt geprüft“ und der Status stehen jetzt im Kopf neben dem Logo, **„Nach Updates suchen“** (bzw. „Jetzt aktualisieren“, wenn eins da ist) sitzt rechts daneben.

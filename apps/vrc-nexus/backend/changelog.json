@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.8.3",
+  "title": "Prints hochladen",
+  "body": "- **Prints hochladen**: In Galerie & Inventar → Prints gibt es jetzt den Hochladen-Knopf mit optionaler **Notiz** (max. 32 Zeichen). Bist du gerade in einer Welt, wird sie mitgeschickt. Wie in VRChat selbst braucht das **VRC+**."
+ },
+ {
   "version": "2.8.2",
   "title": "Über-Reiter aufgeräumt",
   "body": "- Einstellungen → ℹ️ Über aufgeräumt: der doppelte Block „Version & Updates“ ist weg. Version, Plattform, „zuletzt geprüft“ und der Status stehen jetzt im Kopf neben dem Logo, **„Nach Updates suchen“** (bzw. „Jetzt aktualisieren“, wenn eins da ist) sitzt rechts daneben."

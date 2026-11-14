@@ -653,7 +653,7 @@ class NexusApp {
                 db.prepare('UPDATE accounts SET last_sync = 0 WHERE user_id = ?').run(UID);
                 return { msg: 'Als Profil-Icon gesetzt.' };
             case 'file_upload': {
-                const tag = { photos: 'gallery', icons: 'icon', emojis: 'emoji', stickers: 'sticker' }[input.kind];
+                const tag = { photos: 'gallery', icons: 'icon', emojis: 'emoji', stickers: 'sticker', prints: 'print' }[input.kind];
                 const f = files.file;
                 if (!tag || !f || !f.buffer || !f.buffer.length) throw new UserError('Bitte eine Bilddatei auswählen.');
                 if (f.buffer.length > 10 * 1024 * 1024) throw new UserError('Die Datei ist größer als 10 MB.');
@@ -661,6 +661,12 @@ class NexusApp {
                 const mime = b[0] === 0x89 && b[1] === 0x50 ? 'image/png' : b[0] === 0xff && b[1] === 0xd8 ? 'image/jpeg' : b.subarray(0, 3).toString() === 'GIF' ? 'image/gif'
                     : b.subarray(0, 4).toString() === 'RIFF' && b.subarray(8, 12).toString() === 'WEBP' ? 'image/webp' : '';
                 if (!mime) throw new UserError('Bitte ein Bild (PNG, JPG, GIF oder WebP) wählen.');
+                if (tag === 'print') {   // Prints: eigener Endpunkt, Feld „image“, mit Zeitpunkt, Notiz und – wenn bekannt – der aktuellen Welt (VRC+ nötig)
+                    const st = this.game.state, pf = { timestamp: new Date().toISOString(), note: cut(str(input.note).trim(), 32) };
+                    if (/^wrld_[0-9a-f-]{36}$/i.test(st.worldId || '')) { pf.worldId = st.worldId; pf.worldName = cut(st.worldName, 100); }
+                    await v.upload(acc, '/prints', pf, b, mime, str(f.name).replace(/[^\w.-]/g, '_') || 'print.png', 'image');
+                    return { msg: 'Print hochgeladen.' };
+                }
                 const fields = { tag };
                 if (tag === 'emoji') { fields.animationStyle = /^[a-z]{2,20}$/.test(str(input.anim)) ? input.anim : 'none'; fields.maskTag = 'square'; }
                 if (tag === 'sticker') fields.maskTag = 'square';

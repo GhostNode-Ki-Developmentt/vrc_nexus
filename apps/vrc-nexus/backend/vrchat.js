@@ -14,7 +14,7 @@ const SYNC_MIN = 45;
 const OFFLINE_SYNC = 900;
 const FEED_KEEP_DAYS = 180;
 const UID = 1;   // die App hat genau ein Konto
-const VERSION = '2.8.2';
+const VERSION = '2.8.3';
 
 class Vrc {
     /**
@@ -645,10 +645,10 @@ class Vrc {
     }
 
     // ---------- Dateien ----------
-    async upload(acc, path, fields, buffer, mime, name) {
+    async upload(acc, path, fields, buffer, mime, name, fileField) {
         const form = new FormData();
         for (const [k, v] of Object.entries(fields)) form.append(k, v);
-        form.append('file', new Blob([buffer], { type: mime }), name);
+        form.append(fileField || 'file', new Blob([buffer], { type: mime }), name);
         const jar = Object.entries(acc.cookie_jar).filter(([, v]) => v).map(([k, v]) => k + '=' + v).join('; ');
         const res = await fetch(this.apiBase() + path, { method: 'POST', body: form, headers: { Accept: 'application/json', Cookie: jar, 'User-Agent': this.userAgent() }, signal: AbortSignal.timeout(60000) });
         let json = null;
