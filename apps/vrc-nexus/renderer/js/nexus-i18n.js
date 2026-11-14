@@ -16,8 +16,11 @@
         ja: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><circle cx="1.5" cy="1" r="0.6" fill="#BC002D"/></svg>',
     };
     const ui = (window.VRCX && window.VRCX.ui) || {};
-    let lang = LANGS[ui['ui.lang']] ? ui['ui.lang'] : 'de';
-    try { const l = localStorage.getItem('nexusLang'); if (!ui['ui.lang'] && LANGS[l]) lang = l; } catch (e) { /* egal */ }
+    /** Systemsprache (Windows/Android) → de/en/fr/ja, sonst Englisch */
+    const sysLang = () => { for (const l of [].concat(navigator.languages || [], navigator.language || [])) { const k = String(l).slice(0, 2).toLowerCase(); if (LANGS[k]) return k; } return 'en'; };
+    let choice = ui['ui.lang'] === 'auto' || LANGS[ui['ui.lang']] ? ui['ui.lang'] : '';
+    let lang = choice === 'auto' ? sysLang() : choice || 'de';
+    try { const l = localStorage.getItem('nexusLang'); if (!choice && LANGS[l]) lang = l; } catch (e) { /* egal */ }
 
     const D = () => (window.NexusDict || {})[lang] || null;
     const RX = () => ((window.NexusDict || {}).rx || {})[lang] || [];
@@ -130,9 +133,10 @@
         if (t) t.textContent = 'VRC Nexus';
     }
     function setLang(l, save) {
-        if (!LANGS[l]) return;
-        lang = l;
-        try { localStorage.setItem('nexusLang', l); } catch (e) { /* egal */ }
+        if (!LANGS[l] && l !== 'auto') return;
+        choice = l;
+        lang = l === 'auto' ? sysLang() : l;
+        try { localStorage.setItem('nexusLang', lang); } catch (e) { /* egal */ }
         if (window.VRCX && window.VRCX.ui) window.VRCX.ui['ui.lang'] = l;   // sonst setzt ein späteres applyUi die alte Sprache zurück
         apply();
         corner();
@@ -163,7 +167,7 @@
         const cur = document.documentElement.dataset.themeChoice || document.documentElement.dataset.theme || 'neon';
         const L = { de: ['Sprache', 'Theme'], en: ['Language', 'Theme'], fr: ['Langue', 'Thème'], ja: ['言語', 'テーマ'] }[lang];
         const TN = { neon: { en: '🌃 Neon', fr: '🌃 Néon', ja: '🌃 ネオン' }, midnight: { en: '🌌 Midnight', fr: '🌌 Minuit', ja: '🌌 ミッドナイト' }, snow: { en: '❄️ Snow', fr: '❄️ Neige', ja: '❄️ スノー' }, sakura: { en: '🌸 Sakura', fr: '🌸 Sakura', ja: '🌸 さくら' }, auto: { en: '🌗 Automatic', fr: '🌗 Automatique', ja: '🌗 自動' } };
-        box.innerHTML = '<div class="i18n-menu" role="menu" data-m="lang"' + (open === 'lang' ? '' : ' hidden') + '><b>' + L[0] + '</b>' + Object.entries(LANGS).map(([k, v]) => '<button type="button" data-lang="' + k + '" class="' + (k === lang ? 'on' : '') + '"><i>' + FLAG[k] + '</i>' + v[0] + '</button>').join('') + '</div>'
+        box.innerHTML = '<div class="i18n-menu" role="menu" data-m="lang"' + (open === 'lang' ? '' : ' hidden') + '><b>' + L[0] + '</b>' + '<button type="button" data-lang="auto" class="' + (choice === 'auto' ? 'on' : '') + '"><i class="i18n-auto">🌐</i>' + { de: 'Automatisch', en: 'Automatic', fr: 'Automatique', ja: '自動' }[lang] + '</button>' + Object.entries(LANGS).map(([k, v]) => '<button type="button" data-lang="' + k + '" class="' + (k === choice ? 'on' : '') + '"><i>' + FLAG[k] + '</i>' + v[0] + '</button>').join('') + '</div>'
             + (TH ? '<div class="i18n-menu" role="menu" data-m="theme"' + (open === 'theme' ? '' : ' hidden') + '><b>' + L[1] + '</b>' + Object.entries(TH).map(([k, v]) => '<button type="button" data-theme="' + k + '" class="' + (k === cur ? 'on' : '') + '"><i class="th-sw">' + v[2].map(c => '<span style="background:' + c + '"></span>').join('') + '</i>' + ((TN[k] || {})[lang] || v[0]) + '<small>' + (v[1] === 'light' ? '☀' : v[1] === 'auto' ? '◐' : '☾') + '</small></button>').join('') + '</div>' : '')
             + '<span class="i18n-btns">' + (TH ? '<button type="button" class="i18n-fab" data-open="theme" title="' + L[1] + '" aria-label="' + L[1] + '" aria-haspopup="true" aria-expanded="' + (open === 'theme') + '">🎨</button>' : '') + '<button type="button" class="i18n-fab" data-open="lang" title="' + L[0] + '" aria-label="' + L[0] + ': ' + LANGS[lang][0] + '" aria-haspopup="true" aria-expanded="' + (open === 'lang') + '"><i>' + FLAG[lang] + '</i></button></span>';
     }
@@ -178,7 +182,7 @@
     }
 
     function start() {
-        if (ui['ui.lang']) { try { localStorage.setItem('nexusLang', lang); } catch (e) { /* egal */ } }   // für Fenster ohne Einstellungen (Overlay)
+        if (choice) { try { localStorage.setItem('nexusLang', lang); } catch (e) { /* egal */ } }   // für Fenster ohne Einstellungen (Overlay)
         apply();
         obs.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTR.concat(['value']) });
         corner();
@@ -188,7 +192,7 @@
         setTimeout(corner, 0);
     }
     window.NexusI18n = {
-        get lang() { return lang; }, LANGS, set: setLang, t: window.t, locale: () => LANGS[lang][1], refresh: () => walk(document.body), corner: () => { if (box) corner(); },
+        get lang() { return lang; }, get choice() { return choice; }, sysLang, LANGS, set: setLang, t: window.t, locale: () => LANGS[lang][1], refresh: () => walk(document.body), corner: () => { if (box) corner(); },
         /** Hilfe beim Übersetzen: alle sichtbaren deutschen Texte ohne Übersetzung */
         missing() {
             const out = new Set();

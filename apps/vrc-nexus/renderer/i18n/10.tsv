@@ -279,3 +279,6 @@ Standard 9000	Default 9000	Par défaut 9000	標準 9000
 Avatar-Parameter von VRChat mitlesen	Read avatar parameters from VRChat	Lire les paramètres d'avatar de VRChat	VRChatからアバターパラメーターを読み取る
 OSC-Port (empfangen)	OSC port (receive)	Port OSC (réception)	OSCポート（受信）
 Standard 9001	Default 9001	Par défaut 9001	標準 9001
+ℹ️ Über	ℹ️ About	ℹ️ À propos	ℹ️ 情報
+🌐 Automatisch (Systemsprache)	🌐 Automatic (system language)	🌐 Automatique (langue du système)	🌐 自動（システム言語）
+Auch über die Flagge umschaltbar. „Automatisch“ nimmt die Sprache von Windows/Android (sonst Englisch).	Can also be switched via the flag. “Automatic” uses the Windows/Android language (otherwise English).	Modifiable aussi via le drapeau. « Automatique » utilise la langue de Windows/Android (sinon anglais).	旗アイコンからも切り替え可能。「自動」はWindows/Androidの言語を使用（それ以外は英語）。

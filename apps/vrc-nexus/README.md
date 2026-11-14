@@ -20,6 +20,12 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.7.0 – Über in den Einstellungen, App-Sprache automatisch
+
+- **„Über VRC Nexus“ ist jetzt ein Reiter der Einstellungen** (⚙ Einstellungen → ℹ️ Über) statt eines Menüpunkts unter „Mehr“. Alte Wege (Befehlspalette, Links) landen automatisch dort.
+- **Version & Updates** (installierte Version, zuletzt geprüft, „Nach Updates suchen“, Aktualisieren) steht jetzt oben im Über-Reiter statt unter System.
+- **App-Sprache automatisch**: neue Wahl „🌐 Automatisch (Systemsprache)“ – nimmt die Sprache von Windows/Android (Deutsch, Englisch, Französisch, Japanisch; andere → Englisch). Auch im Flaggen-Menü. Standard für neue Installationen; wer schon eine Sprache gewählt hat, behält sie.
+
 ### Neu in 2.6.3 – Logs & OSC wie die anderen Einstellungen
 
 - Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“ ist jetzt in normalen Einstellungszeilen (Name links, Schalter/Feld rechts) statt in Kästen.

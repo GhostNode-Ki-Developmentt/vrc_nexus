@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.7.0",
+  "title": "Über in den Einstellungen, App-Sprache automatisch",
+  "body": "- **„Über VRC Nexus“ ist jetzt ein Reiter der Einstellungen** (⚙ Einstellungen → ℹ️ Über) statt eines Menüpunkts unter „Mehr“. Alte Wege (Befehlspalette, Links) landen automatisch dort.\n- **Version & Updates** (installierte Version, zuletzt geprüft, „Nach Updates suchen“, Aktualisieren) steht jetzt oben im Über-Reiter statt unter System.\n- **App-Sprache automatisch**: neue Wahl „🌐 Automatisch (Systemsprache)“ – nimmt die Sprache von Windows/Android (Deutsch, Englisch, Französisch, Japanisch; andere → Englisch). Auch im Flaggen-Menü. Standard für neue Installationen; wer schon eine Sprache gewählt hat, behält sie."
+ },
+ {
   "version": "2.6.3",
   "title": "Logs & OSC wie die anderen Einstellungen",
   "body": "- Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“ ist jetzt in normalen Einstellungszeilen (Name links, Schalter/Feld rechts) statt in Kästen.\n- Wie überall in den Einstellungen wird **sofort gespeichert** – kein eigener Speichern-Knopf mehr."

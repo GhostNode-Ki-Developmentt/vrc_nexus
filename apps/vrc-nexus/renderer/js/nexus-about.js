@@ -45,7 +45,7 @@
         if (!b || !b.closest('#aboutBox')) return;
         if (b.dataset.ab === 'more') { n = 50; return load(); }
         if (b.dataset.ab === 'check') return UI.api('update_check').then(d => { UI.toast(d.msg || 'Geprüft.'); load(); }).catch(er => UI.toast('⚠ ' + er.message, true));
-        if (b.dataset.ab === 'update') return UI.tab('settings');
+        if (b.dataset.ab === 'update') { const u = document.getElementById('updSec'); if (u) u.scrollIntoView({ behavior: 'smooth' }); return; }
     });
     window.NexusAbout = { open() { n = 2; load(); } };
 })();

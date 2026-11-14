@@ -42,7 +42,7 @@
         if (s['ui.menu_style'] === 'text') b.classList.add('menu-text');
         if (s['ui.font'] === 'system') b.classList.add('font-system');
         if (s['ui.font'] === 'mono') b.classList.add('font-mono');
-        if (window.NexusI18n && s['ui.lang'] && s['ui.lang'] !== window.NexusI18n.lang) window.NexusI18n.set(s['ui.lang'], false);
+        if (window.NexusI18n && s['ui.lang'] && s['ui.lang'] !== window.NexusI18n.choice) window.NexusI18n.set(s['ui.lang'], false);
         const choice = THEMES[s['ui.theme']] ? s['ui.theme'] : 'neon';
         const theme = choice === 'auto' ? (LIGHT && LIGHT.matches ? 'snow' : 'neon') : choice;
         const html = document.documentElement;
@@ -580,7 +580,7 @@
 
     // ======================= Einstellungen =======================
     let setData = null, setTab = UI.store.get('setTab', 'system');
-    function loadSettings() { const box = $('#setBox'); loading(box, 'Lade Einstellungen …'); api('tools_settings').then(d => { setData = d; renderSettings(); }).catch(fail(box)); }
+    function loadSettings() { setTab = UI.store.get('setTab', setTab); const box = $('#setBox'); loading(box, 'Lade Einstellungen …'); api('tools_settings').then(d => { setData = d; renderSettings(); }).catch(fail(box)); }
     function field(f, v) {
         const k = esc(f.key);
         switch (f.type) {
@@ -645,7 +645,7 @@
         const d = setData, box = $('#setBox');
         const MOBILE_HIDE = /^(upd\.mode|link\.(upload|remote)|sys\.|vr\.|media\.|int\.|social\.(players|memo)|notify\.(player_|screenshot|vrc_start)|adv\.(debug|devtools)|ui\.(wide|sticky_menu))/;
         const visible = f => !MOBILE || !MOBILE_HIDE.test(f.key);
-        const tabsShown = Object.keys(d.schema.tabs).filter(t => d.schema.fields.some(f => f.tab === t && visible(f)));
+        const tabsShown = Object.keys(d.schema.tabs).filter(t => t === 'about' || d.schema.fields.some(f => f.tab === t && visible(f)));
         if (!tabsShown.includes(setTab)) setTab = tabsShown[0];
         const fields = d.schema.fields.filter(f => f.tab === setTab && visible(f));
         const secs = [...new Set(fields.map(f => f.section))];
@@ -664,11 +664,13 @@
             + (setTab === 'link' && !MOBILE ? '<div class="set-sec"><h3>☁ Cloud-Sicherung ins Dashboard</h3><div id="bkBox"><div class="vx-loading">…</div></div></div>' : '')
             + (setTab === 'int' && !MOBILE ? obsHtml(d.settings) : '')
             + (setTab === 'vr' && !MOBILE ? '<div class="set-sec"><h3>🎮 VRChat-Logs &amp; OSC-Verbindung</h3><div id="setGameCfg"><div class="vx-loading">Lade …</div></div></div>' : '')
-            + (setTab === 'system' ? '<div class="set-sec"><h3>Version &amp; Updates</h3><div id="updBox"><div class="vx-loading">…</div></div></div><div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
+            + (setTab === 'about' ? '<div class="set-sec" id="updSec"><h3>Version &amp; Updates</h3><div id="updBox"><div class="vx-loading">…</div></div></div><div class="set-sec"><div id="aboutBox"><div class="vx-loading">Lade …</div></div></div>' : '')
+            + (setTab === 'system' ? '<div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
             + (MOBILE ? (['adv', 'link'].includes(setTab) ? extra : '') : extra) + '<p class="vx-small">Änderungen werden sofort gespeichert.</p></div>';
         if (setTab === 'tr' && window.NexusTr) window.NexusTr.panel($('#trPanel'));
         if (setTab === 'link') { linkPanel(); if (!MOBILE) backupPanel(); }
-        if (setTab === 'system') { updatePanel(); dbPanel(); }
+        if (setTab === 'system') dbPanel();
+        if (setTab === 'about') { updatePanel(); if (window.NexusAbout) window.NexusAbout.open(); }
         if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
     }
     // Datenbank: Größe, Einträge je Bereich, ältester Eintrag, Aufbewahrung, jetzt aufräumen

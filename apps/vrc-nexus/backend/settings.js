@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const { str, int, cut, UserError } = require('./util');
 
 const STATUS = [['', '– nichts ändern –'], ['join me', '🔵 Join Me'], ['active', '🟢 Online'], ['ask me', '🟠 Ask Me'], ['busy', '🔴 Beschäftigt']];
-const TABS = { system: '🖥 System', ui: '🎨 Oberfläche', social: '👥 Sozial', notify: '🔔 Benachrichtigungen', vr: '🥽 VR', media: '📷 Medien', tr: '🌐 Übersetzen', link: '🔗 Dashboard', int: '🔌 Integrationen', adv: '🧪 Erweitert' };
+const TABS = { system: '🖥 System', ui: '🎨 Oberfläche', social: '👥 Sozial', notify: '🔔 Benachrichtigungen', vr: '🥽 VR', media: '📷 Medien', tr: '🌐 Übersetzen', link: '🔗 Dashboard', int: '🔌 Integrationen', adv: '🧪 Erweitert', about: 'ℹ️ Über' };
 const TR_LANGS = require('./translate').LANGS.map(l => [l[0], l[2]]);
 const START_TABS = [['home', 'Startseite (Widgets)'], ['friends', 'Freundesliste'], ['feed', 'Verlauf'], ['locations', 'Freunde-Orte'], ['players', 'Spielerliste'], ['favs', 'Favoriten'], ['worlds', 'Welten'],
     ['avatars', 'Meine Avatare'], ['notifs', 'Benachrichtigungen'], ['tools', 'Werkzeuge'], ['client', 'Spiel & OSC']];
@@ -32,7 +32,7 @@ const FIELDS = [
     ['sys.keep_notifs', 'system', 'Aufräumen', 'select', '0', 'Benachrichtigungs-Verlauf behalten', 'Nur erledigte – offene bei VRChat bleiben immer.', [['0', 'für immer'], ['30', '30 Tage'], ['90', '90 Tage'], ['180', '180 Tage'], ['365', '1 Jahr'], ['730', '2 Jahre']]],
     ['sys.keep_cache', 'system', 'Aufräumen', 'select', '30', 'Profil-Zwischenspeicher behalten', 'Wird bei Bedarf neu von VRChat geladen.', [['0', 'für immer'], ['7', '7 Tage'], ['30', '30 Tage'], ['90', '90 Tage']]],
     // ---------- Oberfläche ----------
-    ['ui.lang', 'ui', 'Aussehen', 'select', 'de', 'Sprache / Language', 'Auch über die Flagge unten rechts umschaltbar.', [['de', 'Deutsch'], ['en', 'English'], ['fr', 'Français'], ['ja', '日本語']]],
+    ['ui.lang', 'ui', 'Aussehen', 'select', 'auto', 'Sprache / Language', 'Auch über die Flagge umschaltbar. „Automatisch“ nimmt die Sprache von Windows/Android (sonst Englisch).', [['auto', '🌐 Automatisch (Systemsprache)'], ['de', 'Deutsch'], ['en', 'English'], ['fr', 'Français'], ['ja', '日本語']]],
     ['ui.theme', 'ui', 'Aussehen', 'select', 'neon', 'Theme', 'Auch über 🎨 unten rechts umschaltbar.', [['neon', '🌃 Neon (dunkel, Standard)'], ['midnight', '🌌 Mitternacht (dunkel)'], ['snow', '❄️ Schnee (hell)'], ['sakura', '🌸 Sakura (hell)'], ['auto', '🌗 Automatisch (wie Windows/Android)']]],
     ['ui.accent', 'ui', 'Aussehen', 'color', '#38d5e6', 'Akzentfarbe', 'Bei #38d5e6 nimmt jedes Theme seine eigene Farbe.'],
     ['ui.zoom', 'ui', 'Aussehen', 'number', 100, 'Zoom (%)', '70–150 %', [70, 150]],
