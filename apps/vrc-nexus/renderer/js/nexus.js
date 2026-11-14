@@ -190,6 +190,11 @@
         let foot = $('#sideFoot');
         if (!foot && menu) { foot = document.createElement('div'); foot.className = 'vx-sidefoot'; foot.id = 'sideFoot'; menu.appendChild(foot); }
         const side = document.body.classList.contains('nav-side');
+        const sb = $('#syncBar'), hd = $('.vx-head');
+        if (sb && hd && head) {
+            if (side && sb.parentNode !== hd) hd.insertBefore(sb, head);
+            if (!side && sb.parentNode === hd) { const nav = $('#subNav') || $('#tabs'); nav.parentNode.insertBefore(sb, nav.nextSibling); }
+        }
         for (const id of ['directBtn', 'hdSettings']) {
             const el = $('#' + id);
             if (!el || !foot || !head) continue;

@@ -641,6 +641,7 @@
             + '<p class="nx-hint">Optionen anhängen: <code>&amp;theme=light</code>, <code>&amp;hide=players,time,music,chat</code>. Die Adresse funktioniert nur auf diesem PC.</p></div>';
     }
     function renderSettings() {
+        if (window.NexusClient && window.NexusClient.cfgPark) window.NexusClient.cfgPark();
         const d = setData, box = $('#setBox');
         const MOBILE_HIDE = /^(upd\.mode|link\.(upload|remote)|sys\.|vr\.|media\.|int\.|social\.(players|memo)|notify\.(player_|screenshot|vrc_start)|adv\.(debug|devtools)|ui\.(wide|sticky_menu))/;
         const visible = f => !MOBILE || !MOBILE_HIDE.test(f.key);
@@ -662,11 +663,13 @@
             + (setTab === 'tr' ? '<div id="trPanel"></div>' : '') + (setTab === 'tr' ? [] : secs).map(sec => '<div class="set-sec"><h3>' + esc(sec) + '</h3>' + fields.filter(f => f.section === sec).map(f => '<div class="set-row"><div><b>' + esc(f.label) + '</b>' + (f.hint ? '<div class="nx-hint">' + esc(f.hint) + '</div>' : '') + '</div>' + field(f, d.settings[f.key]) + '</div>').join('') + '</div>').join('')
             + (setTab === 'link' && !MOBILE ? '<div class="set-sec"><h3>☁ Cloud-Sicherung ins Dashboard</h3><div id="bkBox"><div class="vx-loading">…</div></div></div>' : '')
             + (setTab === 'int' && !MOBILE ? obsHtml(d.settings) : '')
+            + (setTab === 'vr' && !MOBILE ? '<div class="set-sec"><h3>🎮 VRChat-Logs &amp; OSC-Verbindung</h3><div id="setGameCfg"><div class="vx-loading">Lade …</div></div></div>' : '')
             + (setTab === 'system' ? '<div class="set-sec"><h3>Version &amp; Updates</h3><div id="updBox"><div class="vx-loading">…</div></div></div><div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
             + (MOBILE ? (['adv', 'link'].includes(setTab) ? extra : '') : extra) + '<p class="vx-small">Änderungen werden sofort gespeichert.</p></div>';
         if (setTab === 'tr' && window.NexusTr) window.NexusTr.panel($('#trPanel'));
         if (setTab === 'link') { linkPanel(); if (!MOBILE) backupPanel(); }
         if (setTab === 'system') { updatePanel(); dbPanel(); }
+        if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
     }
     // Datenbank: Größe, Einträge je Bereich, ältester Eintrag, Aufbewahrung, jetzt aufräumen
     function dbRender(d) {

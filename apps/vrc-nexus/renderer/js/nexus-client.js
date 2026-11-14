@@ -34,7 +34,7 @@
     }
     const fail = e => toast('⚠ ' + e.message, true);
 
-    let data = null, sub = store.get('sub', 'live'), timer = null, built = false, openNow = false;
+    let data = null, sub = store.get('sub', 'live') === 'devices' ? 'live' : store.get('sub', 'live'), timer = null, built = false, openNow = false;
     let logBefore = 0;
     const KIND = () => (data && data.kinds) || {};
 
@@ -57,7 +57,6 @@
                 <button type="button" class="chip" data-sub="log">📜 Spiel-Log</button>
                 <button type="button" class="chip" data-sub="people">🧑‍🤝‍🧑 Getroffen</button>
                 <button type="button" class="chip" data-sub="visits">🌐 Besuche</button>
-                <button type="button" class="chip" data-sub="devices">⚙ Einstellungen</button>
             </nav>
             <div class="nc-pane" data-p="live">
                 <div class="nc-grid">
@@ -107,7 +106,23 @@
                 <div class="muted small" id="ncPInfo"></div>
                 <div class="nc-pgrid" id="ncPList"></div>
             </div>
-            <div class="nc-pane" data-p="mods" hidden><div id="cmBox"></div></div>
+            <div class="nc-pane" data-p="mods" hidden><div class="nc-grid nc-rotwrap">
+                    <div class="nc-card">
+                        <h4>💬 Chatbox-Rotator</h4>
+                        <label class="check"><input form="ncCfg" type="checkbox" name="rotator_enabled"> automatisch Status in die Chatbox schreiben</label>
+                        <label class="small">Ein Text</label>
+                        <input form="ncCfg" type="text" name="rotator_text" maxlength="200">
+                        <label class="small">… oder mehrere im Wechsel (eine Zeile = ein Text)</label>
+                        <textarea form="ncCfg" name="rotator_texts" rows="4" placeholder="🕒 {zeit} · 🌐 {welt}/n👥 {spieler} Spieler&#10;🎧 Musik an, Mikro aus&#10;{zufall:Hallo!|Hi!|Moin!} Schön, dass du da bist"></textarea>
+                        <div class="nc-row"><label class="small">alle</label><input form="ncCfg" type="number" name="rotator_seconds" min="5" max="3600" style="width: 90px;"><span class="small">Sekunden</span>
+                            <select form="ncCfg" name="rotator_mode"><option value="seq">der Reihe nach</option><option value="random">zufällig</option></select></div>
+                        <label class="check"><input form="ncCfg" type="checkbox" name="rotator_only_game"> nur wenn VRChat läuft</label>
+                        <p class="muted small"><b>/n</b> = neue Zeile · Platzhalter: {zeit} {zeit_s} {uhr} {datum} {wochentag} {welt} {zugang} {region} {spieler} {avatar} {dauer} {name}
+                            {freunde} {freunde_online} {status} {statustext} {countdown:2026-12-24 18:00} {zufall:a|b|c} {musik} {musik_titel} {musik_kuenstler} {musik_app} {musik_zeit} {afk} {afk_zeit} {spieler_neu}</p>
+                        <div class="nc-row"><button type="button" class="btn btn-sm" id="ncRotPrev">👁 Vorschau</button><span class="small" id="ncRotOut" style="white-space: pre-wrap;"></span></div>
+                        <button class="btn btn-sm btn-gold" form="ncCfg">💾 Speichern</button>
+                    </div>
+                </div><div id="cmBox"></div></div>
             <div class="nc-pane" data-p="osctools" hidden><div id="otBox"></div></div>
             <div class="nc-pane" data-p="tts" hidden><div id="ttsBox"></div></div>
             <div class="nc-pane" data-p="osclog" hidden>
@@ -205,40 +220,26 @@
                 <div class="nc-row nc-filter"><select id="ncVDays"><option value="1">Heute & gestern</option><option value="7" selected>7 Tage</option><option value="30">30 Tage</option><option value="90">90 Tage</option></select></div>
                 <div id="ncVisits"></div>
             </div>
-            <div class="nc-pane" data-p="devices" hidden>
-                <form class="nc-grid" id="ncCfg">
+            <form id="ncCfg" hidden></form>
+            <div class="nc-park" hidden><div class="nc-grid" id="ncGameCfg">
                     <div class="nc-card">
                         <h4>📜 VRChat-Logs</h4>
-                        <label class="check"><input type="checkbox" name="logs"> Logs mitlesen (Welten, Spieler, Avatare, Videos, Screenshots, Einladungen)</label>
+                        <label class="check"><input form="ncCfg" type="checkbox" name="logs"> Logs mitlesen (Welten, Spieler, Avatare, Videos, Screenshots, Einladungen)</label>
                         <label class="small muted">Log-Ordner (leer = Standard)</label>
-                        <input type="text" name="log_dir" placeholder="%LOCALAPPDATA%Low\\VRChat\\VRChat">
+                        <input form="ncCfg" type="text" name="log_dir" placeholder="%LOCALAPPDATA%Low\\VRChat\\VRChat">
                         <p class="muted small">Aktuell: <code id="ncLogDir"></code></p>
                         <div class="nc-row"><button type="button" class="btn btn-sm" id="ncImport">⇩ Alle alten Logs einlesen</button></div>
                     </div>
                     <div class="nc-card">
                         <h4>🎛️ OSC</h4>
-                        <div class="nc-row"><label class="small">Ziel</label><input type="text" name="osc_host" style="width: 130px;"><label class="small">Port</label><input type="number" name="osc_send_port" min="1" max="65535" style="width: 90px;"></div>
-                        <label class="check"><input type="checkbox" name="osc_listen"> Avatar-Parameter von VRChat mitlesen</label>
-                        <div class="nc-row"><label class="small">Empfangs-Port</label><input type="number" name="osc_listen_port" min="1" max="65535" style="width: 90px;"></div>
+                        <div class="nc-row"><label class="small">Ziel</label><input form="ncCfg" type="text" name="osc_host" style="width: 130px;"><label class="small">Port</label><input form="ncCfg" type="number" name="osc_send_port" min="1" max="65535" style="width: 90px;"></div>
+                        <label class="check"><input form="ncCfg" type="checkbox" name="osc_listen"> Avatar-Parameter von VRChat mitlesen</label>
+                        <div class="nc-row"><label class="small">Empfangs-Port</label><input form="ncCfg" type="number" name="osc_listen_port" min="1" max="65535" style="width: 90px;"></div>
                         <p class="muted small" id="ncOscErr"></p>
                         <p class="muted small">In VRChat: Action-Menü → Optionen → <b>OSC aktivieren</b>.</p>
                     </div>
-                    <div class="nc-card">
-                        <h4>💬 Chatbox-Rotator</h4>
-                        <label class="check"><input type="checkbox" name="rotator_enabled"> automatisch Status in die Chatbox schreiben</label>
-                        <label class="small">Ein Text</label>
-                        <input type="text" name="rotator_text" maxlength="200">
-                        <label class="small">… oder mehrere im Wechsel (eine Zeile = ein Text)</label>
-                        <textarea name="rotator_texts" rows="4" placeholder="🕒 {zeit} · 🌐 {welt}/n👥 {spieler} Spieler&#10;🎧 Musik an, Mikro aus&#10;{zufall:Hallo!|Hi!|Moin!} Schön, dass du da bist"></textarea>
-                        <div class="nc-row"><label class="small">alle</label><input type="number" name="rotator_seconds" min="5" max="3600" style="width: 90px;"><span class="small">Sekunden</span>
-                            <select name="rotator_mode"><option value="seq">der Reihe nach</option><option value="random">zufällig</option></select></div>
-                        <label class="check"><input type="checkbox" name="rotator_only_game"> nur wenn VRChat läuft</label>
-                        <p class="muted small"><b>/n</b> = neue Zeile · Platzhalter: {zeit} {zeit_s} {uhr} {datum} {wochentag} {welt} {zugang} {region} {spieler} {avatar} {dauer} {name}
-                            {freunde} {freunde_online} {status} {statustext} {countdown:2026-12-24 18:00} {zufall:a|b|c} {musik} {musik_titel} {musik_kuenstler} {musik_app} {musik_zeit} {afk} {afk_zeit} {spieler_neu}</p>
-                        <div class="nc-row"><button type="button" class="btn btn-sm" id="ncRotPrev">👁 Vorschau</button><span class="small" id="ncRotOut" style="white-space: pre-wrap;"></span></div>
-                        <button class="btn btn-sm btn-gold">💾 Speichern</button>
-                    </div>
-                </form>
+                    <div class="nc-card nc-cfgsave"><button class="btn btn-sm btn-gold" form="ncCfg">💾 Speichern</button></div>
+                </div></div>
             </div>`;
         $('#ncSub').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) showSub(b.dataset.sub); });
         if (window.NexusUI && window.NexusUI.subnav) window.NexusUI.subnav();   // Menü links: Reiter nach oben holen
@@ -414,11 +415,11 @@
 
     function renderTokens() {
         const f = $('#ncCfg'), c = data.cfg || {};
-        if (!f || f.contains(document.activeElement)) return;
+        if (!f || (document.activeElement && document.activeElement.form === f)) return;
         ['log_dir', 'osc_host', 'osc_send_port', 'osc_listen_port', 'rotator_text', 'rotator_seconds', 'rotator_texts', 'rotator_mode'].forEach(k => { f[k].value = c[k] ?? ''; });
         ['logs', 'osc_listen', 'rotator_enabled', 'rotator_only_game'].forEach(k => { f[k].checked = !!c[k]; });
-        $('#ncLogDir').textContent = data.log_dir || '';
-        $('#ncOscErr').textContent = data.state && data.state.osc_error ? '⚠ ' + data.state.osc_error : '';
+        if ($('#ncLogDir')) $('#ncLogDir').textContent = data.log_dir || '';
+        if ($('#ncOscErr')) $('#ncOscErr').textContent = data.state && data.state.osc_error ? '⚠ ' + data.state.osc_error : '';
     }
 
     function eventText(e) {
@@ -726,7 +727,13 @@
             openNow = true;
             refresh().then(() => { showSub(sub); poll(); });
         },
-        close() { openNow = false; clearTimeout(timer); }
+        close() { openNow = false; clearTimeout(timer); },
+        /** Logs- & OSC-Einstellungen in die Haupt-Einstellungen hängen (el) bzw. zurückparken (ohne el) */
+        cfgInto(el) {
+            const go = () => { const g = document.getElementById('ncGameCfg'); if (g && el && document.contains(el)) { el.innerHTML = ''; el.appendChild(g); renderTokens(); } };
+            if (built) { go(); refresh(); } else refresh().then(go);
+        },
+        cfgPark() { const g = document.getElementById('ncGameCfg'), park = document.querySelector('.nc-park'); if (g && park && g.parentNode !== park) park.appendChild(g); }
     };
     document.addEventListener('visibilitychange', () => { if (!document.hidden && openNow) poll(); });
     // Ohne verbundenes VRChat-Konto: aufklappbarer Bereich unter der Anmeldung

@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.6.1",
+  "title": "Aufgeräumt: Abgleich oben, Einstellungen am richtigen Ort",
+  "body": "- Die Abgleich-Leiste („… im Spiel · … online · … Freunde“, automatisch, Strg+K, Aktualisieren) sitzt bei Menü links **ohne Rahmen oben im Kopf** neben dem Profil.\n- Spiel & OSC: der Unterpunkt **„Einstellungen“ ist weg** – VRChat-Logs und OSC-Verbindung stehen jetzt unter **Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“**.\n- Der **Chatbox-Rotator** steht jetzt oben im Reiter **Chatbox-Module**."
+ },
+ {
   "version": "2.6.0",
   "title": "Hintergrundbild",
   "body": "- **Einstellungen → Oberfläche → Hintergrundbild**: eigenes Bild hinter der ganzen App.\n- Bild wählen **aus der VRChat-Galerie** (Fotos & Prints), **als Datei vom PC** (PNG/JPG/GIF/WebP, max. 8 MB – bleibt nur lokal in der App-Datenbank) oder per **https-Adresse**.\n- Regler für **Deckkraft** (0–100 %) und **Weichzeichnen**, dazu „Anpassen“: Ausfüllen, ganz zeigen, kacheln oder mittig.\n- In der Galerie hat jedes Foto/Print einen 🖼-Knopf „Als App-Hintergrund“.\n- Funktioniert in der Windows- und der Android-App."

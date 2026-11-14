@@ -620,3 +620,11 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .nx-bgpick-in { background: var(--panel-bg, rgba(var(--panel-rgb), 0.98)); border: 1px solid var(--border-color); width: min(900px, 100%); max-height: 85vh; overflow-y: auto; padding: 16px; }
 .nx-bgpick .vx-gitem { cursor: pointer; }
 .nx-bgpick .vx-gitem:hover { outline: 2px solid var(--accent-cyan); }
+
+/* ---------- Abgleich-Leiste im Kopf (Menü links), ohne Rahmen ---------- */
+.vx-head > .vx-bar { flex: 1 1 360px; align-self: center; margin: 0; border: 0; background: transparent; padding: 0 6px; min-width: 0; }
+.vx-head > .vx-bar .vx-spark { max-width: 110px; }
+/* Logs & OSC in den Einstellungen, Rotator über den Chatbox-Modulen */
+#setGameCfg .nc-grid { margin: 0; }
+.nc-cfgsave { display: flex; align-items: flex-end; justify-content: flex-end; border: 0 !important; background: transparent !important; }
+.nc-rotwrap { grid-template-columns: 1fr; margin-bottom: 14px; }

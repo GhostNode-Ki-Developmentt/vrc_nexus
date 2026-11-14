@@ -20,6 +20,12 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.6.1 – Aufgeräumt: Abgleich oben, Einstellungen am richtigen Ort
+
+- Die Abgleich-Leiste („… im Spiel · … online · … Freunde“, automatisch, Strg+K, Aktualisieren) sitzt bei Menü links **ohne Rahmen oben im Kopf** neben dem Profil.
+- Spiel & OSC: der Unterpunkt **„Einstellungen“ ist weg** – VRChat-Logs und OSC-Verbindung stehen jetzt unter **Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“**.
+- Der **Chatbox-Rotator** steht jetzt oben im Reiter **Chatbox-Module**.
+
 ### Neu in 2.6.0 – Hintergrundbild
 
 - **Einstellungen → Oberfläche → Hintergrundbild**: eigenes Bild hinter der ganzen App.
