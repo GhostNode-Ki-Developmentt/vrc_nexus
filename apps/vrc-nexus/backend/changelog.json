@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.6.3",
+  "title": "Logs & OSC wie die anderen Einstellungen",
+  "body": "- Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“ ist jetzt in normalen Einstellungszeilen (Name links, Schalter/Feld rechts) statt in Kästen.\n- Wie überall in den Einstellungen wird **sofort gespeichert** – kein eigener Speichern-Knopf mehr."
+ },
+ {
   "version": "2.6.2",
   "title": "Chatbox-Rotator als Modul",
   "body": "- Der **Chatbox-Rotator** sieht jetzt aus wie die anderen Chatbox-Module: eigene Zeile unter der Modulliste mit Symbol, Kurzinfo (z. B. „3 Texte · alle 30 s“), **Schalter** (speichert sofort) und **„Anpassen ›“** zum Aufklappen von Texten, Takt, Reihenfolge und Vorschau."

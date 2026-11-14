@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.6.3 – Logs & OSC wie die anderen Einstellungen
+
+- Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“ ist jetzt in normalen Einstellungszeilen (Name links, Schalter/Feld rechts) statt in Kästen.
+- Wie überall in den Einstellungen wird **sofort gespeichert** – kein eigener Speichern-Knopf mehr.
+
 ### Neu in 2.6.2 – Chatbox-Rotator als Modul
 
 - Der **Chatbox-Rotator** sieht jetzt aus wie die anderen Chatbox-Module: eigene Zeile unter der Modulliste mit Symbol, Kurzinfo (z. B. „3 Texte · alle 30 s“), **Schalter** (speichert sofort) und **„Anpassen ›“** zum Aufklappen von Texten, Takt, Reihenfolge und Vorschau.

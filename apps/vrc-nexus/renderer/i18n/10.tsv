@@ -266,3 +266,16 @@ In deiner Galerie sind keine Fotos. Lade eins unter Galerie hoch oder wähle ein
 🎮 VRChat-Logs & OSC-Verbindung	🎮 VRChat logs & OSC connection	🎮 Journaux VRChat & connexion OSC	🎮 VRChatログとOSC接続
 Eigene Texte im Wechsel in die Chatbox – mit Platzhaltern wie {zeit}, {welt}, {spieler}. Läuft, wenn die Module oben aus sind.	Your own texts rotating in the chatbox – with placeholders like {zeit}, {welt}, {spieler}. Runs when the modules above are off.	Tes propres textes en alternance dans la chatbox – avec des variables comme {zeit}, {welt}, {spieler}. Actif quand les modules ci-dessus sont désactivés.	自分のテキストをチャットボックスで順番に表示 – {zeit}、{welt}、{spieler} などのプレースホルダー対応。上のモジュールがオフのときに動作します。
 kein Text	no text	aucun texte	テキストなし
+Logs mitlesen	Read logs	Lire les journaux	ログを読み取る
+Welten, Spieler, Avatare, Videos, Screenshots, Einladungen	Worlds, players, avatars, videos, screenshots, invites	Mondes, joueurs, avatars, vidéos, captures, invitations	ワールド、プレイヤー、アバター、動画、スクリーンショット、招待
+Log-Ordner	Log folder	Dossier des journaux	ログフォルダー
+Leer = Standard. Aktuell:	Empty = default. Current:	Vide = par défaut. Actuel :	空欄 = 標準。現在:
+Alte Logs	Old logs	Anciens journaux	過去のログ
+Alle vorhandenen VRChat-Logdateien einmal einlesen (doppelte Einträge werden erkannt).	Import all existing VRChat log files once (duplicates are detected).	Importer une fois tous les fichiers journaux VRChat existants (les doublons sont détectés).	既存のVRChatログファイルをすべて一度読み込みます（重複は検出されます）。
+OSC-Ziel (Adresse)	OSC target (address)	Cible OSC (adresse)	OSC送信先（アドレス）
+Wohin Chatbox und Parameter gesendet werden – meist 127.0.0.1.	Where chatbox and parameters are sent – usually 127.0.0.1.	Où la chatbox et les paramètres sont envoyés – généralement 127.0.0.1.	チャットボックスとパラメーターの送信先 – 通常は 127.0.0.1。
+OSC-Port (senden)	OSC port (send)	Port OSC (envoi)	OSCポート（送信）
+Standard 9000	Default 9000	Par défaut 9000	標準 9000
+Avatar-Parameter von VRChat mitlesen	Read avatar parameters from VRChat	Lire les paramètres d'avatar de VRChat	VRChatからアバターパラメーターを読み取る
+OSC-Port (empfangen)	OSC port (receive)	Port OSC (réception)	OSCポート（受信）
+Standard 9001	Default 9001	Par défaut 9001	標準 9001

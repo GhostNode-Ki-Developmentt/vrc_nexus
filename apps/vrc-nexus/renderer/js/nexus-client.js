@@ -223,24 +223,14 @@
                 <div id="ncVisits"></div>
             </div>
             <form id="ncCfg" hidden></form>
-            <div class="nc-park" hidden><div class="nc-grid" id="ncGameCfg">
-                    <div class="nc-card">
-                        <h4>📜 VRChat-Logs</h4>
-                        <label class="check"><input form="ncCfg" type="checkbox" name="logs"> Logs mitlesen (Welten, Spieler, Avatare, Videos, Screenshots, Einladungen)</label>
-                        <label class="small muted">Log-Ordner (leer = Standard)</label>
-                        <input form="ncCfg" type="text" name="log_dir" placeholder="%LOCALAPPDATA%Low\\VRChat\\VRChat">
-                        <p class="muted small">Aktuell: <code id="ncLogDir"></code></p>
-                        <div class="nc-row"><button type="button" class="btn btn-sm" id="ncImport">⇩ Alle alten Logs einlesen</button></div>
-                    </div>
-                    <div class="nc-card">
-                        <h4>🎛️ OSC</h4>
-                        <div class="nc-row"><label class="small">Ziel</label><input form="ncCfg" type="text" name="osc_host" style="width: 130px;"><label class="small">Port</label><input form="ncCfg" type="number" name="osc_send_port" min="1" max="65535" style="width: 90px;"></div>
-                        <label class="check"><input form="ncCfg" type="checkbox" name="osc_listen"> Avatar-Parameter von VRChat mitlesen</label>
-                        <div class="nc-row"><label class="small">Empfangs-Port</label><input form="ncCfg" type="number" name="osc_listen_port" min="1" max="65535" style="width: 90px;"></div>
-                        <p class="muted small" id="ncOscErr"></p>
-                        <p class="muted small">In VRChat: Action-Menü → Optionen → <b>OSC aktivieren</b>.</p>
-                    </div>
-                    <div class="nc-card nc-cfgsave"><button class="btn btn-sm btn-gold" form="ncCfg">💾 Speichern</button></div>
+            <div class="nc-park" hidden><div id="ncGameCfg">
+                    <div class="set-row"><div><b>Logs mitlesen</b><div class="nx-hint">Welten, Spieler, Avatare, Videos, Screenshots, Einladungen</div></div><label class="switch"><input form="ncCfg" type="checkbox" name="logs"><i></i></label></div>
+                    <div class="set-row"><div><b>Log-Ordner</b><div class="nx-hint">Leer = Standard. Aktuell: <code id="ncLogDir"></code></div></div><input form="ncCfg" type="text" name="log_dir" placeholder="%LOCALAPPDATA%Low\\VRChat\\VRChat"></div>
+                    <div class="set-row"><div><b>Alte Logs</b><div class="nx-hint">Alle vorhandenen VRChat-Logdateien einmal einlesen (doppelte Einträge werden erkannt).</div></div><button type="button" class="btn btn-sm" id="ncImport">⇩ Alle alten Logs einlesen</button></div>
+                    <div class="set-row"><div><b>OSC-Ziel (Adresse)</b><div class="nx-hint">Wohin Chatbox und Parameter gesendet werden – meist 127.0.0.1.</div></div><input form="ncCfg" type="text" name="osc_host"></div>
+                    <div class="set-row"><div><b>OSC-Port (senden)</b><div class="nx-hint">Standard 9000</div></div><input form="ncCfg" type="number" name="osc_send_port" min="1" max="65535"></div>
+                    <div class="set-row"><div><b>Avatar-Parameter von VRChat mitlesen</b><div class="nx-hint">In VRChat: Action-Menü → Optionen → <b>OSC aktivieren</b>. <span id="ncOscErr"></span></div></div><label class="switch"><input form="ncCfg" type="checkbox" name="osc_listen"><i></i></label></div>
+                    <div class="set-row"><div><b>OSC-Port (empfangen)</b><div class="nx-hint">Standard 9001</div></div><input form="ncCfg" type="number" name="osc_listen_port" min="1" max="65535"></div>
                 </div></div>
             </div>`;
         $('#ncSub').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) showSub(b.dataset.sub); });
@@ -327,6 +317,8 @@
             api('client_cfg_save', d).then(r => { data.cfg = r.cfg; toast('Gespeichert.'); refresh(); }).catch(fail);
         });
         $('#ncRotOn').addEventListener('change', () => cfgForm.requestSubmit());
+        // Logs & OSC in den Einstellungen: wie dort üblich sofort speichern
+        $('#ncGameCfg').addEventListener('change', e => { if (e.target.form === cfgForm) cfgForm.requestSubmit(); });
         $('#ncRotOpen').addEventListener('click', () => { const e = $('#ncRotEdit'); e.hidden = !e.hidden; $('#ncRotOpen').textContent = e.hidden ? 'Anpassen ›' : 'Schließen ▴'; });
         $('#ncRotPrev').addEventListener('click', () => {
             const f = cfgForm, lines = f.rotator_texts.value.split('\n').map(x => x.trim()).filter(Boolean);
