@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.6.2 – Chatbox-Rotator als Modul
+
+- Der **Chatbox-Rotator** sieht jetzt aus wie die anderen Chatbox-Module: eigene Zeile unter der Modulliste mit Symbol, Kurzinfo (z. B. „3 Texte · alle 30 s“), **Schalter** (speichert sofort) und **„Anpassen ›“** zum Aufklappen von Texten, Takt, Reihenfolge und Vorschau.
+
 ### Neu in 2.6.1 – Aufgeräumt: Abgleich oben, Einstellungen am richtigen Ort
 
 - Die Abgleich-Leiste („… im Spiel · … online · … Freunde“, automatisch, Strg+K, Aktualisieren) sitzt bei Menü links **ohne Rahmen oben im Kopf** neben dem Profil.

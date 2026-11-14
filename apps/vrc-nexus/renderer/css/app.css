@@ -627,4 +627,7 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 /* Logs & OSC in den Einstellungen, Rotator über den Chatbox-Modulen */
 #setGameCfg .nc-grid { margin: 0; }
 .nc-cfgsave { display: flex; align-items: flex-end; justify-content: flex-end; border: 0 !important; background: transparent !important; }
-.nc-rotwrap { grid-template-columns: 1fr; margin-bottom: 14px; }
+.nc-rotrow { margin-top: 6px; }
+.nc-rotrow .cm-edit label.small { font-size: 0.78rem; color: var(--text-muted); }
+.nc-rotrow .cm-edit[hidden] { display: none; }
+.nc-rotrow .cm-edit > .btn, .nc-rotrow .cm-edit .nc-row { align-self: flex-start; }

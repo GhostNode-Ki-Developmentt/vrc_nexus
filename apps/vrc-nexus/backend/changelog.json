@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.6.2",
+  "title": "Chatbox-Rotator als Modul",
+  "body": "- Der **Chatbox-Rotator** sieht jetzt aus wie die anderen Chatbox-Module: eigene Zeile unter der Modulliste mit Symbol, Kurzinfo (z. B. „3 Texte · alle 30 s“), **Schalter** (speichert sofort) und **„Anpassen ›“** zum Aufklappen von Texten, Takt, Reihenfolge und Vorschau."
+ },
+ {
   "version": "2.6.1",
   "title": "Aufgeräumt: Abgleich oben, Einstellungen am richtigen Ort",
   "body": "- Die Abgleich-Leiste („… im Spiel · … online · … Freunde“, automatisch, Strg+K, Aktualisieren) sitzt bei Menü links **ohne Rahmen oben im Kopf** neben dem Profil.\n- Spiel & OSC: der Unterpunkt **„Einstellungen“ ist weg** – VRChat-Logs und OSC-Verbindung stehen jetzt unter **Einstellungen → VR → „VRChat-Logs & OSC-Verbindung“**.\n- Der **Chatbox-Rotator** steht jetzt oben im Reiter **Chatbox-Module**."

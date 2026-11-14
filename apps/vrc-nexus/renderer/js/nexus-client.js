@@ -106,10 +106,12 @@
                 <div class="muted small" id="ncPInfo"></div>
                 <div class="nc-pgrid" id="ncPList"></div>
             </div>
-            <div class="nc-pane" data-p="mods" hidden><div class="nc-grid nc-rotwrap">
-                    <div class="nc-card">
-                        <h4>💬 Chatbox-Rotator</h4>
-                        <label class="check"><input form="ncCfg" type="checkbox" name="rotator_enabled"> automatisch Status in die Chatbox schreiben</label>
+            <div class="nc-pane" data-p="mods" hidden><div id="cmBox"></div>
+                <section class="cm-row nc-rotrow" id="ncRotRow"><span class="cm-ic">🔁</span>
+                    <div class="cm-txt"><b>Chatbox-Rotator</b> <small class="cm-note" id="ncRotNote"></small><p>Eigene Texte im Wechsel in die Chatbox – mit Platzhaltern wie {zeit}, {welt}, {spieler}. Läuft, wenn die Module oben aus sind.</p></div>
+                    <div class="cm-ctl"><span class="cm-btns"><button type="button" class="cm-open" id="ncRotOpen">Anpassen ›</button></span></div>
+                    <label class="switch cm-sw" title="automatisch Status in die Chatbox schreiben"><input form="ncCfg" type="checkbox" name="rotator_enabled" id="ncRotOn"><i></i></label>
+                    <div class="cm-edit" id="ncRotEdit" hidden>
                         <label class="small">Ein Text</label>
                         <input form="ncCfg" type="text" name="rotator_text" maxlength="200">
                         <label class="small">… oder mehrere im Wechsel (eine Zeile = ein Text)</label>
@@ -122,7 +124,7 @@
                         <div class="nc-row"><button type="button" class="btn btn-sm" id="ncRotPrev">👁 Vorschau</button><span class="small" id="ncRotOut" style="white-space: pre-wrap;"></span></div>
                         <button class="btn btn-sm btn-gold" form="ncCfg">💾 Speichern</button>
                     </div>
-                </div><div id="cmBox"></div></div>
+                </section></div>
             <div class="nc-pane" data-p="osctools" hidden><div id="otBox"></div></div>
             <div class="nc-pane" data-p="tts" hidden><div id="ttsBox"></div></div>
             <div class="nc-pane" data-p="osclog" hidden>
@@ -324,6 +326,8 @@
             ['logs', 'osc_listen', 'rotator_enabled', 'rotator_only_game'].forEach(k => { d[k] = f[k].checked ? '1' : '0'; });
             api('client_cfg_save', d).then(r => { data.cfg = r.cfg; toast('Gespeichert.'); refresh(); }).catch(fail);
         });
+        $('#ncRotOn').addEventListener('change', () => cfgForm.requestSubmit());
+        $('#ncRotOpen').addEventListener('click', () => { const e = $('#ncRotEdit'); e.hidden = !e.hidden; $('#ncRotOpen').textContent = e.hidden ? 'Anpassen ›' : 'Schließen ▴'; });
         $('#ncRotPrev').addEventListener('click', () => {
             const f = cfgForm, lines = f.rotator_texts.value.split('\n').map(x => x.trim()).filter(Boolean);
             api('client_rot_preview', { text: lines[0] || f.rotator_text.value }).then(r => { $('#ncRotOut').textContent = r.text + '  (' + [...r.text].length + '/144)'; }).catch(fail);
@@ -415,6 +419,7 @@
 
     function renderTokens() {
         const f = $('#ncCfg'), c = data.cfg || {};
+        if ($('#ncRotRow')) { $('#ncRotRow').classList.toggle('on', !!c.rotator_enabled); const n = String(c.rotator_texts || '').split('\n').filter(x => x.trim()).length; $('#ncRotNote').textContent = (n ? n + ' Texte' : c.rotator_text ? '1 Text' : 'kein Text') + ' · alle ' + (c.rotator_seconds || 30) + ' s'; }
         if (!f || (document.activeElement && document.activeElement.form === f)) return;
         ['log_dir', 'osc_host', 'osc_send_port', 'osc_listen_port', 'rotator_text', 'rotator_seconds', 'rotator_texts', 'rotator_mode'].forEach(k => { f[k].value = c[k] ?? ''; });
         ['logs', 'osc_listen', 'rotator_enabled', 'rotator_only_game'].forEach(k => { f[k].checked = !!c[k]; });
