@@ -5,6 +5,16 @@
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     /* VRChat-Bilder (api.vrchat.cloud/…/file|image/file_…) brauchen das Anmelde-Cookie → über den Bildweg der App (nexus.php?img=…) laden */
     const VRC_PIC = /^https:\/\/api\.vrchat\.cloud\/api\/1\/(file|image)\/(file_[0-9a-f-]{36})\/(\d+)(?:\/(\d+|file))?/i;
+    // ---------- Benutzerfarben (Einstellungen → Oberfläche → Benutzerfarben) ----------
+    const RANK_KEY = { 'Visitor': 'visitor', 'New User': 'new', 'User': 'user', 'Known User': 'known', 'Trusted User': 'trusted', 'VRChat-Team': 'team', 'Nuisance': 'nuisance' };
+    function idColor(id) { let h = 0; for (const ch of String(id || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return 'hsl(' + (h % 360) + ', 70%, ' + (58 + (h >> 9) % 12) + '%)'; }
+    /** u = Objekt mit trust [Name, Farbe] und id */
+    function tcol(u) {
+        const s = (window.VRCX && window.VRCX.ui) || {}, t = (u && u.trust) || [];
+        if (s['ui.ucol_id'] && u && u.id && t[0] !== 'VRChat-Team') return idColor(u.id);
+        const c = s['ui.ucol_' + RANK_KEY[t[0]]];
+        return /^#[0-9a-f]{6}$/i.test(c || '') ? c : (t[1] || 'inherit');
+    }
     const pic = u => {
         u = typeof u === 'string' ? u : '';
         const m = VRC_PIC.exec(u);
@@ -282,7 +292,7 @@
 
     function renderMe() {
         const m = state.me;
-        $('#me').innerHTML = img(m.image, 'vx-me-img', m.name) + '<div><b style="color:' + esc(m.trust[1]) + '">' + esc(m.name) + '</b><span>' + statusDot(m.status)
+        $('#me').innerHTML = img(m.image, 'vx-me-img', m.name) + '<div><b style="color:' + esc(tcol(m)) + '">' + esc(m.name) + '</b><span>' + statusDot(m.status)
             + esc(m.status_desc || (ST[m.status] || {}).label || '') + '</span></div>';
         const f = $('#statusForm');
         if (f && !f.dataset.touched) {
@@ -350,7 +360,7 @@
         else where = '<span class="fc-loc muted">Offline' + (f.since ? ' · ' + ago(f.since) : '') + '</span>';
         return '<div class="vx-friend fc st-' + f.state + (f.favorite ? ' fav' : '') + (compact ? ' compact' : '') + '" data-user="' + esc(f.id) + '" tabindex="0" role="button" style="--sc:' + esc(col) + '">'
             + '<span class="fc-av">' + img(f.image, 'vx-av', f.name) + '</span>'
-            + '<span class="vx-f-main"><span class="fc-name"><b style="color:' + esc(f.trust[1]) + '">' + esc(f.name) + '</b>' + (f.favorite ? ' ⭐' : '')
+            + '<span class="vx-f-main"><span class="fc-name"><b style="color:' + esc(tcol(f)) + '">' + esc(f.name) + '</b>' + (f.favorite ? ' ⭐' : '')
             + (f.fav_group ? ' <span class="vx-vfav" title="VRChat-Favorit: ' + esc((state.fav_groups || {})[f.fav_group] || f.fav_group) + '">♥</span>' : '') + (f.pronouns ? ' <span class="vx-pron" data-nogender>' + esc(f.pronouns) + '</span>' : '') + '</span>'
             + (!compact && f.status_desc ? '<span class="fc-sd"><i>✎</i>' + esc(f.status_desc) + '</span>' : '')
             + where
@@ -445,9 +455,9 @@
     }
     function renderUser(u) {
         const l = u.loc || {}, w = l.world_info || {}, s = u.stats || {}, myLoc = state.me.location;
-        let h = '<div class="vx-u-head">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(u.trust[1]) + '">' + esc(u.name) + '</h2>'
+        let h = '<div class="vx-u-head">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
             + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + (u.pronouns ? ' · ' + esc(u.pronouns) : '') + '</div>'
-            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(u.trust[1]) + '">' + esc(u.trust[0]) + '</span>' + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
+            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
             + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';
         if (l.kind === 'world') {
             h += '<div class="vx-u-loc">' + img(w.thumb, 'vx-u-world', '') + '<div><b><a href="#" data-world="' + esc(l.world) + '">' + esc((w.name) || 'Unbekannte Welt') + '</a></b><small>' + esc(l.label) + (w.author ? ' · von ' + esc(w.author) : '') + (w.capacity ? ' · max. ' + w.capacity : '') + '</small><span class="vx-u-btns">'
@@ -949,7 +959,7 @@
         const f = friendById(id);
         if (!f) return {};
         const where = f.state === 'offline' ? '' : (f.loc && f.loc.world_name ? f.loc.world_name : f.state === 'active' ? 'Web/App' : '');
-        return { name: f.name, image: f.image, sub: f.status_desc || where, state: f.state, status: f.status, color: f.trust[1] };
+        return { name: f.name, image: f.image, sub: f.status_desc || where, state: f.state, status: f.status, color: tcol(f) };
     }
     function renderFavMain() {
         const main = $('#favMain'), l = favLists().find(x => x.key === fv.sel);
@@ -1600,7 +1610,7 @@
         }
         api('search', { q }).then(d => {
             box.innerHTML = d.users.length ? '<div class="vx-grid">' + d.users.map(u => '<div class="vx-friend" data-user="' + esc(u.id) + '" tabindex="0" role="button">' + img(u.image, 'vx-av', u.name)
-                + '<span class="vx-f-main"><span class="vx-f-name">' + statusDot(u.status) + '<b style="color:' + esc(u.trust[1]) + '">' + esc(u.name) + '</b>' + (u.is_friend ? ' 🤝' : '') + '</span><span class="vx-f-sd">' + esc(u.trust[0]) + (u.status_desc ? ' · ' + esc(u.status_desc) : '') + '</span></span></div>').join('') + '</div>'
+                + '<span class="vx-f-main"><span class="vx-f-name">' + statusDot(u.status) + '<b style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</b>' + (u.is_friend ? ' 🤝' : '') + '</span><span class="vx-f-sd">' + esc(u.trust[0]) + (u.status_desc ? ' · ' + esc(u.status_desc) : '') + '</span></span></div>').join('') + '</div>'
                 : '<div class="vx-empty">Niemanden gefunden.</div>';
         }).catch(fail(box));
     });
@@ -2199,7 +2209,8 @@
 
     // Start
     load(false).then(() => load(true)).finally(schedule);
-    window.NexusUI = { subnav: () => syncSubNav(), statusDot, store, pic, popMenu, renderUser, feedRow, tab, api, toast, esc, img, ago, hm, dur, clock, num, launch, openUser, openWorld, openAvatar, openInstance, openModal, closeModal, load, readClipboard,
+    window.addEventListener('nexus-colors', () => { try { renderFriends(); } catch (e) { /* noch nicht geladen */ } });
+    window.NexusUI = { tcol, idColor, subnav: () => syncSubNav(), statusDot, store, pic, popMenu, renderUser, feedRow, tab, api, toast, esc, img, ago, hm, dur, clock, num, launch, openUser, openWorld, openAvatar, openInstance, openModal, closeModal, load, readClipboard,
         state: () => state, statusDot, isoDT, renderFriends, store };
     { const st = (window.VRCX.ui || {})['ui.start_tab']; if (st && st !== 'last') tab(st); else tab(store.get('tab', 'home'), store.get('tabSub', '')); }
     setInterval(() => { if (state && !$('[data-pane=friends]').hidden) renderFriends(); }, 60000);

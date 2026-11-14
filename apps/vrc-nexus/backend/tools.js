@@ -277,8 +277,9 @@ class Tools {
         const a = this.autoCfg();
         if (a.start_status) this.setStatus(a.start_status, a.start_desc, 'start').catch(x => this.debug('auto', x));
     }
-    onVrcQuit() {
+    onVrcQuit(crash) {
         this.wasRunning = false;
+        this.afterQuit(!!crash);
         if (this.settings.get('notify.vrc_start')) this.alert('🛑 VRChat beendet', '');
         const a = this.autoCfg();
         if (a.quit_status) this.setStatus(a.quit_status, a.quit_desc, 'quit').catch(x => this.debug('auto', x));
@@ -356,6 +357,7 @@ class Tools {
         const st = this.app.game.state;
         if (st.running && !this.wasRunning) this.onVrcStart();
         if (s['int.rpc'] && s['int.rpc_client']) await this.updateRpc();
+        await this.vrcWatch().catch(e => this.debug('vrcwatch', e));
         if (this.host.setTray && s['sys.tray_count']) {
             try { const fr = this.app.vrc.friendList(); this.host.setTray('VRC Nexus · ' + fr.filter(f => f.state === 'online').length + ' im Spiel, ' + fr.filter(f => f.state === 'active').length + ' online'); } catch (e) { /* egal */ }
         }
@@ -365,18 +367,124 @@ class Tools {
         const wantNotifs = s['notify.vrc'] || a.invite !== 'off' || s['int.webhook_vrc'];
         if (wantNotifs && this.acc() && now() - this.lastNotifPoll >= 120) { this.lastNotifPoll = now(); await this.pollNotifs(a).catch(e => this.debug('notifs', e)); }
     }
+    /** Video-/Musikadresse → { kind: 'watch'|'listen', title, img } (YouTube-Titel über oEmbed, zwischengespeichert) */
+    async mediaInfo(url) {
+        url = str(url);
+        if (!/^https?:\/\//i.test(url)) return null;
+        this.mediaCache = this.mediaCache || new Map();
+        if (this.mediaCache.has(url)) return this.mediaCache.get(url);
+        let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return null; }
+        const yt = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/i.exec(url);
+        const listen = /soundcloud|spotify|music\.youtube|bandcamp|mixcloud|twitch\.tv\/.*radio/i.test(url);
+        const info = { kind: listen ? 'listen' : 'watch', title: host, img: yt ? 'https://i.ytimg.com/vi/' + yt[1] + '/hqdefault.jpg' : '' };
+        if (yt || /soundcloud\.com|vimeo\.com/i.test(host)) {
+            const oe = /soundcloud/i.test(host) ? 'https://soundcloud.com/oembed?format=json&url=' : /vimeo/i.test(host) ? 'https://vimeo.com/api/oembed.json?url=' : 'https://www.youtube.com/oembed?format=json&url=';
+            try { const u2 = oe + encodeURIComponent(url); const j = this.fetchJson ? await this.fetchJson(u2) : await fetch(u2, { signal: AbortSignal.timeout(6000) }).then(r => (r.ok ? r.json() : null)); if (j && j.title) info.title = cut(str(j.title), 100); if (j && j.thumbnail_url && !info.img) info.img = str(j.thumbnail_url); } catch (e) { /* Titel bleibt die Seite */ }
+        }
+        if (this.mediaCache.size > 200) this.mediaCache.clear();
+        this.mediaCache.set(url, info);
+        return info;
+    }
+    async worldThumb(id) {
+        this.thumbCache = this.thumbCache || new Map();
+        if (this.thumbCache.has(id)) return this.thumbCache.get(id);
+        let t = '';
+        try { const w = await this.call('GET', '/worlds/' + encodeURIComponent(id)); t = str(w && (w.thumbnailImageUrl || w.imageUrl)); } catch (e) { /* ohne Bild */ }
+        if (!/^https:\/\//.test(t)) t = '';
+        this.thumbCache.set(id, t);
+        return t;
+    }
+    /** Discord-Status zusammenbauen (ohne Senden – testbar) */
+    async rpcActivity() {
+        const s = this.settings.all();
+        const st = this.app.game.state;
+        if (!st.running || !st.worldId) return null;
+        const loc = U.location(st.worldId + ':' + st.instance);
+        const me = (this.acc() && this.acc().me) || {};
+        const askMe = /ask me/i.test(str(me.status));
+        const priv = /~(private|friends|hidden)\(/.test(st.instance) || /groupAccessType\(members\)/.test(st.instance);
+        const hide = s['int.rpc_private'] && (priv || askMe);
+        const access = loc.access || '';
+        const world = hide || !s['int.rpc_world'] ? 'In VRChat' : cut(st.worldName || 'In einer Welt', 120);
+        const parts = [hide ? (askMe && !priv ? 'Instanz' : 'Private Instanz') : access];
+        if (s['int.rpc_players'] && !hide) parts.push((st.players.size || 1) + ' Spieler');
+        if (s['int.rpc_platform']) {
+            const pf = str(me.last_platform);
+            const vr = this.app.chatmods && typeof this.app.chatmods.vr === 'boolean' ? this.app.chatmods.vr : null;
+            parts.push(/android/i.test(pf) ? 'Quest/Android' : vr === true ? 'PC (VR)' : vr === false ? 'PC (Desktop)' : 'PC');
+        }
+        const act = { details: world, state: parts.filter(Boolean).join(' · '), timestamps: { start: (st.since || now()) * 1000 },
+            assets: { large_image: 'vrchat', large_text: hide ? 'VRChat' : cut(st.worldName || 'VRChat', 120), small_image: 'vrchat', small_text: 'VRC Nexus' }, instance: false };
+        if (s['int.rpc_world_img'] && !hide) { const t = await this.worldThumb(st.worldId); if (t) act.assets.large_image = t; }
+        if (s['int.rpc_media'] && !hide && st.video && now() - st.video.at < 3 * 3600) {
+            const m = await this.mediaInfo(st.video.url);
+            if (m) {
+                act.type = m.kind === 'listen' ? 2 : 3;   // 2 = „Hört“, 3 = „Schaut“
+                act.state = (m.kind === 'listen' ? '🎵 ' : '📺 ') + cut(m.title, 100);
+                act.details = world + (s['int.rpc_players'] ? ' · ' + (st.players.size || 1) + ' Spieler' : '');
+                if (s['int.rpc_media_img'] && m.img) { act.assets.small_image = act.assets.large_image; act.assets.small_text = act.assets.large_text; act.assets.large_image = m.img; act.assets.large_text = cut(m.title, 120); }
+            }
+        }
+        if (s['int.rpc_world_activity'] && !hide && st.worldName) { act.name = cut(st.worldName, 120); act.status_display_type = 2; }
+        if (s['int.rpc_join'] && access === 'Public' && !hide) act.buttons = [{ label: 'Beitreten', url: 'https://vrchat.com/home/launch?worldId=' + encodeURIComponent(st.worldId) + '&instanceId=' + encodeURIComponent(st.instance) }];
+        return act;
+    }
     async updateRpc() {
         const s = this.settings.all();
         await this.rpc.connect(s['int.rpc_client']);
-        const st = this.app.game.state;
-        if (!st.running || !st.worldId) { this.rpc.setActivity(null); return; }
-        const priv = /~(private|friends|hidden)\(/.test(st.instance);
-        const hide = s['int.rpc_private'] && priv;
-        const access = U.location(st.worldId + ':' + st.instance).access;
-        const act = { details: hide || !s['int.rpc_world'] ? 'In VRChat' : cut(st.worldName || 'In einer Welt', 120), state: (hide ? 'Private Instanz' : access) + (s['int.rpc_players'] ? ' · ' + (st.players.size || 1) + ' Spieler' : ''),
-            timestamps: { start: (st.since || now()) * 1000 }, assets: { large_image: 'vrchat', large_text: 'VRC Nexus' }, instance: false };
-        if (s['int.rpc_join'] && access === 'Public') act.buttons = [{ label: 'Beitreten', url: 'https://vrchat.com/home/launch?worldId=' + encodeURIComponent(st.worldId) + '&instanceId=' + encodeURIComponent(st.instance) }];
-        this.rpc.setActivity(act);
+        this.rpc.setActivity(await this.rpcActivity());
+    }
+
+    // ======================= VRChat-Wächter: Absturz, hart beenden, Cache =======================
+    vrcAlive() {
+        if (this.procCheck) return Promise.resolve(this.procCheck());
+        if (process.platform !== 'win32') return Promise.resolve(null);
+        return new Promise(res => require('child_process').execFile('tasklist', ['/FI', 'IMAGENAME eq VRChat.exe', '/NH'], { windowsHide: true, timeout: 8000 }, (e, out) => res(e ? null : /VRChat\.exe/i.test(String(out)))));
+    }
+    async vrcWatch() {
+        const s = this.settings.all(), st = this.app.game.state;
+        if (!st.running) { this.vrcMiss = 0; return; }
+        if (now() - (this.lastAliveCheck || 0) < 10) return;
+        this.lastAliveCheck = now();
+        const alive = await this.vrcAlive();
+        if (alive !== false) { this.vrcMiss = 0; if (st.worldId) this.lastLoc = st.worldId + ':' + st.instance; return; }
+        if (++this.vrcMiss < 2) return;   // zweimal hintereinander weg = wirklich weg
+        this.vrcMiss = 0;
+        const loc = this.lastLoc || (st.worldId ? st.worldId + ':' + st.instance : '');
+        st.resetWorld(); st.running = false;
+        this.onVrcQuit(true);
+        this.crashes = (this.crashes || []).filter(t => now() - t < 1800);
+        if (s['vrc.relaunch'] && this.crashes.length < 3) {
+            this.crashes.push(now());
+            this.alert('💥 VRChat abgestürzt', 'Starte neu' + (loc ? ' und betrete die letzte Instanz wieder' : '') + ' …');
+            await this.launch(/^wrld_/.test(loc) ? loc : '').catch(e => this.debug('relaunch', e));
+            this.relaunched = { at: now(), loc };
+        } else this.alert('💥 VRChat abgestürzt', s['vrc.relaunch'] ? 'Zu viele Abstürze – kein automatischer Neustart mehr für 30 Minuten.' : '');
+    }
+    afterQuit(crash) {
+        const s = this.settings.all();
+        if (!crash && s['vrc.kill_on_exit']) setTimeout(() => this.vrcAlive().then(a => { if (a) this.killVrc(); }), this.quitDelay || 5000);
+        if (s['vrc.cache_on_exit']) setTimeout(() => { try { const r = this.cacheTrim(s['vrc.cache_gb']); if (r.deleted) this.debug('cache', new Error(r.msg)); } catch (e) { this.debug('cache', e); } }, this.quitDelay || 15000);
+    }
+    killVrc() {
+        if (this.killHook) return this.killHook();
+        if (process.platform === 'win32') require('child_process').execFile('taskkill', ['/IM', 'VRChat.exe', '/F'], { windowsHide: true }, () => {});
+    }
+    cacheDir() {
+        if (process.env.NEXUS_VRC_CACHE) return process.env.NEXUS_VRC_CACHE;
+        const la = process.env.LOCALAPPDATA;
+        return la ? path.join(la, '..', 'LocalLow', 'VRChat', 'VRChat', 'Cache-WindowsPlayer') : '';
+    }
+    /** ältesten Cache löschen, bis er unter die Grenze passt – nur Unterordner direkt im Cache-Ordner */
+    cacheTrim(gb) {
+        const dir = this.cacheDir();
+        if (!dir || !fs.existsSync(dir)) return { deleted: 0, msg: 'Kein VRChat-Cache gefunden.' };
+        const size = p => { let n = 0; for (const e of fs.readdirSync(p, { withFileTypes: true })) { const f = path.join(p, e.name); n += e.isDirectory() ? size(f) : (fs.lstatSync(f).size || 0); } return n; };
+        const items = fs.readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory() && !e.isSymbolicLink()).map(e => { const f = path.join(dir, e.name); return { f, size: size(f), t: fs.statSync(f).mtimeMs }; }).sort((a, b) => a.t - b.t);
+        const limit = Math.max(0.0001, +gb || 20) * 1073741824;
+        let total = items.reduce((n, i) => n + i.size, 0), deleted = 0, freed = 0;
+        for (const i of items) { if (total <= limit) break; fs.rmSync(i.f, { recursive: true, force: true }); total -= i.size; freed += i.size; deleted++; }
+        return { deleted, freed, total, msg: deleted ? 'VRChat-Cache: ' + deleted + ' alte Einträge gelöscht (' + (freed / 1073741824).toFixed(1) + ' GB).' : 'VRChat-Cache ist unter der Grenze.' };
     }
     async pollNotifs(a) {
         const s = this.settings.all();
@@ -1005,6 +1113,7 @@ class Tools {
             case 'rejoin': {
                 const st = g.state;
                 if (!st.worldId) throw new UserError('Du bist gerade in keiner Instanz.');
+                if (this.settings.get('vrc.self_invite')) { await this.call('POST', '/invite/myself/to/' + st.worldId + ':' + st.instance); return { ok: true, msg: 'Selbst-Einladung geschickt.' }; }
                 if (this.host.openExternal) await this.host.openExternal('vrchat://launch?ref=vrc-nexus&id=' + st.worldId + ':' + st.instance);
                 return { ok: true };
             }
@@ -1051,7 +1160,7 @@ class Tools {
                 }
                 if (f.loc.kind !== 'world') throw new UserError(f.name + ' ist in keiner offenen Instanz.');
                 const loc = f.loc.location;
-                if (str(d.op) === 'invite_me') { await this.call('POST', '/invite/myself/to/' + loc); return { ok: true, msg: 'Selbst-Einladung geschickt.' }; }
+                if (str(d.op) === 'invite_me' || this.settings.get('vrc.self_invite')) { await this.call('POST', '/invite/myself/to/' + loc); return { ok: true, msg: 'Selbst-Einladung geschickt.' }; }
                 if (this.host.openExternal) await this.host.openExternal('vrchat://launch?ref=vrc-nexus&id=' + loc);
                 return { ok: true, msg: 'Trete ' + f.name + ' bei.' };
             }

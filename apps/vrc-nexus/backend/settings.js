@@ -43,6 +43,19 @@ const FIELDS = [
     ['ui.bg_opacity', 'ui', 'Hintergrundbild', 'range', 35, 'Deckkraft (%)', '0 = unsichtbar, 100 = voll sichtbar', [0, 100]],
     ['ui.bg_blur', 'ui', 'Hintergrundbild', 'range', 0, 'Weichzeichnen (px)', '', [0, 30]],
     ['ui.bg_fit', 'ui', 'Hintergrundbild', 'select', 'cover', 'Anpassen', '', [['cover', 'Ausfüllen'], ['contain', 'Ganz zeigen'], ['tile', 'Kacheln'], ['center', 'Mittig (Originalgröße)']]],
+    ['ui.ucol_id', 'ui', 'Benutzerfarben', 'bool', false, 'Feste Farbe pro Benutzer', 'Jeder bekommt eine eigene, gleichbleibende Farbe aus seiner ID – statt der Farbe seiner Vertrauensstufe.'],
+    ['ui.ucol_visitor', 'ui', 'Benutzerfarben', 'color', '#cccccc', 'Besucher', ''],
+    ['ui.ucol_new', 'ui', 'Benutzerfarben', 'color', '#1778ff', 'Neuer Benutzer', ''],
+    ['ui.ucol_user', 'ui', 'Benutzerfarben', 'color', '#2bcf5c', 'Benutzer', ''],
+    ['ui.ucol_known', 'ui', 'Benutzerfarben', 'color', '#ff7b42', 'Bekannter Benutzer', ''],
+    ['ui.ucol_trusted', 'ui', 'Benutzerfarben', 'color', '#b18fff', 'Vertrauter Benutzer', ''],
+    ['ui.ucol_team', 'ui', 'Benutzerfarben', 'color', '#ff2626', 'VRChat-Team', ''],
+    ['ui.ucol_nuisance', 'ui', 'Benutzerfarben', 'color', '#782f2f', 'Störenfried (Nuisance)', ''],
+    ['vrc.relaunch', 'system', 'VRChat', 'bool', false, 'Nach Absturz automatisch neu starten', 'Startet VRChat neu und betritt wieder die letzte Instanz (höchstens 3× in 30 Minuten).'],
+    ['vrc.kill_on_exit', 'system', 'VRChat', 'bool', false, 'VRChat beim Beenden hart schließen', 'Hängt VRChat nach dem Verlassen noch im Hintergrund, wird es beendet.'],
+    ['vrc.cache_on_exit', 'system', 'VRChat', 'bool', false, 'Cache beim Beenden aufräumen', 'Löscht die ältesten Einträge im VRChat-Cache, bis er unter die Grenze passt.'],
+    ['vrc.cache_gb', 'system', 'VRChat', 'number', 20, 'Cache-Grenze (GB)', '', [1, 500]],
+    ['vrc.self_invite', 'system', 'VRChat', 'bool', false, 'Selbst-Einladung statt Instanz öffnen', 'Beim Beitreten schickt die App dir eine Einladung ins Spiel, statt VRChat über den Link zu öffnen.'],
     ['ui.show_images', 'ui', 'Aussehen', 'bool', true, 'Bilder (Avatare, Welten) anzeigen', 'Aus spart Datenvolumen.'],
     ['ui.compact', 'ui', 'Aussehen', 'bool', false, 'Kompakte Freundesliste', ''],
     ['ui.nav', 'ui', 'Menü', 'select', 'side', 'Hauptmenü', 'Links: Menü als Seitenleiste, oben stehen die Unterpunkte der aktuellen Seite.', [['side', 'links (Seitenleiste)'], ['top', 'oben']]],
@@ -137,12 +150,17 @@ const FIELDS = [
     ['int.api', 'int', 'Stream Deck & lokale Schnittstelle', 'bool', false, 'Lokale Schnittstelle für das Stream-Deck-Plugin', 'Nur auf diesem PC erreichbar (127.0.0.1).'],
     ['int.api_port', 'int', 'Stream Deck & lokale Schnittstelle', 'number', 17865, 'Port', '', [1024, 65535]],
     ['int.api_token', 'int', 'Stream Deck & lokale Schnittstelle', 'secret', '', 'Zugangsschlüssel', 'Im Stream-Deck-Plugin eintragen.'],
-    ['int.rpc', 'int', 'Discord Rich Presence', 'bool', false, 'Discord-Status „Spielt VRChat in …“', 'Braucht die Client-ID einer eigenen Discord-Anwendung.'],
+    ['int.rpc', 'int', 'Discord Rich Presence', 'bool', false, 'Discord-Status „Spielt VRChat in …“', 'Nur aktiv, solange du in einer Instanz bist. VRChats eigene Rich Presence ausschalten, sonst streiten sich beide. Braucht die Client-ID einer eigenen Discord-Anwendung.'],
     ['int.rpc_client', 'int', 'Discord Rich Presence', 'text', '', 'Discord Client-ID', 'discord.com/developers → Anwendung anlegen → Application ID'],
     ['int.rpc_world', 'int', 'Discord Rich Presence', 'bool', true, 'Weltnamen zeigen', ''],
-    ['int.rpc_private', 'int', 'Discord Rich Presence', 'bool', true, 'In privaten Instanzen Welt verbergen', ''],
+    ['int.rpc_private', 'int', 'Discord Rich Presence', 'bool', true, 'Details in privaten Instanzen verbergen', 'Invite, Invite+, Gruppen-Mitglieder und solange dein Status „Ask Me“ ist.'],
     ['int.rpc_players', 'int', 'Discord Rich Presence', 'bool', true, 'Spielerzahl zeigen', ''],
     ['int.rpc_join', 'int', 'Discord Rich Presence', 'bool', false, 'Knopf „Beitreten“ bei öffentlichen Instanzen', ''],
+    ['int.rpc_media', 'int', 'Discord Rich Presence', 'bool', true, 'Welt-Integration (Video & Musik)', 'In Video-/Musik-Welten „Schaut …“ / „Hört …“ mit dem Titel aus dem VRChat-Log.'],
+    ['int.rpc_platform', 'int', 'Discord Rich Presence', 'bool', true, 'Plattform zeigen', 'PC, VR oder Quest/Android'],
+    ['int.rpc_world_img', 'int', 'Discord Rich Presence', 'bool', true, 'Weltbilder zeigen', ''],
+    ['int.rpc_media_img', 'int', 'Discord Rich Presence', 'bool', true, 'Medienbilder zeigen', 'Vorschaubild des laufenden Videos (z. B. YouTube), wenn die Welt eins abspielt.'],
+    ['int.rpc_world_activity', 'int', 'Discord Rich Presence', 'bool', false, 'Weltname als Aktivität', 'Discord zeigt „Spielt <Welt>“ statt „Spielt VRChat“ (soweit Discord das unterstützt).'],
     ['int.webhook', 'int', 'Discord-Webhook', 'text', '', 'Webhook-URL', 'https://discord.com/api/webhooks/…'],
     ['int.webhook_join', 'int', 'Discord-Webhook', 'bool', false, 'Melden, wenn Freunde deine Instanz betreten', ''],
     ['int.webhook_vrc', 'int', 'Discord-Webhook', 'bool', false, 'VRChat-Benachrichtigungen weiterleiten', ''],
@@ -209,7 +227,7 @@ class Settings {
     /** Für die Oberfläche: Schema ohne Funktionen */
     schema() { return { tabs: TABS, fields: FIELDS.map(([key, tab, section, type, def, label, hint, opts]) => ({ key, tab, section, type, def, label, hint, opts: opts || null })) }; }
     /** Teil für das Rendern der Seite (Aussehen sofort anwenden) */
-    ui() { const s = this.all(); return Object.fromEntries(Object.entries(s).filter(([k]) => k.startsWith('ui.') || k.startsWith('social.show') || k === 'social.sort')); }
+    ui() { const s = this.all(); return Object.fromEntries(Object.entries(s).filter(([k]) => k.startsWith('ui.') || k === 'vrc.self_invite' || k.startsWith('social.show') || k === 'social.sort')); }
 }
 
 module.exports = { Settings, FIELDS, STATUS, TABS };

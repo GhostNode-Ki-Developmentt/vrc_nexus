@@ -78,6 +78,15 @@
         el.style.inset = blur ? (-blur * 2) + 'px' : '0';
     }
     applyUi(window.VRCX.ui || {});
+    // Einstellung „Selbst-Einladung statt Instanz öffnen“: Beitreten-Links schicken eine Einladung ins Spiel
+    document.addEventListener('click', e => {
+        const a = e.target.closest('a[href^="vrchat://launch"]');
+        if (!a || !(window.VRCX.ui || {})['vrc.self_invite']) return;
+        const loc = decodeURIComponent((/[?&]id=([^&]+)/.exec(a.getAttribute('href')) || [])[1] || '');
+        if (!/^wrld_/.test(loc)) return;
+        e.preventDefault(); e.stopPropagation();
+        api('invite_self', { location: loc }).then(r => toast(r.msg || 'Einladung geschickt.')).catch(x => toast(x.message, true));
+    }, true);
     if (MOBILE) {
         document.body.classList.add('mobile');
         $$('#tabs [data-tab=client], #tabs [data-tab=stream], #tabs [data-tab=players], #tabs [data-tab=activity], #clientStandalone').forEach(el => el.parentNode.removeChild(el));
@@ -131,7 +140,7 @@
                 + '<div style="flex:1;min-width:200px"><b ' + (g.loc.world ? 'data-world="' + esc(g.loc.world) + '"' : '') + '>' + esc(g.title) + '</b>' + (g.loc.location === me ? ' <span class="vx-pill rep">du bist hier</span>' : '')
                 + '<div class="vx-small">' + (g.loc.kind === 'world' ? esc(g.loc.label) : '') + ' · ' + g.people.length + ' Freund' + (g.people.length === 1 ? '' : 'e') + '</div></div>'
                 + (g.loc.kind === 'world' && g.loc.access !== 'Invite' ? '<a class="btn btn-sm btn-gold" href="' + esc(UI.launch(g.loc.location)) + '">▶ Beitreten</a> <button type="button" class="btn btn-sm" data-inst="' + esc(g.loc.location) + '">ℹ Instanz</button>' : '')
-                + '</div><div class="loc-people">' + g.people.map(f => '<span class="loc-p" data-user="' + esc(f.id) + '">' + img(f.image, 'vx-av', f.name) + UI.statusDot(f.status) + '<b style="color:' + esc(f.trust[1]) + '">' + esc(f.name) + '</b>'
+                + '</div><div class="loc-people">' + g.people.map(f => '<span class="loc-p" data-user="' + esc(f.id) + '">' + img(f.image, 'vx-av', f.name) + UI.statusDot(f.status) + '<b style="color:' + esc(UI.tcol(f)) + '">' + esc(f.name) + '</b>'
                     + (f.favorite ? ' ⭐' : '') + ' <small class="vx-small">' + esc(UI.dur(f.since)) + '</small></span>').join('') + '</div></div>').join('')
                 : '<div class="vx-empty">Gerade ist niemand online.</div>');
         $('#locRefresh').onclick = () => UI.load(true, true).then(renderLocations);
@@ -155,8 +164,8 @@
         return '<tr class="' + (left ? 'pl-left' : '') + '" data-user="' + esc(p.id) + '">'
             + '<td class="pl-av">' + img(p.image, 'vx-av', '') + '</td>'
             + '<td title="' + esc(left ? 'gegangen ' + t2(p.left) : 'seit ' + t2(p.since)) + '">' + (left ? '⬅ ' + t2(p.left) : esc(UI.dur(p.since))) + '</td>'
-            + '<td><span class="pl-name" style="color:' + esc(p.trust[1]) + '">' + esc(p.name) + '</span>' + (p.pronouns ? ' <span class="vx-pron">' + esc(p.pronouns) + '</span>' : '') + (!p.id ? ' <span class="vx-small">(ohne ID)</span>' : '') + '</td>'
-            + '<td><span style="color:' + esc(p.trust[1]) + '">' + esc(p.trust[0] === '?' ? (p.loaded ? '' : '…') : p.trust[0]) + '</span></td>'
+            + '<td><span class="pl-name" style="color:' + esc(UI.tcol(p)) + '">' + esc(p.name) + '</span>' + (p.pronouns ? ' <span class="vx-pron">' + esc(p.pronouns) + '</span>' : '') + (!p.id ? ' <span class="vx-small">(ohne ID)</span>' : '') + '</td>'
+            + '<td><span style="color:' + esc(UI.tcol(p)) + '">' + esc(p.trust[0] === '?' ? (p.loaded ? '' : '…') : p.trust[0]) + '</span></td>'
             + '<td>' + (p.status ? UI.statusDot(p.status) + ' ' : '') + '<span class="vx-small">' + esc(p.status_desc) + '</span></td>'
             + '<td class="pl-icons">' + p.icons.map(i => '<span title="' + esc(i[2]) + '">' + i[1] + '</span>').join('') + '</td>'
             + '<td>' + esc(p.platform) + '</td>'
@@ -761,6 +770,7 @@
             window.VRCX.ui = Object.assign(window.VRCX.ui || {}, r.settings);
             applyUi(r.settings);
             toast('Gespeichert.');
+            if (el.dataset.k.startsWith('ui.ucol')) window.dispatchEvent(new Event('nexus-colors'));
             if (el.dataset.k.startsWith('int.')) setTimeout(() => api('tools_settings').then(d => { setData = d; if (setTab === 'int') renderSettings(); }), 500);
         }).catch(x => { toast(x.message, true); renderSettings(); });
     });

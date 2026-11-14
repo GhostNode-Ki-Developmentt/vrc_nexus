@@ -282,3 +282,33 @@ Standard 9001	Default 9001	Par défaut 9001	標準 9001
 ℹ️ Über	ℹ️ About	ℹ️ À propos	ℹ️ 情報
 🌐 Automatisch (Systemsprache)	🌐 Automatic (system language)	🌐 Automatique (langue du système)	🌐 自動（システム言語）
 Auch über die Flagge umschaltbar. „Automatisch“ nimmt die Sprache von Windows/Android (sonst Englisch).	Can also be switched via the flag. “Automatic” uses the Windows/Android language (otherwise English).	Modifiable aussi via le drapeau. « Automatique » utilise la langue de Windows/Android (sinon anglais).	旗アイコンからも切り替え可能。「自動」はWindows/Androidの言語を使用（それ以外は英語）。
+Benutzerfarben	User colors	Couleurs des utilisateurs	ユーザーの色
+Feste Farbe pro Benutzer	Fixed color per user	Couleur fixe par utilisateur	ユーザーごとの固定色
+Jeder bekommt eine eigene, gleichbleibende Farbe aus seiner ID – statt der Farbe seiner Vertrauensstufe.	Everyone gets their own consistent color from their ID – instead of their trust rank color.	Chacun reçoit sa propre couleur fixe dérivée de son ID – au lieu de la couleur de son rang.	信頼ランクの色の代わりに、IDから決まる固定の色を各ユーザーに割り当てます。
+Besucher	Visitor	Visiteur	ビジター
+Neuer Benutzer	New User	Nouvel utilisateur	ニューユーザー
+Benutzer	User	Utilisateur	ユーザー
+Bekannter Benutzer	Known User	Utilisateur connu	ノウンユーザー
+Vertrauter Benutzer	Trusted User	Utilisateur de confiance	トラステッドユーザー
+Störenfried (Nuisance)	Nuisance	Perturbateur (Nuisance)	迷惑ユーザー（Nuisance）
+Nach Absturz automatisch neu starten	Auto-relaunch after crash	Relancer automatiquement après un crash	クラッシュ後に自動で再起動
+Startet VRChat neu und betritt wieder die letzte Instanz (höchstens 3× in 30 Minuten).	Restarts VRChat and rejoins the last instance (at most 3× in 30 minutes).	Relance VRChat et rejoint la dernière instance (max. 3× en 30 minutes).	VRChatを再起動して最後のインスタンスに戻ります（30分で最大3回）。
+VRChat beim Beenden hart schließen	Force-quit VRChat on exit	Forcer la fermeture de VRChat en quittant	終了時にVRChatを強制終了
+Hängt VRChat nach dem Verlassen noch im Hintergrund, wird es beendet.	If VRChat keeps hanging in the background after quitting, it gets killed.	Si VRChat reste bloqué en arrière-plan après avoir quitté, il est arrêté.	終了後もVRChatがバックグラウンドに残っている場合は終了させます。
+Cache beim Beenden aufräumen	Clean cache on exit	Nettoyer le cache en quittant	終了時にキャッシュを整理
+Löscht die ältesten Einträge im VRChat-Cache, bis er unter die Grenze passt.	Deletes the oldest entries in the VRChat cache until it fits under the limit.	Supprime les entrées les plus anciennes du cache VRChat jusqu'à passer sous la limite.	上限を下回るまでVRChatキャッシュの古い項目を削除します。
+Cache-Grenze (GB)	Cache limit (GB)	Limite du cache (Go)	キャッシュ上限（GB）
+Selbst-Einladung statt Instanz öffnen	Self-invite instead of opening the instance	S'auto-inviter au lieu d'ouvrir l'instance	インスタンスを開く代わりに自分を招待
+Beim Beitreten schickt die App dir eine Einladung ins Spiel, statt VRChat über den Link zu öffnen.	When joining, the app sends you an in-game invite instead of opening VRChat via the link.	En rejoignant, l'app t'envoie une invitation en jeu au lieu d'ouvrir VRChat via le lien.	参加時にリンクでVRChatを開く代わりに、ゲーム内で自分に招待を送ります。
+Nur aktiv, solange du in einer Instanz bist. VRChats eigene Rich Presence ausschalten, sonst streiten sich beide. Braucht die Client-ID einer eigenen Discord-Anwendung.	Only active while you are in an instance. Turn off VRChat's own Rich Presence, otherwise both conflict. Needs the client ID of your own Discord application.	Actif uniquement dans une instance. Désactive la Rich Presence de VRChat, sinon les deux entrent en conflit. Nécessite l'ID client de ta propre application Discord.	インスタンス内にいる間のみ有効。競合を避けるためVRChat自身のリッチプレゼンスはオフにしてください。自分のDiscordアプリのクライアントIDが必要です。
+Details in privaten Instanzen verbergen	Hide details in private instances	Masquer les détails dans les instances privées	プライベートインスタンスでは詳細を隠す
+Invite, Invite+, Gruppen-Mitglieder und solange dein Status „Ask Me“ ist.	Invite, Invite+, group members and while your status is “Ask Me”.	Invite, Invite+, membres du groupe et tant que ton statut est « Ask Me ».	Invite、Invite+、グループメンバー、およびステータスが「Ask Me」の間。
+Welt-Integration (Video & Musik)	World integration (video & music)	Intégration des mondes (vidéo & musique)	ワールド連携（動画・音楽）
+In Video-/Musik-Welten „Schaut …“ / „Hört …“ mit dem Titel aus dem VRChat-Log.	In video/music worlds “Watching …” / “Listening to …” with the title from the VRChat log.	Dans les mondes vidéo/musique « Regarde … » / « Écoute … » avec le titre du journal VRChat.	動画・音楽ワールドではVRChatログのタイトルで「視聴中」「再生中」を表示。
+Plattform zeigen	Show platform	Afficher la plateforme	プラットフォームを表示
+PC, VR oder Quest/Android	PC, VR or Quest/Android	PC, VR ou Quest/Android	PC、VR、Quest/Android
+Weltbilder zeigen	Show world images	Afficher les images des mondes	ワールド画像を表示
+Medienbilder zeigen	Show media images	Afficher les images des médias	メディア画像を表示
+Vorschaubild des laufenden Videos (z. B. YouTube), wenn die Welt eins abspielt.	Thumbnail of the playing video (e.g. YouTube) when the world plays one.	Miniature de la vidéo en cours (ex. YouTube) quand le monde en lit une.	ワールドで再生中の動画（YouTubeなど）のサムネイル。
+Weltname als Aktivität	World name as activity	Nom du monde comme activité	ワールド名をアクティビティにする
+Discord zeigt „Spielt <Welt>“ statt „Spielt VRChat“ (soweit Discord das unterstützt).	Discord shows “Playing <world>” instead of “Playing VRChat” (as far as Discord supports it).	Discord affiche « Joue à <monde> » au lieu de « Joue à VRChat » (si Discord le permet).	Discordで「VRChatをプレイ中」の代わりに「<ワールド>をプレイ中」と表示（Discordが対応している場合）。

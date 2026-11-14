@@ -1071,6 +1071,51 @@ test('2.3.1: GPU-Abfrage ohne NVIDIA wählt keinen virtuellen Adapter (echt nur 
     assert.ok(!/Virtual|Hyper-V|Basic|Remote/i.test(m[3]), 'virtueller Adapter gewählt: ' + m[3]);
 });
 
+test('2.7.1: Discord-Status (Video/Musik, Privat, Plattform, Bilder) & VRChat-Wächter (Absturz → Neustart, hart beenden, Cache)', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-vrc-'));
+    const launched = [];
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: tmp, openExternal: async u => launched.push(u) } });
+    app.game.osc.stopListen();
+    const t = app.tools, st = app.game.state;
+    t.call = async (m, p) => (/^\/worlds\//.test(p) ? { thumbnailImageUrl: 'https://api.vrchat.cloud/file/w.png' } : {});
+    t.fetchJson = async () => ({ title: 'Never Gonna Give You Up', thumbnail_url: '' });
+    t.alert = () => {};
+    const W = 'wrld_' + '1'.repeat(8) + '-1111-2222-3333-444444444444';
+    st.running = true; st.worldId = W; st.instance = '123~region(eu)'; st.worldName = 'Popcorn Palace'; st.since = 1; st.players.set('a', { name: 'a' }); st.players.set('b', { name: 'b' });
+    app.settings.save({ 'int.rpc_join': true });
+    let a = await t.rpcActivity();
+    assert.strictEqual(a.details, 'Popcorn Palace'); assert.ok(/2 Spieler/.test(a.state)); assert.strictEqual(a.assets.large_image, 'https://api.vrchat.cloud/file/w.png');
+    assert.ok(a.buttons && /launch\?worldId=/.test(a.buttons[0].url), 'Beitreten-Knopf bei öffentlich');
+    st.video = { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', at: Math.floor(Date.now() / 1000) };
+    a = await t.rpcActivity();
+    assert.strictEqual(a.type, 3); assert.ok(/Never Gonna/.test(a.state)); assert.ok(/i\.ytimg\.com\/vi\/dQw4w9WgXcQ/.test(a.assets.large_image), 'Medienbild');
+    st.video = { url: 'https://soundcloud.com/x/y', at: Math.floor(Date.now() / 1000) };
+    assert.strictEqual((await t.rpcActivity()).type, 2, 'Musik = Hört');
+    st.instance = '123~private(usr_x)~region(eu)';
+    a = await t.rpcActivity();
+    assert.strictEqual(a.details, 'In VRChat'); assert.ok(!a.buttons); assert.strictEqual(a.assets.large_image, 'vrchat'); assert.ok(!a.type, 'privat: kein Video');
+    app.settings.save({ 'int.rpc_private': false, 'int.rpc_world_activity': true });
+    a = await t.rpcActivity();
+    assert.strictEqual(a.name, 'Popcorn Palace'); assert.ok(!a.buttons, 'privat: kein Beitreten');
+    // Absturz: Prozess zweimal weg → Neustart in die letzte Instanz
+    app.settings.save({ 'vrc.relaunch': true });
+    let alive = true; t.procCheck = () => alive;
+    await t.vrcWatch(); assert.ok(t.lastLoc.startsWith(W));
+    alive = false; t.lastAliveCheck = 0; await t.vrcWatch(); assert.strictEqual(launched.length, 0, 'einmal weg reicht nicht');
+    t.lastAliveCheck = 0; await t.vrcWatch();
+    assert.strictEqual(st.running, false);
+    assert.ok(launched.length === 1 && /steam:\/\/run\/438100\/\/.*vrchat%3A%2F%2Flaunch/.test(launched[0]), 'Neustart über Steam mit letzter Instanz');
+    // Cache aufräumen: ältestes zuerst, bis unter der Grenze
+    const cache = path.join(tmp, 'Cache-WindowsPlayer'); process.env.NEXUS_VRC_CACHE = cache;
+    for (const [n, age] of [['alt', 3], ['mittel', 2], ['neu', 1]]) { const d = path.join(cache, n); fs.mkdirSync(d, { recursive: true }); fs.writeFileSync(path.join(d, 'data'), Buffer.alloc(600 * 1024 * 1024 / 1024)); const tt = Date.now() / 1000 - age * 86400; fs.utimesSync(d, tt, tt); }
+    const r = t.cacheTrim(0.0012);   // ≈ 1,2 MB → zwei der drei (je 0,6 MB) bleiben übrig? nein: Grenze 1,29 MB → eins muss weg
+    assert.strictEqual(r.deleted, 1); assert.ok(!fs.existsSync(path.join(cache, 'alt')) && fs.existsSync(path.join(cache, 'neu')));
+    delete process.env.NEXUS_VRC_CACHE;
+    t.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

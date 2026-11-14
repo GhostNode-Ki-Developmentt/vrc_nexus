@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.7.1",
+  "title": "Benutzerfarben, Discord-Status, VRChat-Wächter",
+  "body": "- **Benutzerfarben** (Einstellungen → Oberfläche → Benutzerfarben): Farbe je Vertrauensstufe selbst wählen (Besucher, Neuer Benutzer, Benutzer, Bekannter, Vertrauter, VRChat-Team, Störenfried) – oder per Schalter **feste Farbe pro Benutzer** aus seiner ID. Gilt in Freundesliste, rechter Leiste, Spielerliste, Profil und Freunde-Orten, sofort ohne Neuladen.\n- **Discord-Status** ausgebaut: Welt-Integration („Schaut …“/„Hört …“ mit Titel bei YouTube/SoundCloud/Vimeo aus dem VRChat-Log), Plattform (PC/VR/Quest), Weltbild, Medienbild (Video-Vorschau), Weltname als Aktivität; Details in privaten Instanzen (Invite/Invite+/Gruppe, „Ask Me“) verbergen; Beitreten-Knopf nur öffentlich. Hinweis: nur in einer Instanz aktiv, VRChats eigene Rich Presence ausschalten.\n- **VRChat** (Einstellungen → System → VRChat): nach Absturz automatisch neu starten und letzte Instanz wieder betreten (max. 3× in 30 min), VRChat beim Beenden hart schließen, Cache beim Beenden aufräumen (älteste Einträge bis zur Grenze), **Selbst-Einladung statt Instanz öffnen** (alle ▶-Beitreten-Knöpfe und Stream Deck)."
+ },
+ {
   "version": "2.7.0",
   "title": "Über in den Einstellungen, App-Sprache automatisch",
   "body": "- **„Über VRC Nexus“ ist jetzt ein Reiter der Einstellungen** (⚙ Einstellungen → ℹ️ Über) statt eines Menüpunkts unter „Mehr“. Alte Wege (Befehlspalette, Links) landen automatisch dort.\n- **Version & Updates** (installierte Version, zuletzt geprüft, „Nach Updates suchen“, Aktualisieren) steht jetzt oben im Über-Reiter statt unter System.\n- **App-Sprache automatisch**: neue Wahl „🌐 Automatisch (Systemsprache)“ – nimmt die Sprache von Windows/Android (Deutsch, Englisch, Französisch, Japanisch; andere → Englisch). Auch im Flaggen-Menü. Standard für neue Installationen; wer schon eine Sprache gewählt hat, behält sie."

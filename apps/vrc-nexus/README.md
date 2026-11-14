@@ -20,6 +20,12 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.7.1 – Benutzerfarben, Discord-Status, VRChat-Wächter
+
+- **Benutzerfarben** (Einstellungen → Oberfläche → Benutzerfarben): Farbe je Vertrauensstufe selbst wählen (Besucher, Neuer Benutzer, Benutzer, Bekannter, Vertrauter, VRChat-Team, Störenfried) – oder per Schalter **feste Farbe pro Benutzer** aus seiner ID. Gilt in Freundesliste, rechter Leiste, Spielerliste, Profil und Freunde-Orten, sofort ohne Neuladen.
+- **Discord-Status** ausgebaut: Welt-Integration („Schaut …“/„Hört …“ mit Titel bei YouTube/SoundCloud/Vimeo aus dem VRChat-Log), Plattform (PC/VR/Quest), Weltbild, Medienbild (Video-Vorschau), Weltname als Aktivität; Details in privaten Instanzen (Invite/Invite+/Gruppe, „Ask Me“) verbergen; Beitreten-Knopf nur öffentlich. Hinweis: nur in einer Instanz aktiv, VRChats eigene Rich Presence ausschalten.
+- **VRChat** (Einstellungen → System → VRChat): nach Absturz automatisch neu starten und letzte Instanz wieder betreten (max. 3× in 30 min), VRChat beim Beenden hart schließen, Cache beim Beenden aufräumen (älteste Einträge bis zur Grenze), **Selbst-Einladung statt Instanz öffnen** (alle ▶-Beitreten-Knöpfe und Stream Deck).
+
 ### Neu in 2.7.0 – Über in den Einstellungen, App-Sprache automatisch
 
 - **„Über VRC Nexus“ ist jetzt ein Reiter der Einstellungen** (⚙ Einstellungen → ℹ️ Über) statt eines Menüpunkts unter „Mehr“. Alte Wege (Befehlspalette, Links) landen automatisch dort.

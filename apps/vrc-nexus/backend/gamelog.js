@@ -45,7 +45,7 @@ const P = {
 
 class SessionState {
     constructor() { this.resetWorld(); this.displayName = ''; this.userId = ''; this.avatar = ''; this.running = false; }
-    resetWorld() { this.worldId = ''; this.instance = ''; this.worldName = ''; this.since = 0; this.players = new Map(); }
+    resetWorld() { this.worldId = ''; this.instance = ''; this.worldName = ''; this.since = 0; this.players = new Map(); this.video = null; }
     snapshot() {
         return { running: this.running, world_id: this.worldId, instance: this.instance, world_name: this.worldName, since: this.since,
             players: [...this.players.values()].sort((a, b) => a.name.localeCompare(b.name)), avatar: this.avatar, display_name: this.displayName };
@@ -96,7 +96,7 @@ class LogParser {
             if (st.displayName && who === st.displayName) { st.avatar = av; return [this.ev(t, 'avatar', { player_name: who, detail: av })]; }
             return [];
         }
-        if ((p = P.video.exec(msg))) return [this.ev(t, 'video', { detail: p[1].slice(0, 500) })];
+        if ((p = P.video.exec(msg))) { st.video = { url: p[1].slice(0, 500), at: t }; return [this.ev(t, 'video', { detail: p[1].slice(0, 500) })]; }
         if ((p = P.screenshot.exec(msg))) return [this.ev(t, 'screenshot', { detail: p[1].slice(0, 500) })];
         if ((p = P.auth.exec(msg))) { st.displayName = p[1].trim(); st.userId = p[2]; st.running = true; return []; }
         if ((p = P.notification.exec(msg))) return [this.ev(t, 'notification', { player_id: p[2], player_name: p[1].trim(), detail: NOTIFY[p[3]] || p[3] })];
