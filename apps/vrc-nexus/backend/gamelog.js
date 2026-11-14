@@ -17,7 +17,7 @@ const { UID } = require('./vrchat');
 const KINDS = {
     world_join: ['🌐', 'Welt betreten'], world_leave: ['🚪', 'Welt verlassen'], player_join: ['👋', 'Spieler kam'], player_leave: ['👋', 'Spieler ging'],
     avatar: ['🎭', 'Avatar gewechselt'], video: ['🎬', 'Video'], screenshot: ['📸', 'Screenshot'], notification: ['🔔', 'Benachrichtigung'],
-    vrc_start: ['▶️', 'VRChat gestartet'], vrc_quit: ['⏹️', 'VRChat beendet'], note: ['📝', 'Notiz'],
+    vrc_start: ['▶️', 'VRChat gestartet'], vrc_quit: ['⏹️', 'VRChat beendet'], note: ['📝', 'Notiz'], print: ['🖨️', 'Print'], sticker: ['🏷️', 'Sticker'], emoji: ['😀', 'Emoji'],
 };
 const NOTIFY = { invite: 'Einladung', requestInvite: 'Einladungsanfrage', friendRequest: 'Freundschaftsanfrage', inviteResponse: 'Antwort auf Einladung',
     requestInviteResponse: 'Antwort auf Anfrage', votetokick: 'Abstimmung zum Kicken' };
@@ -53,7 +53,23 @@ class SessionState {
 }
 
 class LogParser {
-    constructor(state) { this.state = state || new SessionState(); this.pending = null; }
+    constructor(state) { this.state = state || new SessionState(); this.pending = null; this.seenFiles = new Set(); }
+    /** Prints/Sticker/Emoji in der Instanz: VRChat schreibt deren IDs ins Log (Prints & Emoji nur mit --enable-sdk-log-levels).
+     *  Bewusst locker erkannt (ID + Stichwort in derselben Zeile), weil sich die genauen Zeilen je VRChat-Version ändern. */
+    media(t, msg) {
+        const st = this.state;
+        let kind = '', id = '';
+        const pr = /\bprnt_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i.exec(msg);
+        const fl = /\bfile_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i.exec(msg);
+        if (pr && /print/i.test(msg)) { kind = 'print'; id = pr[0]; }
+        else if (fl && /sticker/i.test(msg)) { kind = 'sticker'; id = fl[0]; }
+        else if (fl && /emoji/i.test(msg)) { kind = 'emoji'; id = fl[0]; }
+        if (!kind || this.seenFiles.has(id + st.instance)) return [];
+        this.seenFiles.add(id + st.instance);
+        if (this.seenFiles.size > 2000) this.seenFiles.clear();
+        const u = /\b(usr_[0-9a-f-]{36})\b/i.exec(msg), n = /\busr_[0-9a-f-]{36}\s*\(([^)]{1,40})\)/i.exec(msg);
+        return [this.ev(t, kind, { detail: id, player_id: u ? u[1] : '', player_name: n ? n[1] : '' })];
+    }
     ev(t, kind, extra = {}) {
         const s = this.state;
         return Object.assign({ ts: t, kind, world_id: s.worldId, instance: s.instance, world_name: s.worldName, player_id: '', player_name: '', detail: '' }, extra);
@@ -96,6 +112,8 @@ class LogParser {
             if (st.displayName && who === st.displayName) { st.avatar = av; return [this.ev(t, 'avatar', { player_name: who, detail: av })]; }
             return [];
         }
+        const md = this.media(t, msg);
+        if (md.length) return md;
         if ((p = P.video.exec(msg))) { st.video = { url: p[1].slice(0, 500), at: t }; return [this.ev(t, 'video', { detail: p[1].slice(0, 500) })]; }
         if ((p = P.screenshot.exec(msg))) return [this.ev(t, 'screenshot', { detail: p[1].slice(0, 500) })];
         if ((p = P.auth.exec(msg))) { st.displayName = p[1].trim(); st.userId = p[2]; st.running = true; return []; }

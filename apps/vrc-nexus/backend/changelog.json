@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.7.2",
+  "title": "Prints, Sticker & Emoji speichern",
+  "body": "- **Prints, Sticker und Emoji aus der Instanz als Datei speichern** (Einstellungen → Medien → „Aus der Instanz speichern“), je eigener Schalter. Landen im VRChat-Bilder-Ordner in „Prints“, „Stickers“ bzw. „Emoji“ (nach Monat sortiert, mit Datum, Name und ID im Dateinamen).\n- Prints optional **ohne weißen Rand** (gleichmäßig weißer Rand rundherum wird abgeschnitten).\n- Erkennung über das VRChat-Log, Download über deine angemeldete Sitzung. Für Prints und Emoji braucht VRChat die Startoption `--enable-sdk-log-levels` (unter Werkzeuge → VRChat starten einstellbar).\n- Neue Einträge im Spiel-Log: 🖨️ Print, 🏷️ Sticker, 😀 Emoji."
+ },
+ {
   "version": "2.7.1",
   "title": "Benutzerfarben, Discord-Status, VRChat-Wächter",
   "body": "- **Benutzerfarben** (Einstellungen → Oberfläche → Benutzerfarben): Farbe je Vertrauensstufe selbst wählen (Besucher, Neuer Benutzer, Benutzer, Bekannter, Vertrauter, VRChat-Team, Störenfried) – oder per Schalter **feste Farbe pro Benutzer** aus seiner ID. Gilt in Freundesliste, rechter Leiste, Spielerliste, Profil und Freunde-Orten, sofort ohne Neuladen.\n- **Discord-Status** ausgebaut: Welt-Integration („Schaut …“/„Hört …“ mit Titel bei YouTube/SoundCloud/Vimeo aus dem VRChat-Log), Plattform (PC/VR/Quest), Weltbild, Medienbild (Video-Vorschau), Weltname als Aktivität; Details in privaten Instanzen (Invite/Invite+/Gruppe, „Ask Me“) verbergen; Beitreten-Knopf nur öffentlich. Hinweis: nur in einer Instanz aktiv, VRChats eigene Rich Presence ausschalten.\n- **VRChat** (Einstellungen → System → VRChat): nach Absturz automatisch neu starten und letzte Instanz wieder betreten (max. 3× in 30 min), VRChat beim Beenden hart schließen, Cache beim Beenden aufräumen (älteste Einträge bis zur Grenze), **Selbst-Einladung statt Instanz öffnen** (alle ▶-Beitreten-Knöpfe und Stream Deck)."

@@ -169,6 +169,37 @@ class Tools {
         try { const c = JSON.parse(fs.readFileSync(path.join(this.vrchatDir(), 'config.json'), 'utf8')); if (c.picture_output_folder) return str(c.picture_output_folder); } catch (e) { /* Standard */ }
         return process.env.NEXUS_PHOTO_DIR || path.join(os.homedir(), 'Pictures', 'VRChat');
     }
+    /** Print/Sticker/Emoji aus der Instanz als Datei in den VRChat-Bilder-Ordner */
+    async saveInstanceFile(e) {
+        const s = this.settings.all();
+        const on = { print: s['media.save_prints'], sticker: s['media.save_stickers'], emoji: s['media.save_emoji'] }[e.kind];
+        const acc = this.acc();
+        if (!on || !acc) return null;
+        let fid = '', ver = 0, label = '';
+        if (e.kind === 'print') {
+            const pr = await this.call('GET', '/prints/' + encodeURIComponent(e.detail));
+            const m = /\/file\/(file_[0-9a-f-]{36})\/(\d+)/i.exec(str(pr && pr.files && pr.files.image));
+            if (!m) return null;
+            fid = m[1]; ver = int(m[2]); label = str(pr.authorName || e.player_name);
+        } else {
+            const f = await this.call('GET', '/file/' + encodeURIComponent(e.detail));
+            fid = e.detail; ver = this.app.vrc.constructor.fileVersion(f || {}); label = e.player_name || str(f && f.ownerId).slice(0, 12);
+            if (!ver) return null;
+        }
+        const img = await (this.fetchFile ? this.fetchFile(fid, ver) : this.app.vrc.proxyFile(acc, fid, ver, 0));
+        if (!img || !img.body) return null;
+        let body = img.body, ext = /png/i.test(img.type) ? 'png' : /gif/i.test(img.type) ? 'gif' : /webp/i.test(img.type) ? 'webp' : 'jpg';
+        if (e.kind === 'print' && s['media.print_trim'] && this.host.trimWhite) { try { const t = await this.host.trimWhite(body); if (t) { body = t; ext = 'png'; } } catch (x) { /* Original behalten */ } }
+        const d = new Date((e.ts || now()) * 1000), pad = n => String(n).padStart(2, '0');
+        const dir = path.join(this.photoDir(), { print: 'Prints', sticker: 'Stickers', emoji: 'Emoji' }[e.kind], d.getFullYear() + '-' + pad(d.getMonth() + 1));
+        fs.mkdirSync(dir, { recursive: true });
+        const safe = x => str(x).replace(/[^\w\- ]+/g, '').trim().slice(0, 30);
+        const name = 'VRChat_' + { print: 'Print', sticker: 'Sticker', emoji: 'Emoji' }[e.kind] + '_' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '_' + pad(d.getHours()) + '-' + pad(d.getMinutes()) + '-' + pad(d.getSeconds())
+            + (safe(label) ? '_' + safe(label) : '') + '_' + (e.kind === 'print' ? e.detail : fid).slice(5, 13) + '.' + ext;
+        const file = path.join(dir, name);
+        if (!fs.existsSync(file)) fs.writeFileSync(file, body);
+        return file;
+    }
     crashDir() { return path.join(process.env.TEMP || os.tmpdir(), 'VRChat', 'VRChat', 'Crashes'); }
     async steamDir() {
         const s = str(this.settings.get('media.steam_dir')).trim();
@@ -266,6 +297,7 @@ class Tools {
         if (e.kind === 'player_leave' && this.whoMatches(s['notify.player_leave'], e.player_id)) this.alert('⬅ ' + e.player_name, 'hat die Instanz verlassen');
         if (e.kind === 'world_join' && s['int.webhook_world']) this.webhook('🌐 Neue Welt: ' + (e.world_name || e.world_id));
         if (e.kind === 'screenshot') this.onScreenshot(e).catch(x => this.debug('screenshot', x));
+        if (['print', 'sticker', 'emoji'].includes(e.kind)) this.saveInstanceFile(e).catch(x => this.debug('save_' + e.kind, x));
         if (e.kind === 'vrc_start' || e.kind === 'world_join' && !this.wasRunning) this.onVrcStart();
         if (e.kind === 'vrc_quit') this.onVrcQuit();
         if (['world_join', 'player_join', 'player_leave'].includes(e.kind)) setTimeout(() => this.autoCompany().catch(x => this.debug('auto', x)), 2000);

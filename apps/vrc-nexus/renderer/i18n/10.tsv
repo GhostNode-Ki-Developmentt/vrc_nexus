@@ -312,3 +312,14 @@ Medienbilder zeigen	Show media images	Afficher les images des médias	メディ�
 Vorschaubild des laufenden Videos (z. B. YouTube), wenn die Welt eins abspielt.	Thumbnail of the playing video (e.g. YouTube) when the world plays one.	Miniature de la vidéo en cours (ex. YouTube) quand le monde en lit une.	ワールドで再生中の動画（YouTubeなど）のサムネイル。
 Weltname als Aktivität	World name as activity	Nom du monde comme activité	ワールド名をアクティビティにする
 Discord zeigt „Spielt <Welt>“ statt „Spielt VRChat“ (soweit Discord das unterstützt).	Discord shows “Playing <world>” instead of “Playing VRChat” (as far as Discord supports it).	Discord affiche « Joue à <monde> » au lieu de « Joue à VRChat » (si Discord le permet).	Discordで「VRChatをプレイ中」の代わりに「<ワールド>をプレイ中」と表示（Discordが対応している場合）。
+Aus der Instanz speichern	Save from the instance	Enregistrer depuis l'instance	インスタンスから保存
+Prints speichern	Save prints	Enregistrer les prints	プリントを保存
+Gespawnte Prints in deinen VRChat-Bilder-Ordner (Unterordner „Prints“). Braucht die VRChat-Startoption --enable-sdk-log-levels.	Spawned prints into your VRChat pictures folder (subfolder “Prints”). Needs the VRChat launch option --enable-sdk-log-levels.	Les prints apparus dans ton dossier d'images VRChat (sous-dossier « Prints »). Nécessite l'option de lancement VRChat --enable-sdk-log-levels.	出現したプリントをVRChatの画像フォルダー（「Prints」）に保存。VRChat起動オプション --enable-sdk-log-levels が必要です。
+Weißen Rand bei Prints entfernen	Remove white border from prints	Retirer la bordure blanche des prints	プリントの白い縁を取り除く
+Sticker speichern	Save stickers	Enregistrer les stickers	ステッカーを保存
+Platzierte Sticker in den Unterordner „Stickers“.	Placed stickers into the subfolder “Stickers”.	Les stickers placés dans le sous-dossier « Stickers ».	配置されたステッカーを「Stickers」フォルダーに保存。
+Emoji speichern	Save emoji	Enregistrer les emoji	絵文字を保存
+Gespawnte Emoji in den Unterordner „Emoji“. Braucht die VRChat-Startoption --enable-sdk-log-levels.	Spawned emoji into the subfolder “Emoji”. Needs the VRChat launch option --enable-sdk-log-levels.	Les emoji apparus dans le sous-dossier « Emoji ». Nécessite l'option de lancement VRChat --enable-sdk-log-levels.	出現した絵文字を「Emoji」フォルダーに保存。VRChat起動オプション --enable-sdk-log-levels が必要です。
+Print	Print	Print	プリント
+Sticker	Sticker	Sticker	ステッカー
+Emoji	Emoji	Emoji	絵文字

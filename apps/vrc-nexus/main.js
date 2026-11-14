@@ -53,6 +53,24 @@ const host = {
     showUser: id => { if (!win) return; win.show(); win.focus(); win.webContents.executeJavaScript('window.NexusUI && NexusUI.openUser(' + JSON.stringify(id) + ')').catch(() => {}); },
     showTab: tab => { if (!win) return; win.show(); win.focus(); if (tab) win.webContents.executeJavaScript('window.NexusUI && NexusUI.tab(' + JSON.stringify(tab) + ')').catch(() => {}); },
     setTray: text => { if (tray) tray.setToolTip(text); },
+    /** gleichmäßig weißen Rand rundherum abschneiden (Prints) */
+    trimWhite: async buf => {
+        const im = nativeImage.createFromBuffer(buf);
+        const { width: w, height: h } = im.getSize();
+        if (!w || !h) return null;
+        const px = im.toBitmap();   // BGRA
+        const white = (x, y) => { const i = (y * w + x) * 4; return px[i] > 235 && px[i + 1] > 235 && px[i + 2] > 235; };
+        const rowWhite = y => { for (let x = 0; x < w; x += 2) if (!white(x, y)) return false; return true; };
+        const colWhite = (x, y0, y1) => { for (let y = y0; y < y1; y += 2) if (!white(x, y)) return false; return true; };
+        let top = 0, bot = h - 1, left = 0, right = w - 1;
+        while (top < bot && rowWhite(top)) top++;
+        while (bot > top && rowWhite(bot)) bot--;
+        while (left < right && colWhite(left, top, bot)) left++;
+        while (right > left && colWhite(right, top, bot)) right--;
+        if (right - left < w * 0.3 || bot - top < h * 0.3) return null;
+        if (!top && !left && bot === h - 1 && right === w - 1) return null;
+        return im.crop({ x: left, y: top, width: right - left + 1, height: bot - top + 1 }).toPNG();
+    },
     thumbnail: async file => (await nativeImage.createThumbnailFromPath(file, { width: 360, height: 220 })).toJPEG(80),
     /** Update installieren: Installer still ausführen bzw. portable EXE ersetzen, dann neu starten */
     installUpdate: async (assets, progress) => {

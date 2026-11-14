@@ -1116,6 +1116,41 @@ test('2.7.1: Discord-Status (Video/Musik, Privat, Plattform, Bilder) & VRChat-W�
     t.stop();
 });
 
+test('2.7.2: Prints/Sticker/Emoji aus dem Log erkennen und als Datei speichern', async () => {
+    const { LogParser } = require('../backend/gamelog');
+    const { NexusApp } = require('../backend/app');
+    const P = 'prnt_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', F = 'file_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444', U = 'usr_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    const lp = new LogParser();
+    const L = m => '2026.11.14 21:30:00 Debug      -  ' + m;
+    assert.strictEqual(lp.feed(L('[API] Requesting Get prints/' + P + ' {{}}'))[0].kind, 'print');
+    assert.strictEqual(lp.feed(L('[API] Requesting Get prints/' + P + ' {{}}')).length, 0, 'gleicher Print nur einmal');
+    const st = lp.feed(L('[StickersManager] User ' + U + ' (Foxy) spawned sticker ' + F));
+    assert.strictEqual(st[0].kind, 'sticker'); assert.strictEqual(st[0].detail, F); assert.strictEqual(st[0].player_name, 'Foxy');
+    assert.strictEqual(lp.feed(L('[EmojiManager] Spawning emoji ' + F.replace('b', 'd')))[0].kind, 'emoji');
+    assert.strictEqual(lp.feed(L('[Behaviour] Something with ' + F)).length, 0, 'Datei-ID ohne Stichwort zählt nicht');
+    // Speichern
+    const db = await openDatabase(null);
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-pr-'));
+    process.env.NEXUS_PHOTO_DIR = tmp;
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: tmp } });
+    app.game.osc.stopListen();
+    const t = app.tools;
+    t.acc = () => ({ vrc_id: 'usr_me', me: {} });
+    t.call = async (m, p) => (/^\/prints\//.test(p) ? { authorName: 'Luna', files: { image: 'https://api.vrchat.cloud/api/1/file/' + F + '/3/file' } } : { versions: [{ version: 0 }, { version: 1, status: 'complete', file: {} }] });
+    const got = []; t.fetchFile = async (fid, v) => { got.push(fid + '/' + v); return { type: 'image/png', body: Buffer.from('PNG') }; };
+    const ev = { ts: Math.floor(Date.now() / 1000), kind: 'print', detail: P, player_name: '' };
+    assert.strictEqual(await t.saveInstanceFile(ev), null, 'aus = nichts speichern');
+    app.settings.save({ 'media.save_prints': true, 'media.save_stickers': true });
+    const f1 = await t.saveInstanceFile(ev);
+    assert.ok(f1 && fs.existsSync(f1) && /Prints/.test(f1) && /VRChat_Print_.*_Luna_/.test(path.basename(f1)), f1);
+    const f2 = await t.saveInstanceFile({ ts: ev.ts, kind: 'sticker', detail: F, player_name: 'Foxy' });
+    assert.ok(f2 && /Stickers/.test(f2) && /_Foxy_/.test(f2));
+    assert.deepStrictEqual(got, [F + '/3', F + '/1']);
+    assert.strictEqual(await t.saveInstanceFile({ ts: ev.ts, kind: 'emoji', detail: F }), null, 'Emoji aus');
+    delete process.env.NEXUS_PHOTO_DIR;
+    t.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

@@ -20,6 +20,13 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.7.2 – Prints, Sticker & Emoji speichern
+
+- **Prints, Sticker und Emoji aus der Instanz als Datei speichern** (Einstellungen → Medien → „Aus der Instanz speichern“), je eigener Schalter. Landen im VRChat-Bilder-Ordner in „Prints“, „Stickers“ bzw. „Emoji“ (nach Monat sortiert, mit Datum, Name und ID im Dateinamen).
+- Prints optional **ohne weißen Rand** (gleichmäßig weißer Rand rundherum wird abgeschnitten).
+- Erkennung über das VRChat-Log, Download über deine angemeldete Sitzung. Für Prints und Emoji braucht VRChat die Startoption `--enable-sdk-log-levels` (unter Werkzeuge → VRChat starten einstellbar).
+- Neue Einträge im Spiel-Log: 🖨️ Print, 🏷️ Sticker, 😀 Emoji.
+
 ### Neu in 2.7.1 – Benutzerfarben, Discord-Status, VRChat-Wächter
 
 - **Benutzerfarben** (Einstellungen → Oberfläche → Benutzerfarben): Farbe je Vertrauensstufe selbst wählen (Besucher, Neuer Benutzer, Benutzer, Bekannter, Vertrauter, VRChat-Team, Störenfried) – oder per Schalter **feste Farbe pro Benutzer** aus seiner ID. Gilt in Freundesliste, rechter Leiste, Spielerliste, Profil und Freunde-Orten, sofort ohne Neuladen.
