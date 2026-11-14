@@ -631,3 +631,21 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .nc-rotrow .cm-edit label.small { font-size: 0.78rem; color: var(--text-muted); }
 .nc-rotrow .cm-edit[hidden] { display: none; }
 .nc-rotrow .cm-edit > .btn, .nc-rotrow .cm-edit .nc-row { align-self: flex-start; }
+/* ---------- Übersetzer „VRChat → Text“ & Sprachbefehle ---------- */
+.sb-live { grid-column: 1 / -1; }
+.sb-lines { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 6px 2px; scrollbar-width: thin; }
+.sb-line { padding: 6px 10px; border-left: 3px solid var(--accent-cyan); background: rgba(var(--accent-rgb), 0.05); font-size: 0.95rem; }
+.sb-line.me { border-left-color: var(--accent-gold); }
+.sb-line.unsure { opacity: 0.6; border-left-style: dashed; }
+.sb-line b { font-weight: 600; }
+.sb-flag { font-size: 1.05rem; }
+.sb-lang, .sb-me { color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.5px; }
+.sb-me { color: var(--accent-gold); }
+.sb-orig { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.sp-flag { font-size: 1rem; }
+.sp-cmdcard { grid-column: 1 / -1; }
+.sp-cmdform { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin: 8px 0; }
+.sp-cmdform label { display: flex; flex-direction: column; gap: 2px; }
+.sp-cmdform input[name=phrase] { width: 200px; } .sp-cmdform input[name=addr] { width: 260px; }
+.sp-cmdlist { display: flex; flex-direction: column; gap: 4px; max-height: 300px; overflow-y: auto; margin-bottom: 8px; }
+.sp-cmd { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(160px, 1.4fr) auto auto auto; gap: 10px; align-items: center; padding: 4px 8px; border: 1px solid var(--border-color); background: rgba(var(--panel-rgb), 0.6); user-select: none; }

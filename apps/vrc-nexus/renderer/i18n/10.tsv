@@ -323,3 +323,35 @@ Gespawnte Emoji in den Unterordner „Emoji“. Braucht die VRChat-Startoption -
 Print	Print	Print	プリント
 Sticker	Sticker	Sticker	ステッカー
 Emoji	Emoji	Emoji	絵文字
+🈯 Übersetzer	🈯 Translator	🈯 Traducteur	🈯 翻訳
+🈯 Live-Untertitel	🈯 Live subtitles	🈯 Sous-titres en direct	🈯 ライブ字幕
+▶ Mitlesen starten	▶ Start listening	▶ Commencer l'écoute	▶ 聞き取り開始
+⏹ Mitlesen stoppen	⏹ Stop listening	⏹ Arrêter l'écoute	⏹ 聞き取り停止
+Leeren	Clear	Vider	クリア
+Übersetzer an	Translator on	Traducteur activé	翻訳オン
+Gesprochene Sprache	Spoken language	Langue parlée	話されている言語
+„automatisch“ erkennt die Sprache bei jedem Satz neu – auch wenn mehrere Leute verschiedene Sprachen sprechen.	“Automatic” detects the language for every sentence – even if several people speak different languages.	« Automatique » détecte la langue à chaque phrase – même si plusieurs personnes parlent des langues différentes.	「自動」は文ごとに言語を判定します – 複数の人が別々の言語を話していても大丈夫です。
+übersetzen nach	translate to	traduire en	翻訳先
+Mindest-Sicherheit	Minimum confidence	Confiance minimale	最低信頼度
+Diese Sprachen ignorieren	Ignore these languages	Ignorer ces langues	これらの言語を無視
+Originaltext klein darunter	Original text small below	Texte original en petit dessous	原文を下に小さく表示
+eigene Sprache (Mikro) auch anzeigen	also show my own speech (mic)	afficher aussi ma voix (micro)	自分の声（マイク）も表示
+Whisper-Modell	Whisper model	Modèle Whisper	Whisperモデル
+Empfindlichkeit	Sensitivity	Sensibilité	感度
+Satz höchstens	Sentence at most	Phrase au maximum	1文の最大
+ich	me	moi	自分
+🌐 automatisch erkennen	🌐 detect automatically	🌐 détection automatique	🌐 自動検出
+⚡ Sprachbefehle	⚡ Voice commands	⚡ Commandes vocales	⚡ 音声コマンド
+Gesprochener Satz	Spoken phrase	Phrase prononcée	話すフレーズ
+Parameter-Adresse	Parameter address	Adresse du paramètre	パラメーターアドレス
+Typ	Type	Type	種類
+Wert	Value	Valeur	値
+＋ Hinzufügen	＋ Add	＋ Ajouter	＋ 追加
+⬆ Importieren	⬆ Import	⬆ Importer	⬆ インポート
+⬇ Exportieren	⬇ Export	⬇ Exporter	⬇ エクスポート
+Alle löschen	Delete all	Tout supprimer	すべて削除
+Noch keine Sprachbefehle.	No voice commands yet.	Aucune commande vocale pour l'instant.	音声コマンドはまだありません。
+bei Sprachbefehl nichts in die Chatbox	nothing to the chatbox on a voice command	rien dans la chatbox lors d'une commande vocale	音声コマンド時はチャットボックスに送らない
+Sagst du einen dieser Sätze, schickt die App den Avatar-Parameter (statt den Text in die Chatbox, wenn unten so eingestellt). Erkennung nutzt die Spracheingabe oben.	If you say one of these phrases, the app sends the avatar parameter (instead of the text to the chatbox, if set below). Recognition uses the voice input above.	Si tu dis l'une de ces phrases, l'app envoie le paramètre d'avatar (au lieu du texte dans la chatbox, si réglé ci-dessous). La reconnaissance utilise la saisie vocale ci-dessus.	これらのフレーズを話すと、アプリがアバターパラメーターを送信します（下で設定した場合はチャットボックスの代わりに）。認識には上の音声入力を使います。
+Läuft dauerhaft neben VRChat & SteamVR – „Base“ oder „Small“ sind ein guter Kompromiss, größere Modelle brauchen deutlich mehr CPU/GPU.	Runs continuously next to VRChat & SteamVR – “Base” or “Small” are a good compromise, larger models need much more CPU/GPU.	Tourne en continu à côté de VRChat & SteamVR – « Base » ou « Small » sont un bon compromis, les grands modèles demandent bien plus de CPU/GPU.	VRChatやSteamVRと並行して常時動作します – 「Base」か「Small」がおすすめ。大きいモデルはCPU/GPU負荷がかなり増えます。
+Erscheint auch im SteamVR-HUD (Einstellungen → VR). Der Ton bleibt auf deinem PC; zum Übersetzen geht nur der erkannte Text an DeepL/Google.	Also appears in the SteamVR HUD (Settings → VR). The audio stays on your PC; only the recognized text goes to DeepL/Google for translation.	Apparaît aussi dans le HUD SteamVR (Paramètres → VR). Le son reste sur ton PC ; seul le texte reconnu est envoyé à DeepL/Google pour la traduction.	SteamVRのHUDにも表示されます（設定 → VR）。音声はPCから出ません。翻訳には認識したテキストだけをDeepL/Googleに送ります。

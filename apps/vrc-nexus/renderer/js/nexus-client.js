@@ -54,6 +54,7 @@
                 <button type="button" class="chip" data-sub="auto">🤖 Automatik</button>
                 <button type="button" class="chip" data-sub="speech">🎙 Sprache</button>
                 <button type="button" class="chip" data-sub="tts">🔊 Sprachausgabe</button>
+                <button type="button" class="chip" data-sub="subs">🈯 Übersetzer</button>
                 <button type="button" class="chip" data-sub="log">📜 Spiel-Log</button>
                 <button type="button" class="chip" data-sub="people">🧑‍🤝‍🧑 Getroffen</button>
                 <button type="button" class="chip" data-sub="visits">🌐 Besuche</button>
@@ -127,6 +128,7 @@
                 </section></div>
             <div class="nc-pane" data-p="osctools" hidden><div id="otBox"></div></div>
             <div class="nc-pane" data-p="tts" hidden><div id="ttsBox"></div></div>
+            <div class="nc-pane" data-p="subs" hidden><div id="subsBox"></div></div>
             <div class="nc-pane" data-p="osclog" hidden>
                 <div class="nc-row nc-filter">
                     <select id="olRange"><option value="live">Live (Speicher)</option><option value="today">Heute</option><option value="7">7 Tage</option><option value="30">30 Tage</option><option value="all">Alles</option></select>
@@ -344,6 +346,7 @@
         if (name === 'osctools' && window.NexusOscTools) window.NexusOscTools.open();
         if (name === 'mods' && window.NexusChatMods) window.NexusChatMods.open(document.getElementById('cmBox'));
         if (name === 'tts' && window.NexusTts) window.NexusTts.open(document.getElementById('ttsBox'));
+        if (name === 'subs' && window.NexusSubs) window.NexusSubs.open(document.getElementById('subsBox'));
         if (name === 'macros') loadMacros();
         if (name === 'auto') loadAuto();
         if (name === 'speech' && window.NexusSpeech) window.NexusSpeech.open();

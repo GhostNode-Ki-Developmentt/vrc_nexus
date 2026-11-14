@@ -234,13 +234,15 @@
     let hist = null, histQ = '';
     function loadHist() { return api('speech_log', { q: histQ }).then(d => { hist = d; renderHist(); }).catch(() => {}); }
     function fmtT(t) { const d = new Date(t), loc = window.nxLoc ? nxLoc() : 'de-DE'; return d.toLocaleDateString(loc, { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+    const FLAG = { de: '🇩🇪', en: '🇬🇧', fr: '🇫🇷', es: '🇪🇸', ja: '🇯🇵', nl: '🇳🇱', pl: '🇵🇱', it: '🇮🇹', ru: '🇷🇺', tr: '🇹🇷', ko: '🇰🇷', zh: '🇨🇳', pt: '🇵🇹', uk: '🇺🇦', sv: '🇸🇪', da: '🇩🇰', no: '🇳🇴', fi: '🇫🇮', cs: '🇨🇿', hu: '🇭🇺', ro: '🇷🇴', el: '🇬🇷', id: '🇮🇩', ar: '🇸🇦', th: '🇹🇭', vi: '🇻🇳', hi: '🇮🇳' };
+    window.NexusFlag = l => FLAG[l] || (l ? String(l).toUpperCase() : '');
     function renderHist() {
         const el = document.getElementById('spHist');
         if (!el || !hist) return;
         el.innerHTML = hist.items.length ? hist.items.map(e => '<div class="sp-h" data-i="' + e.i + '"><div class="sp-h-top"><span class="muted small">' + esc(fmtT(e.t)) + '</span>'
             + '<span class="sp-h-tag">' + (e.via === 'voice' ? '👂' : '🎙') + ' ' + esc(e.engine || '') + (e.ms ? ' · ' + (e.ms / 1000).toFixed(1) + ' s' : '') + (e.test ? ' · Test' : '') + '</span>'
             + '<span class="sp-h-btns"><button type="button" data-hs="text" title="Original erneut senden">↻</button>' + (e.sent ? '<button type="button" data-hs="sent" title="Übersetzung erneut senden">↻🌐</button>' : '') + '<button type="button" data-hc="1" title="kopieren">📋</button><button type="button" data-hd="1" title="löschen">✕</button></span></div>'
-            + '<div class="sp-h-text">„' + esc(e.text) + '“</div>' + (e.sent ? '<div class="sp-h-tr">🌐 ' + esc(e.target || '') + ': ' + esc(e.sent) + '</div>' : '') + '</div>').join('')
+            + '<div class="sp-h-text">' + (e.lang ? '<span class="sp-flag" title="' + esc(e.lang) + (e.prob ? ' · ' + Math.round(e.prob * 100) + ' %' : '') + '">' + esc(window.NexusFlag(e.lang)) + '</span> ' : '') + '„' + esc(e.text) + '“</div>' + (e.sent ? '<div class="sp-h-tr">🌐 ' + esc(e.target || '') + ': ' + esc(e.sent) + '</div>' : '') + '</div>').join('')
             : '<div class="muted small">' + (histQ ? 'Keine Treffer.' : 'Noch nichts erkannt.') + '</div>';
         const n = document.getElementById('spHistN'); if (n) n.textContent = hist.total;
     }
@@ -276,7 +278,7 @@
             + '<div class="nc-row"><label class="check small"><input type="checkbox" name="vad"' + (c.vad ? ' checked' : '') + '> automatisch stoppen nach</label><input type="number" name="silence" value="' + c.silence + '" min="0.4" max="5" step="0.1" style="width:60px"><span class="small">s Stille · max.</span><input type="number" name="max" value="' + c.max + '" min="3" max="120" style="width:60px"><span class="small">s</span></div>'
             + '<div class="nc-row"><span class="small">👂 Sprachaktivierung:</span><span class="small">mind.</span><input type="number" name="voice_min" value="' + (c.voice_min || 0.5) + '" min="0.2" max="3" step="0.1" style="width:60px"><span class="small">s Sprache</span>'
             + '<label class="check small"><input type="checkbox" name="voice_mute_only"' + (c.voice_mute_only ? ' checked' : '') + '> nur wenn ich in VRChat stumm bin</label><label class="check small"><input type="checkbox" name="voice_game_only"' + (c.voice_game_only ? ' checked' : '') + '> nur wenn VRChat läuft</label></div>'
-            + '<div class="nc-row"><label class="check small"><input type="checkbox" name="log"' + (c.log ? ' checked' : '') + '> Verlauf speichern</label></div>'
+            + '<div class="nc-row"><label class="check small"><input type="checkbox" name="log"' + (c.log ? ' checked' : '') + '> Verlauf speichern</label><label class="check small"><input type="checkbox" name="cmd_only"' + (c.cmd_only ? ' checked' : '') + '> bei Sprachbefehl nichts in die Chatbox</label></div>'
             + '<div class="nc-row"><label class="check small"><input type="checkbox" name="typing"' + (c.typing ? ' checked' : '') + '> „tippt …“ beim Sprechen</label><label class="check small"><input type="checkbox" name="sound"' + (c.sound ? ' checked' : '') + '> Ton</label></div>'
             + '<div class="nc-row"><label class="check small"><input type="checkbox" name="translate"' + (c.translate ? ' checked' : '') + '> übersetzen nach</label><input type="text" name="target" value="' + esc(c.target) + '" style="width:70px" title="z. B. EN-US, JA, FR">'
             + '<label class="check small"><input type="checkbox" name="whisper_en"' + (c.whisper_en ? ' checked' : '') + '> Whisper übersetzt selbst ins Englische</label></div>'
@@ -288,9 +290,57 @@
             + Object.entries(st.models).map(([k, v]) => '<div class="nc-row"><span class="small">' + esc(v[0]) + ' · ' + v[1] + ' MB</span>' + (st.have[k] ? '<span class="nc-badge ok">vorhanden</span><button type="button" class="nc-x" data-spdel="' + k + '" title="löschen">✕</button>' : '<button type="button" class="btn btn-sm" data-sp="' + k + '">⬇ laden</button>') + '</div>').join('')
             + '<p class="muted small">Tiny/Base sind schnell, Small/Medium genauer (brauchen mehr CPU). Modelle von huggingface.co/ggerganov/whisper.cpp, Programm von github.com/ggml-org/whisper.cpp.</p>'
             + '<h4 style="margin-top:10px">🔑 OpenAI-Schlüssel</h4><form class="nc-row" id="spKey"><input type="password" name="key" placeholder="' + (st.has_key ? '•••••• gespeichert' : 'sk-…') + '" style="flex:1" autocomplete="off"><button class="btn btn-sm">Speichern</button>' + (st.has_key ? '<button type="button" class="btn btn-sm" id="spKeyDel">Entfernen</button>' : '') + '</form></div>'
+            + cmdCard()
             + '</div>';
         renderHist();
     }
+    // ---------- Sprachbefehle: Satz sagen → Avatar-Parameter ----------
+    let cmdList = null, cmdDel = false;
+    function loadCmds() { return api('speech_cmds').then(d => { cmdList = d.items; render(); }).catch(() => {}); }
+    function cmdCard() {
+        const l = cmdList || [];
+        return '<div class="nc-card sp-cmdcard"><h4>⚡ Sprachbefehle <small class="muted">' + l.length + '</small></h4>'
+            + '<p class="muted small">Sagst du einen dieser Sätze, schickt die App den Avatar-Parameter (statt den Text in die Chatbox, wenn unten so eingestellt). Erkennung nutzt die Spracheingabe oben.</p>'
+            + '<form class="sp-cmdform" id="spCmdAdd"><label><span class="small">Gesprochener Satz</span><input name="phrase" placeholder="z. B. Ohren hoch" maxlength="80" required></label>'
+            + '<label><span class="small">Parameter-Adresse</span><input name="addr" value="/avatar/parameters/" required></label>'
+            + '<label><span class="small">Typ</span><select name="type"><option value="bool">Bool</option><option value="int">Int</option><option value="float">Float</option></select></label>'
+            + '<label><span class="small">Wert</span><input name="value" value="true" style="width:80px" title="Bool: true / false / toggle · Int: 0–255 · Float: −1 bis 1"></label><button class="btn btn-sm btn-gold">＋ Hinzufügen</button></form>'
+            + '<div class="sp-cmdlist">' + (l.length ? l.map((c, i) => '<div class="sp-cmd" data-ci="' + i + '"' + (cmdDel ? ' title="Doppelklick = löschen"' : '') + '><b>„' + esc(c.phrase) + '“</b><span class="mono small">' + esc(c.addr) + '</span><span class="small">' + esc(c.type) + ' = ' + esc(c.value)
+                + '</span><button type="button" class="btn btn-sm" data-ct="' + i + '" title="Jetzt senden">▶</button><button type="button" class="nc-x" data-cx="' + i + '" title="Löschen">✕</button></div>').join('') : '<div class="muted small">Noch keine Sprachbefehle.</div>') + '</div>'
+            + '<div class="nc-row"><label class="btn btn-sm">⬆ Importieren<input type="file" accept=".json" id="spCmdImp" hidden></label><button type="button" class="btn btn-sm" id="spCmdExp"' + (l.length ? '' : ' disabled') + '>⬇ Exportieren</button>'
+            + '<label class="check small"><input type="checkbox" id="spCmdDelMode"' + (cmdDel ? ' checked' : '') + '> Löschen per Doppelklick &amp; „Alle löschen“</label>'
+            + (cmdDel && l.length ? '<button type="button" class="btn btn-sm btn-danger" id="spCmdClr">Alle löschen</button>' : '') + '</div></div>';
+    }
+    document.addEventListener('click', e => {
+        if (!box() || !box().contains(e.target)) return;
+        const t = e.target.closest('[data-ct]');
+        if (t) return api('speech_cmd_test', { i: t.dataset.ct }).then(d => toast(d.msg)).catch(x => toast('⚠ ' + x.message, true));
+        const x = e.target.closest('[data-cx]');
+        if (x) return api('speech_cmd_del', { i: x.dataset.cx }).then(d => { cmdList = d.items; render(); });
+        if (e.target.closest('#spCmdExp')) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(cmdList || [], null, 2)], { type: 'application/json' }));
+            a.download = 'vrc-nexus-sprachbefehle.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            return;
+        }
+        if (e.target.closest('#spCmdClr') && confirm('Alle Sprachbefehle löschen?')) return api('speech_cmd_clear').then(d => { cmdList = d.items; toast(d.msg); render(); });
+    });
+    document.addEventListener('dblclick', e => {
+        const r = e.target.closest('.sp-cmd');
+        if (!r || !cmdDel || !box() || !box().contains(r)) return;
+        api('speech_cmd_del', { i: r.dataset.ci }).then(d => { cmdList = d.items; render(); });
+    });
+    document.addEventListener('change', e => {
+        if (e.target.id === 'spCmdDelMode') { cmdDel = e.target.checked; render(); }
+        if (e.target.id === 'spCmdImp' && e.target.files[0]) e.target.files[0].text().then(t => api('speech_cmd_import', { data: t })).then(d => { cmdList = d.items; toast(d.msg); render(); }).catch(x => toast('⚠ ' + x.message, true));
+        if (e.target.form && e.target.form.id === 'spCmdAdd' && e.target.name === 'type') { const v = e.target.form.value; v.value = e.target.value === 'bool' ? 'true' : e.target.value === 'int' ? '1' : '0.5'; }
+    });
+    document.addEventListener('submit', e => {
+        if (e.target.id !== 'spCmdAdd') return;
+        e.preventDefault();
+        const f = e.target;
+        api('speech_cmd_add', { phrase: f.phrase.value, addr: f.addr.value, type: f.type.value, value: f.value.value }).then(d => { cmdList = d.items; toast(d.msg); document.activeElement.blur(); render(); }).catch(x => toast('⚠ ' + x.message, true));
+    });
     document.addEventListener('click', e => {
         if (!box() || !box().contains(e.target)) return;
         if (e.target.closest('#spRec')) return cmd('toggle');
@@ -327,6 +377,6 @@
     });
 
     document.addEventListener('input', e => { if (e.target.id === 'spHistQ') { histQ = e.target.value; clearTimeout(e.target._t); e.target._t = setTimeout(loadHist, 250); } });
-    window.NexusSpeech = { cmd, start, stop, open() { refresh(); loadHist(); if (!mics) loadMics(); }, get recording() { return !!rec; }, get listening() { return !!lis; } };
+    window.NexusSpeech = { cmd, start, stop, open() { refresh(); loadHist(); loadCmds(); if (!mics) loadMics(); }, get recording() { return !!rec; }, get listening() { return !!lis; } };
     poll();
 })();

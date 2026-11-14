@@ -4,7 +4,7 @@
  * Die Oberfläche läuft unter app://nexus/, alle Anfragen an „nexus.php“ beantwortet das eingebaute Backend (backend/app.js).
  * Läuft im Infobereich weiter (Verlauf, Statistik, Spiel-Log & OSC zeichnen dann weiter auf).
  */
-const { app, BrowserWindow, Menu, Tray, Notification, protocol, shell, safeStorage, nativeImage, dialog, globalShortcut } = require('electron');
+const { app, BrowserWindow, Menu, Tray, Notification, protocol, shell, safeStorage, nativeImage, dialog, globalShortcut, session, desktopCapturer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -169,6 +169,12 @@ app.on('second-instance', () => { if (win) { win.show(); win.focus(); } });
 
 app.whenReady().then(async () => {
     Menu.setApplicationMenu(null);
+    // Übersetzer „VRChat → Text“: getDisplayMedia liefert den Windows-Systemton (Loopback) – das Bild wird in der Seite sofort verworfen
+    try {
+        session.defaultSession.setDisplayMediaRequestHandler((req, cb) => {
+            desktopCapturer.getSources({ types: ['screen'] }).then(src => cb(src[0] ? { video: src[0], audio: 'loopback' } : {})).catch(() => cb({}));
+        });
+    } catch (e) { /* ältere Electron-Version */ }
     try {
         db = await openDatabase(path.join(app.getPath('userData'), 'nexus.sqlite'));
     } catch (e) {

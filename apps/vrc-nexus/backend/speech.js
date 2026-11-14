@@ -13,9 +13,16 @@ const { execFile } = require('child_process');
 const { str, int, cut, UserError } = require('./util');
 
 const MODELS = { tiny: ['Tiny', 75], base: ['Base', 142], small: ['Small', 466], medium: ['Medium', 1500], 'large-v3-turbo': ['Large v3 Turbo', 1600] };
-const LANGS = { de: 'Deutsch', en: 'Englisch', auto: 'automatisch', fr: 'Französisch', es: 'Spanisch', ja: 'Japanisch', nl: 'Niederländisch', pl: 'Polnisch', it: 'Italienisch', ru: 'Russisch', tr: 'Türkisch' };
+const LANGS = { auto: '🌐 automatisch erkennen', de: 'Deutsch', en: 'Englisch', fr: 'Französisch', es: 'Spanisch', ja: 'Japanisch', ko: 'Koreanisch', zh: 'Chinesisch', ru: 'Russisch', pt: 'Portugiesisch',
+    it: 'Italienisch', nl: 'Niederländisch', pl: 'Polnisch', tr: 'Türkisch', uk: 'Ukrainisch', sv: 'Schwedisch', da: 'Dänisch', no: 'Norwegisch', fi: 'Finnisch', cs: 'Tschechisch',
+    hu: 'Ungarisch', ro: 'Rumänisch', el: 'Griechisch', id: 'Indonesisch', ar: 'Arabisch', th: 'Thai', vi: 'Vietnamesisch', hi: 'Hindi', he: 'Hebräisch', bg: 'Bulgarisch',
+    sk: 'Slowakisch', hr: 'Kroatisch', lt: 'Litauisch', lv: 'Lettisch', et: 'Estnisch', sl: 'Slowenisch' };
+/** OpenAI meldet die Sprache als englischen Namen */
+const LANG_NAMES = { german: 'de', english: 'en', french: 'fr', spanish: 'es', japanese: 'ja', korean: 'ko', chinese: 'zh', russian: 'ru', portuguese: 'pt', italian: 'it', dutch: 'nl', polish: 'pl',
+    turkish: 'tr', ukrainian: 'uk', swedish: 'sv', danish: 'da', norwegian: 'no', finnish: 'fi', czech: 'cs', hungarian: 'hu', romanian: 'ro', greek: 'el', indonesian: 'id', arabic: 'ar', thai: 'th',
+    vietnamese: 'vi', hindi: 'hi', hebrew: 'he', bulgarian: 'bg', slovak: 'sk', croatian: 'hr', lithuanian: 'lt', latvian: 'lv', estonian: 'et', slovenian: 'sl' };
 const FALLBACK_BIN = 'https://github.com/ggml-org/whisper.cpp/releases/download/v1.7.6/whisper-bin-x64.zip';
-const DEF = { enabled: false, engine: 'local', model: 'base', lang: 'de', translate: false, target: 'EN-US', whisper_en: false, prefix: '🎙 ', typing: true, sound: false,
+const DEF = { enabled: false, engine: 'local', model: 'base', lang: 'auto', cmd_only: true, translate: false, target: 'EN-US', whisper_en: false, prefix: '🎙 ', typing: true, sound: false,
     hotkey: 'Alt+V', vad: true, silence: 1.2, max: 30, threads: 4, bin: '', mic: '', mic_label: '', gain: 100, threshold: 2,
     mode: 'ptt', voice_min: 0.5, voice_mute_only: false, voice_game_only: true, log: true };
 
@@ -77,6 +84,7 @@ class Speech {
             enabled: c.enabled !== undefined ? b(c.enabled) : cur.enabled,
             engine: ['local', 'openai'].includes(c.engine) ? c.engine : cur.engine,
             model: MODELS[c.model] ? c.model : cur.model,
+            cmd_only: c.cmd_only === undefined ? cur.cmd_only : c.cmd_only === true || c.cmd_only === '1',
             lang: LANGS[c.lang] ? c.lang : cur.lang,
             translate: c.translate !== undefined ? b(c.translate) : cur.translate,
             target: /^[A-Z]{2}(-[A-Z]{2,4})?$/i.test(str(c.target)) ? str(c.target).toUpperCase() : cur.target,
@@ -198,12 +206,21 @@ class Speech {
         this.lastError = '';
         const t0 = Date.now();
         try {
-            let text = c.engine === 'openai' ? await this.openai(wav, c) : await this.local(wav, c);
-            text = text.replace(/\[(BLANK_AUDIO|Musik|Music|MUSIC|Applaus|Stille)\]|\((Musik|music|Stille)\)/gi, '').replace(/\s+/g, ' ').trim();
+            const r = await this.recognize(wav, c);
+            const text = this.clean(r.text), lang = r.lang || (c.lang !== 'auto' ? c.lang : '');
             if (!text) { this.last = ''; return { text: '', sent: '' }; }
             this.last = text;
+            // Sprachbefehle: passt ein gespeicherter Satz, wird der Parameter gesendet (und – wenn eingestellt – nichts in die Chatbox)
+            const hit = opts.noSend ? null : this.matchCmd(text);
+            if (hit) {
+                await this.runCmd(hit);
+                if (c.log) this.addLog({ t: Date.now(), text, sent: '⚡ ' + hit.addr + ' = ' + hit.value, target: '', lang, engine: 'Sprachbefehl', ms: Date.now() - t0, via: str(opts.via) || 'ptt' });
+                if (c.cmd_only) return { text, sent: '', lang, prob: r.prob, command: hit };
+            }
             let sent = text;
-            if (c.translate && !c.whisper_en) sent = (await this.app.tr.chat(text, c.target)).text;
+            // schon in der Zielsprache gesprochen → nicht übersetzen
+            if (c.translate && !c.whisper_en && !(lang && lang === str(c.target).slice(0, 2).toLowerCase())) sent = (await this.app.tr.chat(text, c.target)).text;
+            if (this.app.subs) this.app.subs.mine(text, lang, r.prob, sent);
             if (!opts.noSend) await this.app.game.oscSend('chatbox', { text: (c.prefix || '') + sent, sound: c.sound ? '1' : '', split: '1', vars: false });
             // Sprachausgabe: Erkanntes (bzw. die Übersetzung) in VRChat sprechen
             if (this.app.tts && !opts.noSend) {
@@ -213,27 +230,36 @@ class Speech {
                     this.app.tts.say(say, 'sprache').catch(() => {});
                 }
             }
-            if (c.log) this.addLog({ t: Date.now(), text, sent: sent !== text ? sent : '', target: sent !== text ? c.target : '', lang: c.lang, engine: c.engine === 'openai' ? 'OpenAI' : 'whisper.cpp ' + ((MODELS[c.model] || [''])[0]), ms: Date.now() - t0, via: str(opts.via) || 'ptt', test: !!opts.noSend });
-            return { text, sent };
+            if (c.log) this.addLog({ t: Date.now(), text, sent: sent !== text ? sent : '', target: sent !== text ? c.target : '', lang: lang || c.lang, prob: r.prob, engine: c.engine === 'openai' ? 'OpenAI' : 'whisper.cpp ' + ((MODELS[c.model] || [''])[0]), ms: Date.now() - t0, via: str(opts.via) || 'ptt', test: !!opts.noSend });
+            return { text, sent, lang, prob: r.prob, command: hit };
         } catch (e) { this.lastError = e.message; throw e; }
         finally {
             this.busy = false;
             if (c.typing) this.app.game.oscSend('typing', { on: '' }).catch(() => {});
         }
     }
+    clean(text) { return str(text).replace(/\[(BLANK_AUDIO|Musik|Music|MUSIC|Applaus|Stille|Applause|Laughter|Lachen)\]|\((Musik|music|Stille|Applause|Laughter)\)|\*[^*]{1,30}\*/gi, '').replace(/\s+/g, ' ').trim(); }
+    /** Text + Sprache erkennen: { text, lang, prob } – lang/prob nur bei automatischer Erkennung sicher */
+    async recognize(wav, over = {}) {
+        const c = Object.assign({}, this.cfg(), over);
+        if (process.env.NEXUS_FAKE_WHISPER) { const f = JSON.parse(process.env.NEXUS_FAKE_WHISPER); return Array.isArray(f) ? f[(this.fakeI = (this.fakeI || 0) + 1) % f.length] : f; }
+        return c.engine === 'openai' ? this.openai(wav, c) : this.local(wav, c);
+    }
     local(wav, c) {
         const bin = this.binPath();
         if (!bin) throw new UserError('whisper.cpp fehlt – unter Spiel & OSC → Sprache „Programm laden“ drücken.');
-        const model = this.modelPath();
+        const model = this.modelPath(c.model);
         if (!fs.existsSync(model) && !process.env.NEXUS_WHISPER_BIN) throw new UserError('Modell „' + c.model + '“ fehlt – erst herunterladen.');
-        const file = path.join(os.tmpdir(), 'nexus-speech-' + Date.now() + '.wav');
+        const file = path.join(os.tmpdir(), 'nexus-speech-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.wav');
         fs.writeFileSync(file, wav);
         const args = ['-m', model, '-f', file, '-l', c.lang, '-nt', '-np', '-t', String(c.threads)];
         if (c.whisper_en) args.push('-tr');
         return new Promise((resolve, reject) => execFile(bin, args, { cwd: path.dirname(bin), windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024 }, (e, out, err) => {
             fs.rm(file, { force: true }, () => {});
             if (e) return reject(new UserError(whisperError(e, str(err) + '\n' + str(out), bin)));
-            resolve(str(out).split(/\r?\n/).map(l => l.replace(/^\[[\d:.\s>-]+\]\s*/, '').trim()).filter(Boolean).join(' '));
+            const text = str(out).split(/\r?\n/).map(l => l.replace(/^\[[\d:.\s>-]+\]\s*/, '').trim()).filter(Boolean).join(' ');
+            const m = /auto-detected language:\s*([a-z]{2,3})\s*\(p\s*=\s*([\d.]+)\)/i.exec(str(err) + '\n' + str(out));
+            resolve(m ? { text, lang: m[1].toLowerCase(), prob: Number(m[2]) } : { text, lang: c.lang !== 'auto' ? c.lang : '' });
         }));
     }
     async openai(wav, c) {
@@ -244,15 +270,62 @@ class Speech {
         fd.append('file', new Blob([wav], { type: 'audio/wav' }), 'sprache.wav');
         fd.append('model', 'whisper-1');
         if (c.lang !== 'auto' && !c.whisper_en) fd.append('language', c.lang);
+        if (!c.whisper_en) fd.append('response_format', 'verbose_json');
         const r = await fetch(base + (c.whisper_en ? '/audio/translations' : '/audio/transcriptions'), { method: 'POST', headers: { Authorization: 'Bearer ' + k }, body: fd, signal: AbortSignal.timeout(60000) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new UserError('OpenAI: ' + ((j.error && j.error.message) || 'HTTP ' + r.status));
-        return str(j.text);
+        const ln = str(j.language).toLowerCase();
+        return { text: str(j.text), lang: LANG_NAMES[ln] || (LANGS[ln] ? ln : c.lang !== 'auto' ? c.lang : ''), prob: j.language ? 0.9 : undefined };
+    }
+
+    // ---------- Sprachbefehle: Satz → OSC-Parameter ----------
+    cmds() { try { return JSON.parse(this.app.db.setting('speech_cmds', '[]')) || []; } catch (e) { return []; } }
+    saveCmds(l) { this.app.db.setSetting('speech_cmds', JSON.stringify(l.slice(0, 200))); return l; }
+    static norm(t) { return str(t).toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim(); }
+    checkCmd(c) {
+        const phrase = cut(str(c.phrase).trim(), 80), addr = str(c.addr).trim(), type = ['bool', 'int', 'float'].includes(c.type) ? c.type : 'bool';
+        if (Speech.norm(phrase).length < 2) throw new UserError('Bitte einen Satz eingeben.');
+        if (!/^\/[\w\/.\-]{1,200}$/.test(addr)) throw new UserError('Parameter-Adresse ungültig (z. B. /avatar/parameters/Ohren).');
+        let value = str(c.value).trim().toLowerCase();
+        if (type === 'bool') value = ['1', 'true', 'an', 'on', 'ja', 'yes', 'wahr'].includes(value) ? 'true' : ['0', 'false', 'aus', 'off', 'nein', 'no'].includes(value) ? 'false' : 'toggle';
+        else if (type === 'int') { const n = parseInt(value, 10); if (isNaN(n) || n < 0 || n > 255) throw new UserError('Int-Wert 0–255.'); value = String(n); }
+        else { const n = Number(value.replace(',', '.')); if (isNaN(n) || n < -1 || n > 1) throw new UserError('Float-Wert −1 bis 1.'); value = String(n); }
+        return { phrase, addr, type, value };
+    }
+    matchCmd(text) {
+        const t = ' ' + Speech.norm(text) + ' ';
+        let best = null;
+        for (const c of this.cmds()) { const p = Speech.norm(c.phrase); if (p && t.includes(' ' + p + ' ') && (!best || p.length > Speech.norm(best.phrase).length)) best = c; }
+        return best;
+    }
+    async runCmd(c) {
+        let v;
+        if (c.type === 'bool') {
+            this.cmdState = this.cmdState || {};
+            v = c.value === 'toggle' ? !this.cmdState[c.addr] : c.value === 'true';
+            this.cmdState[c.addr] = v;
+        } else v = c.type === 'int' ? parseInt(c.value, 10) : { float: Number(c.value) };
+        await this.app.game.osc.send(c.addr, v);
+        this.lastCmd = { at: Date.now(), phrase: c.phrase, addr: c.addr, value: String(v && v.float !== undefined ? v.float : v) };
     }
 
     async action(act, input) {
         switch (act) {
             case 'speech_status': return this.status();
+            case 'speech_cmds': return { items: this.cmds(), last: this.lastCmd || null };
+            case 'speech_cmd_add': { const l = this.cmds(); const c = this.checkCmd(input); l.push(c); this.saveCmds(l); return { items: l, msg: 'Sprachbefehl „' + c.phrase + '“ gespeichert.' }; }
+            case 'speech_cmd_del': { const l = this.cmds(); l.splice(int(input.i), 1); this.saveCmds(l); return { items: l }; }
+            case 'speech_cmd_clear': return { items: this.saveCmds([]), msg: 'Alle Sprachbefehle gelöscht.' };
+            case 'speech_cmd_import': {
+                let arr = [];
+                try { arr = JSON.parse(str(input.data)); } catch (e) { throw new UserError('Keine gültige JSON-Datei.'); }
+                if (!Array.isArray(arr)) arr = arr && Array.isArray(arr.commands) ? arr.commands : [];
+                const l = this.cmds(); let n = 0;
+                for (const x of arr.slice(0, 200)) { try { l.push(this.checkCmd({ phrase: x.phrase || x.Phrase, addr: x.addr || x.address || x.Address, type: str(x.type || x.Type || 'bool').toLowerCase(), value: x.value ?? x.Value })); n++; } catch (e) { /* überspringen */ } }
+                this.saveCmds(l);
+                return { items: l, msg: n + ' Sprachbefehle importiert.' };
+            }
+            case 'speech_cmd_test': { const c = this.cmds()[int(input.i)]; if (!c) throw new UserError('Nicht gefunden.'); await this.runCmd(c); return { msg: '⚡ ' + c.addr + ' gesendet.' }; }
             case 'speech_log': {
                 const q = str(input.q).toLowerCase().trim();
                 const l = this.history().map((e, i) => Object.assign({ i }, e)).filter(e => !q || (e.text + ' ' + e.sent).toLowerCase().includes(q));
@@ -283,4 +356,4 @@ class Speech {
     }
 }
 
-module.exports = { Speech, MODELS, LANGS, download, findFile };
+module.exports = { Speech, MODELS, LANGS, LANG_NAMES, download, findFile };

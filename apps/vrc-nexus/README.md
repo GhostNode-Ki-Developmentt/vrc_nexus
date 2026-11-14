@@ -20,6 +20,16 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.0 – Übersetzer „VRChat → Text“, Sprachbefehle, Sprache automatisch
+
+- **🈯 Übersetzer „VRChat → Text“** (Spiel & OSC → Übersetzer): hört den Spielton mit (Windows-Systemton), erkennt lokal mit whisper.cpp, was andere sagen, und zeigt es **übersetzt als Live-Untertitel** – z. B. Englisch → Deutsch.
+  - **Sprache automatisch erkennen** ist Standard: pro Satz neu, auch wenn mehrere Leute verschiedene Sprachen sprechen. Am Untertitel steht Flagge + Kürzel, z. B. „🇬🇧 EN → DE“.
+  - Gesprochene Sprache auch fest wählbar (36 Sprachen), Zielsprache frei (alle DeepL/Google-Sprachen, Standard = App-Sprache).
+  - Sätze in der Zielsprache werden nicht übersetzt, unsichere Erkennung wird mit „?“ markiert (Mindest-Sicherheit einstellbar), Sprachen lassen sich ignorieren, Original optional klein darunter.
+  - Whisper-Modell getrennt wählbar (kleines Modell empfohlen – läuft dauerhaft). Der Ton bleibt auf dem PC, nur der erkannte Text geht zum Übersetzen an DeepL/Google.
+- **Spracheingabe → Chatbox**: Sprache jetzt standardmäßig **automatisch erkannt**; schon in der Zielsprache gesprochen → keine Übersetzung. Im Verlauf steht die erkannte Sprache als Flagge.
+- **⚡ Sprachbefehle** (Spiel & OSC → Sprache): Satz sagen → Avatar-Parameter (Bool an/aus/umschalten, Int, Float) per OSC. Liste mit Testknopf, Import/Export (JSON), optional Löschen per Doppelklick + „Alle löschen“, einstellbar ob dann nichts in die Chatbox geht.
+
 ### Neu in 2.7.2 – Prints, Sticker & Emoji speichern
 
 - **Prints, Sticker und Emoji aus der Instanz als Datei speichern** (Einstellungen → Medien → „Aus der Instanz speichern“), je eigener Schalter. Landen im VRChat-Bilder-Ordner in „Prints“, „Stickers“ bzw. „Emoji“ (nach Monat sortiert, mit Datum, Name und ID im Dateinamen).

@@ -1151,6 +1151,73 @@ test('2.7.2: Prints/Sticker/Emoji aus dem Log erkennen und als Datei speichern',
     t.stop();
 });
 
+test('2.8.0: Sprache automatisch erkennen (whisper-Ausgabe), Sprachbefehle → OSC, Übersetzer „VRChat → Text“', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-sp-'));
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: tmp } });
+    app.game.osc.stopListen();
+    const sent = []; app.game.osc.send = async (a, ...v) => { sent.push([a, ...v]); };
+    app.game.oscSend = async (k, d) => { if (k === 'chatbox') sent.push(['chatbox', d.text]); };
+    app.tr.translate = async (text, target) => ({ text: '[' + target + '] ' + text });
+    app.tr.chat = async (text, target) => ({ text: '[' + target + '] ' + text });
+    const wav = Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(3000)]);
+    if (process.platform !== 'win32') {
+        // echtes Ausgabeformat von whisper-cli mit -l auto (Sprache steht in stderr)
+        const fake = path.join(tmp, 'w.js');
+        fs.writeFileSync(fake, '#!/usr/bin/env node\nconst a=process.argv.join(" ");console.error("whisper_full_with_state: auto-detected language: en (p = 0.973218)");console.log("[00:00:00.000 --> 00:00:02.000]  Hello, how are you?");if(!/-l auto/.test(a))process.exit(3);\n', { mode: 0o755 });
+        process.env.NEXUS_WHISPER_BIN = fake;
+        const r = await app.speech.recognize(wav, { lang: 'auto' });
+        assert.deepStrictEqual([r.text, r.lang, r.prob], ['Hello, how are you?', 'en', 0.973218]);
+        delete process.env.NEXUS_WHISPER_BIN;
+    }
+    assert.strictEqual(app.speech.cfg().lang, 'auto', 'Mikro-Sprache standardmäßig automatisch');
+    // Sprachbefehle
+    await assert.rejects(app.post({ act: 'speech_cmd_add', phrase: 'Ohren', addr: 'kein/slash', type: 'bool', value: 'true' }, {}), /Adresse/);
+    await app.post({ act: 'speech_cmd_add', phrase: 'Ohren hoch', addr: '/avatar/parameters/Ears', type: 'bool', value: 'toggle' }, {});
+    await app.post({ act: 'speech_cmd_add', phrase: 'Outfit zwei', addr: '/avatar/parameters/Outfit', type: 'int', value: '2' }, {});
+    const imp = await app.post({ act: 'speech_cmd_import', data: JSON.stringify([{ Phrase: 'tail wag', Address: '/avatar/parameters/Tail', Type: 'Float', Value: '0.5' }, { phrase: '', addr: '/x' }]) }, {});
+    assert.strictEqual(imp.items.length, 3, 'ungültiger Eintrag übersprungen');
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'Okay, Ohren hoch bitte!', lang: 'de', prob: 0.99 });
+    app.speech.saveCfg({ enabled: '1', prefix: '', translate: false });
+    sent.length = 0;
+    let r = await app.post({ act: 'speech_transcribe', audio: wav.toString('base64') }, {});
+    assert.ok(r.command && r.command.addr === '/avatar/parameters/Ears');
+    assert.deepStrictEqual(sent, [['/avatar/parameters/Ears', true]], 'Befehl gesendet, nichts in die Chatbox');
+    sent.length = 0; await app.post({ act: 'speech_transcribe', audio: wav.toString('base64') }, {});
+    assert.deepStrictEqual(sent, [['/avatar/parameters/Ears', false]], 'Umschalten');
+    // eigene Sprache: schon Zielsprache → nicht übersetzen; Untertitel „ich“
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'Hallo zusammen', lang: 'de', prob: 0.95 });
+    app.speech.saveCfg({ translate: true, target: 'DE' });
+    sent.length = 0; r = await app.post({ act: 'speech_transcribe', audio: wav.toString('base64') }, {});
+    assert.deepStrictEqual(sent, [['chatbox', 'Hallo zusammen']]);
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'Bonjour', lang: 'fr', prob: 0.95 });
+    sent.length = 0; await app.post({ act: 'speech_transcribe', audio: wav.toString('base64') }, {});
+    assert.deepStrictEqual(sent, [['chatbox', '[DE] Bonjour']]);
+    // Übersetzer: Spielton
+    await assert.rejects(app.post({ act: 'subs_listen', audio: wav.toString('base64') }, {}), /aus/);
+    await app.post({ act: 'subs_cfg', enabled: '1', src: 'auto', target: '', min_prob: '60', ignore: 'ru, xx' }, {});
+    assert.strictEqual(app.subs.cfg().ignore, 'ru');
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'Where are you from?', lang: 'en', prob: 0.9 });
+    r = await app.post({ act: 'subs_listen', audio: wav.toString('base64') }, {});
+    assert.strictEqual(r.line.tr, '[DE] Where are you from?'); assert.strictEqual(r.line.flag, '🇬🇧');
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'Ich komme aus Leipzig', lang: 'de', prob: 0.9 });
+    r = await app.post({ act: 'subs_listen', audio: wav.toString('base64') }, {});
+    assert.strictEqual(r.line.tr, '', 'Zielsprache → keine Übersetzung');
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'привет', lang: 'ru', prob: 0.9 });
+    r = await app.post({ act: 'subs_listen', audio: wav.toString('base64') }, {});
+    assert.ok(r.ignored, 'ignorierte Sprache');
+    process.env.NEXUS_FAKE_WHISPER = JSON.stringify({ text: 'mmh ja', lang: 'nl', prob: 0.3 });
+    r = await app.post({ act: 'subs_listen', audio: wav.toString('base64') }, {});
+    assert.ok(r.line.unsure && !r.line.tr, 'unsicher → nicht übersetzen, markieren');
+    app.settings.save({ 'ui.lang': 'en' });
+    assert.strictEqual(app.subs.target(app.subs.cfg()), 'EN-GB', 'Ziel folgt der App-Sprache');
+    const st = await app.post({ act: 'subs_state' }, {});
+    assert.ok(st.lines.some(l => l.who === 'me' && l.tr === '[DE] Bonjour'), 'eigene Untertitel');
+    delete process.env.NEXUS_FAKE_WHISPER;
+    app.tools.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

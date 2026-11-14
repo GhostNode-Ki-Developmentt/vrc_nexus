@@ -63,6 +63,7 @@ class NexusApp {
         this.stream = opts.mobile ? null : new StreamBot(this, opts.crypt);
         this.backup = new CloudBackup(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
+        this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
         this.tts = opts.mobile ? null : new Tts(this, opts.crypt);
         this.media = opts.mobile ? null : new Media(this);
         this.osctools = opts.mobile ? null : new OscTools(this);
@@ -162,6 +163,7 @@ class NexusApp {
             if (act === 'media_status') return this.media ? this.media.status() : { available: false };
             if (act === 'media_ctl') { if (!this.media) throw new UserError('Nur in der Windows-App.'); return this.media.control(str(input.cmd), str(input.id)); }
             if (act.startsWith('auto_')) return await this.auto.action(act, input);
+            if (act.startsWith('subs_')) { if (!this.subs) throw new UserError('Übersetzer gibt es nur in der Windows-App.'); return await this.subs.action(act, input); }
             if (act.startsWith('speech_')) { if (!this.speech) throw new UserError('Spracheingabe gibt es nur in der Windows-App.'); return await this.speech.action(act, input); }
             if (act === 'overlay_act') return await this.tools.apiAction(str(input.action), input);
             if (act === 'overlay_cfg') { const s = this.settings.all(); return { phrases: str(s['vr.overlay_phrases']).split('\n').map(x => x.trim()).filter(Boolean).slice(0, 40), translate: !!s['vr.overlay_translate'], target: str(s['tr.chat_target'] || '') }; }
