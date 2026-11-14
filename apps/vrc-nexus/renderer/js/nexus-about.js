@@ -25,7 +25,8 @@
         const up = d.update;
         box.innerHTML = '<div class="ab-head"><img src="icon.png" alt="" class="ab-logo"><div><h2>VRC Nexus</h2>'
             + '<p class="ab-ver">Version <b>' + esc(d.version) + '</b> · ' + esc(d.platform) + (d.runtime.electron ? ' · Electron ' + esc(d.runtime.electron) + ' · Chromium ' + esc(d.runtime.chrome.split('.')[0]) : '') + '</p>'
-            + '<p class="small">' + (up ? (up.available ? '⬆ Version <b>' + esc(up.version) + '</b> ist verfügbar – <button type="button" class="nc-link" data-ab="update">jetzt aktualisieren</button>' : '✔ Du hast die neueste Version.') : '') + ' <button type="button" class="nc-link" data-ab="check">Nach Updates suchen</button></p></div></div>'
+            + '<p class="small">' + (up ? (up.available ? '⬆ Version <b>' + esc(up.version) + '</b> ist verfügbar' : '✔ Du hast die neueste Version.') + (up.checked ? ' <span class="muted">· zuletzt geprüft ' + esc(UI.ago(up.checked)) + '</span>' : '') : '') + '</p></div>'
+            + '<div class="ab-upd" id="updBox"></div></div>'
             + '<div class="nc-grid ab-grid">'
             + '<div class="nc-card ab-log"><h4>📝 Was ist neu</h4>' + d.changelog.map((c, i) => '<section class="ab-v"><h3><span class="ab-tag' + (i === 0 ? ' now' : '') + '">' + esc(c.version) + (c.version === d.version ? ' · installiert' : '') + '</span> ' + esc(c.title) + '</h3><div class="ab-body fmt" data-no-i18n>' + md(c.body) + '</div></section>').join('')
             + (d.total > d.changelog.length ? '<button type="button" class="btn btn-sm" data-ab="more">Ältere Versionen anzeigen (' + (d.total - d.changelog.length) + ')</button>' : '')
@@ -38,6 +39,7 @@
             + '<li><b>Open-Meteo</b> – Wetterdaten</li><li><b>OpenVR</b> (Valve) – SteamVR-Overlay</li><li><b>DeepL</b>, <b>Google</b>, <b>Azure</b>, <b>ElevenLabs</b>, <b>OpenAI</b>, <b>Pulsoid</b>, <b>decapi.me</b> – optionale Dienste</li>'
             + '<li>Ideen aus der Community: VRCX, MagicChatbox, TTS Voice Wizard – jeweils eigene Umsetzung</li></ul></div>'
             + '</div>';
+        window.dispatchEvent(new Event('nexus-about'));   // Update-Knopf/-Hinweis rechts im Kopf füllen
     }
     function load() { return UI.api('about', { n }).then(render).catch(e => { const b = document.getElementById('aboutBox'); if (b) b.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; }); }
     document.addEventListener('click', e => {

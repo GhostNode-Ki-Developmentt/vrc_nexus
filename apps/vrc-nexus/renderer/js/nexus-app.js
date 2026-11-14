@@ -673,13 +673,13 @@
             + (setTab === 'link' && !MOBILE ? '<div class="set-sec"><h3>☁ Cloud-Sicherung ins Dashboard</h3><div id="bkBox"><div class="vx-loading">…</div></div></div>' : '')
             + (setTab === 'int' && !MOBILE ? obsHtml(d.settings) : '')
             + (setTab === 'vr' && !MOBILE ? '<div class="set-sec"><h3>🎮 VRChat-Logs &amp; OSC-Verbindung</h3><div id="setGameCfg"><div class="vx-loading">Lade …</div></div></div>' : '')
-            + (setTab === 'about' ? '<div class="set-sec" id="updSec"><h3>Version &amp; Updates</h3><div id="updBox"><div class="vx-loading">…</div></div></div><div class="set-sec"><div id="aboutBox"><div class="vx-loading">Lade …</div></div></div>' : '')
+            + (setTab === 'about' ? '<div class="set-sec"><div id="aboutBox"><div class="vx-loading">Lade …</div></div></div>' : '')
             + (setTab === 'system' ? '<div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
             + (MOBILE ? (['adv', 'link'].includes(setTab) ? extra : '') : extra) + '<p class="vx-small">Änderungen werden sofort gespeichert.</p></div>';
         if (setTab === 'tr' && window.NexusTr) window.NexusTr.panel($('#trPanel'));
         if (setTab === 'link') { linkPanel(); if (!MOBILE) backupPanel(); }
         if (setTab === 'system') dbPanel();
-        if (setTab === 'about') { updatePanel(); if (window.NexusAbout) window.NexusAbout.open(); }
+        if (setTab === 'about' && window.NexusAbout) window.NexusAbout.open();
         if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
     }
     // Datenbank: Größe, Einträge je Bereich, ältester Eintrag, Aufbewahrung, jetzt aufräumen
@@ -1004,6 +1004,11 @@
     }
     function updateHtml(d, full) {
         const plat = d.platform === 'android' ? 'Android' : 'Windows';
+        const box = $('#updBox');
+        if (box && box.classList.contains('ab-upd'))   // kompakt im Kopf von „Über“: nur Update-Hinweis + Knopf
+            return (d.available ? '<div class="upd-new"><b>⬆ Version ' + esc(d.version) + ' ist verfügbar</b>' + (d.published ? ' <span class="vx-small">vom ' + esc(UI.isoDT(d.published)) + '</span>' : '') + progHtml(d)
+                + '<div class="nx-row"><button type="button" class="btn btn-gold" data-upd="install"' + (d.busy ? ' disabled' : '') + '>' + (d.busy ? '⏳ läuft …' : d.platform === 'android' ? '⬇ Update laden & installieren' : '⬆ Jetzt aktualisieren') + '</button></div></div>' : '')
+                + '<button type="button" class="btn btn-sm" data-upd="check"' + (d.busy ? ' disabled' : '') + '>🔎 Nach Updates suchen</button>';
         return '<div class="set-row"><div><b>Installiert</b><div class="nx-hint">' + plat + (d.checked ? ' · zuletzt geprüft ' + UI.ago(d.checked) : '') + '</div></div><div>VRC Nexus <b>' + esc(d.current) + '</b></div></div>'
             + (d.available ? '<div class="upd-new"><b>⬆ Version ' + esc(d.version) + ' ist verfügbar</b>' + (d.published ? ' <span class="vx-small">vom ' + esc(UI.isoDT(d.published)) + '</span>' : '')
                 + (full && d.notes ? '<details><summary class="vx-small">Was ist neu?</summary><div class="vx-small upd-notes">' + md(d.notes) + '</div></details>' : '')
@@ -1013,6 +1018,7 @@
                 : '<p class="vx-small">' + (d.version ? '✔ Das ist die neueste Version.' : 'Noch nicht geprüft.') + '</p>')
             + '<div class="nx-row"><button type="button" class="btn btn-sm" data-upd="check"' + (d.busy ? ' disabled' : '') + '>🔎 Nach Updates suchen</button></div>';
     }
+    window.addEventListener('nexus-about', () => updatePanel());
     function updatePanel() {
         const box = $('#updBox');
         if (!box) return;

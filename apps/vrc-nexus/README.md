@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.2 – Über-Reiter aufgeräumt
+
+- Einstellungen → ℹ️ Über aufgeräumt: der doppelte Block „Version & Updates“ ist weg. Version, Plattform, „zuletzt geprüft“ und der Status stehen jetzt im Kopf neben dem Logo, **„Nach Updates suchen“** (bzw. „Jetzt aktualisieren“, wenn eins da ist) sitzt rechts daneben.
+
 ### Neu in 2.8.1 – SteamVR-HUD mit Infos & Untertiteln
 
 - **SteamVR-HUD (Infos & Untertitel)**: zweites, nicht bedienbares Fenster in SteamVR – wahlweise **neben dem Arm-Fenster** oder **unten im Blickfeld** wie Untertitel (Einstellungen → VR → „SteamVR-HUD“).
