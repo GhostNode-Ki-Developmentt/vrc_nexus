@@ -20,6 +20,13 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.1 – SteamVR-HUD mit Infos & Untertiteln
+
+- **SteamVR-HUD (Infos & Untertitel)**: zweites, nicht bedienbares Fenster in SteamVR – wahlweise **neben dem Arm-Fenster** oder **unten im Blickfeld** wie Untertitel (Einstellungen → VR → „SteamVR-HUD“).
+  - Zeigt die letzten Untertitel: deine eigene Sprache (Mikro) und den Übersetzer „VRChat → Text“ mit Flagge und „EN → DE“, Original optional klein darunter.
+  - Dazu wählbare Infos: Uhrzeit, Welt, Spielerzahl, Spielzeit, Musik, Freunde online, Avatar, Region.
+  - Breite und Deckkraft einstellbar; läuft zusammen mit dem SteamVR-Overlay.
+
 ### Neu in 2.8.0 – Übersetzer „VRChat → Text“, Sprachbefehle, Sprache automatisch
 
 - **🈯 Übersetzer „VRChat → Text“** (Spiel & OSC → Übersetzer): hört den Spielton mit (Windows-Systemton), erkennt lokal mit whisper.cpp, was andere sagen, und zeigt es **übersetzt als Live-Untertitel** – z. B. Englisch → Deutsch.

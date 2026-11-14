@@ -12,12 +12,15 @@ const fs = require('fs');
 const path = require('path');
 
 const W = 1024, H = 640;
+const HW = 768, HH = 320;   // HUD (Infos & Untertitel)
 
 class VrOverlay {
     constructor(opts) {
         this.exe = opts.exe;             // Pfad zu NexusOverlay.exe
         this.icon = opts.icon;           // Vorschaubild für den Dashboard-Reiter
         this.url = opts.url;             // app://nexus/overlay.html
+        this.hudUrl = opts.hudUrl || '';  // app://nexus/hud.html
+        this.hudWin = null;
         this.notify = opts.notify || (() => {});
         this.cfg = {};
         this.proc = null;
@@ -44,7 +47,7 @@ class VrOverlay {
         const check = () => this.steamVrRunning().then(on => { if (on && !this.proc) this.start(); if (!on && this.proc) this.stop(); if (!on) this.status = 'wartet auf SteamVR'; });
         check();
         this.watch = setInterval(check, 15000);
-        if (this.proc) this.sendLayout();
+        if (this.proc) { this.sendLayout(); this.syncHud(); }
         if (this.win) this.win.webContents.setFrameRate(Math.max(1, Math.min(30, Number(s['vr.overlay_fps']) || 10)));
     }
     steamVrRunning() {
@@ -87,7 +90,33 @@ class VrOverlay {
         this.win.webContents.on('paint', (e, dirty, image) => this.frame(image));
         this.win.loadURL(this.url);
     }
-    closeWindow() { if (this.win) { try { this.win.destroy(); } catch (e) { /* egal */ } this.win = null; } }
+    closeWindow() { if (this.win) { try { this.win.destroy(); } catch (e) { /* egal */ } this.win = null; } this.closeHud(); }
+    // ---------- HUD: zweites, nicht bedienbares Fenster (Infos & Untertitel) ----------
+    syncHud() {
+        const on = !!this.cfg['vr.overlay_hud'] && !!this.proc && !!this.hudUrl;
+        if (on && !this.hudWin) {
+            this.hudWin = new BrowserWindow({ width: HW, height: HH, show: false, frame: false, transparent: true, useContentSize: true,
+                webPreferences: { offscreen: true, contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false } });
+            this.hudWin.webContents.setFrameRate(4);
+            this.hudWin.webContents.on('paint', (e, dirty, image) => this.hudFrame(image));
+            this.hudWin.loadURL(this.hudUrl);
+        }
+        if (!on && this.hudWin) this.closeHud();
+        const s = this.cfg;
+        this.cmd({ cmd: 'info', show: on ? 1 : 0, place: s['vr.overlay_hud_place'] || 'wrist', hand: s['vr.overlay_hand'] || 'left', width: (Number(s['vr.overlay_hud_width']) || 28) / 100, alpha: (Number(s['vr.overlay_hud_alpha']) || 90) / 100 });
+    }
+    closeHud() { if (this.hudWin) { try { this.hudWin.destroy(); } catch (e) { /* egal */ } this.hudWin = null; } }
+    /** HUD-Bild: Typ 3, sonst wie frame() – höchstens 4× pro Sekunde */
+    hudFrame(image) {
+        if (!this.proc || Date.now() - (this.lastHud || 0) < 250) return;
+        this.lastHud = Date.now();
+        const { width, height } = image.getSize();
+        const px = image.toBitmap();
+        if (!width || px.length !== width * height * 4 || this.proc.stdin.writableLength > 8 * 1024 * 1024) return;
+        const head = Buffer.alloc(13);
+        head[0] = 3; head.writeUInt32LE(px.length + 8, 1); head.writeUInt32LE(width, 5); head.writeUInt32LE(height, 9);
+        this.proc.stdin.write(head); this.proc.stdin.write(px);
+    }
 
     /** Bild an den Helfer: [1][Länge][Breite][Höhe][BGRA …] – höchstens so oft wie eingestellt */
     frame(image) {
@@ -130,6 +159,7 @@ class VrOverlay {
                 this.status = 'läuft';
                 this.failures = 0;
                 this.sendLayout();
+                this.syncHud();
                 if (this.cfg['vr.overlay_show'] !== false && (this.cfg['vr.overlay_mode'] || 'wrist') !== 'off') this.cmd({ cmd: 'show' });
                 if (wc) wc.invalidate();
                 break;

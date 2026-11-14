@@ -117,7 +117,7 @@ const host = {
     overlayState: () => (vr ? vr.state() : null),
     overlayToggle: async on => { if (!vr) throw new Error('Overlay nicht verfügbar.'); return vr.toggle(on); },
     applySettings: (changed, s) => {
-        if (vr && (changed.includes('*') || changed.some(k => k.startsWith('vr.overlay')))) vr.apply(s);
+        if (vr && (changed.includes('*') || changed.some(k => k.startsWith('vr.overlay')))) vr.apply(s);   // inkl. vr.overlay_hud*
         prefs = { 'sys.hw_accel': s['sys.hw_accel'], 'sys.close_to_tray': s['sys.close_to_tray'], 'sys.start_minimized': s['sys.start_minimized'], 'adv.devtools': s['adv.devtools'] };
         try { fs.writeFileSync(PREFS_FILE, JSON.stringify(prefs)); } catch (e) { /* egal */ }
         if (tray && changed.includes('sys.autostart')) tray.setContextMenu(trayMenu());
@@ -193,7 +193,7 @@ app.whenReady().then(async () => {
     const ovIcon = path.join(app.getPath('userData'), 'overlay-icon.png');
     try { fs.writeFileSync(ovIcon, fs.readFileSync(path.join(RENDERER, 'icon.png'))); } catch (e) { /* egal */ }
     vr = new VrOverlay({ exe: app.isPackaged ? path.join(process.resourcesPath, 'overlay', 'NexusOverlay.exe') : path.join(__dirname, 'overlay', 'bin', 'Release', 'net48', 'NexusOverlay.exe'),
-        icon: ovIcon, url: 'app://nexus/overlay.html', notify });
+        icon: ovIcon, url: 'app://nexus/overlay.html', hudUrl: 'app://nexus/hud.html', notify });
     vr.apply(nexus.settings.all());
     protocol.handle('app', async request => {
         const url = new URL(request.url);

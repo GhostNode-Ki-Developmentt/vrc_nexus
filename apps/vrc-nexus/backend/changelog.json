@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.8.1",
+  "title": "SteamVR-HUD mit Infos & Untertiteln",
+  "body": "- **SteamVR-HUD (Infos & Untertitel)**: zweites, nicht bedienbares Fenster in SteamVR – wahlweise **neben dem Arm-Fenster** oder **unten im Blickfeld** wie Untertitel (Einstellungen → VR → „SteamVR-HUD“).\n  - Zeigt die letzten Untertitel: deine eigene Sprache (Mikro) und den Übersetzer „VRChat → Text“ mit Flagge und „EN → DE“, Original optional klein darunter.\n  - Dazu wählbare Infos: Uhrzeit, Welt, Spielerzahl, Spielzeit, Musik, Freunde online, Avatar, Region.\n  - Breite und Deckkraft einstellbar; läuft zusammen mit dem SteamVR-Overlay."
+ },
+ {
   "version": "2.8.0",
   "title": "Übersetzer „VRChat → Text“, Sprachbefehle, Sprache automatisch",
   "body": "- **🈯 Übersetzer „VRChat → Text“** (Spiel & OSC → Übersetzer): hört den Spielton mit (Windows-Systemton), erkennt lokal mit whisper.cpp, was andere sagen, und zeigt es **übersetzt als Live-Untertitel** – z. B. Englisch → Deutsch.\n  - **Sprache automatisch erkennen** ist Standard: pro Satz neu, auch wenn mehrere Leute verschiedene Sprachen sprechen. Am Untertitel steht Flagge + Kürzel, z. B. „🇬🇧 EN → DE“.\n  - Gesprochene Sprache auch fest wählbar (36 Sprachen), Zielsprache frei (alle DeepL/Google-Sprachen, Standard = App-Sprache).\n  - Sätze in der Zielsprache werden nicht übersetzt, unsichere Erkennung wird mit „?“ markiert (Mindest-Sicherheit einstellbar), Sprachen lassen sich ignorieren, Original optional klein darunter.\n  - Whisper-Modell getrennt wählbar (kleines Modell empfohlen – läuft dauerhaft). Der Ton bleibt auf dem PC, nur der erkannte Text geht zum Übersetzen an DeepL/Google.\n- **Spracheingabe → Chatbox**: Sprache jetzt standardmäßig **automatisch erkannt**; schon in der Zielsprache gesprochen → keine Übersetzung. Im Verlauf steht die erkannte Sprache als Flagge.\n- **⚡ Sprachbefehle** (Spiel & OSC → Sprache): Satz sagen → Avatar-Parameter (Bool an/aus/umschalten, Int, Float) per OSC. Liste mit Testknopf, Import/Export (JSON), optional Löschen per Doppelklick + „Alle löschen“, einstellbar ob dann nichts in die Chatbox geht."

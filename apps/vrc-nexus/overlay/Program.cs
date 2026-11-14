@@ -2,6 +2,7 @@
 // Wird von der Electron-App gestartet. Protokoll:
 //   stdin  (binär): [1 Byte Typ][uint32 Länge LE][Daten]
 //                   Typ 1 = Bild: uint32 Breite, uint32 Höhe, Pixel BGRA (von Electron)  → SetOverlayRaw (RGBA)
+//                   Typ 3 = Bild für das HUD (Infos & Untertitel), gleiches Format wie Typ 1
 //                   Typ 2 = Befehl als JSON-Text, z. B. {"cmd":"show"} {"cmd":"hide"} {"cmd":"toggle"} {"cmd":"mode","mode":"wrist","hand":"left","width":0.28,"alpha":0.95}
 //   stdout (Text):  eine JSON-Zeile pro Ereignis: ready, error, mouse (move/down/up, x, y in Pixeln), scroll, visible, quit
 using System;
@@ -18,6 +19,8 @@ namespace NexusOverlay
     {
         static readonly object Lock = new object();
         static byte[] frame; static uint fw, fh; static bool frameNew;
+        static byte[] infoFrame; static uint iw, ih; static bool infoNew;
+        static ulong info; static bool infoOn; static string infoPlace = "wrist"; static float infoWidth = 0.28f, infoAlpha = 0.9f;
         static string pendingCmd;
         static ulong dash, thumb, hud;
         static bool hudVisible;
@@ -42,6 +45,8 @@ namespace NexusOverlay
             var ov = OpenVR.Overlay;
             if (ov.CreateDashboardOverlay("de.ghostnode.vrcnexus.dash", "VRC Nexus", ref dash, ref thumb) != EVROverlayError.None) { Out("{\"ev\":\"error\",\"msg\":\"Dashboard-Overlay konnte nicht angelegt werden (läuft VRC Nexus doppelt?)\"}"); return 3; }
             ov.CreateOverlay("de.ghostnode.vrcnexus.hud", "VRC Nexus (Handgelenk)", ref hud);
+            ov.CreateOverlay("de.ghostnode.vrcnexus.info", "VRC Nexus (Infos & Untertitel)", ref info);
+            ov.SetOverlaySortOrder(info, 9);
             if (icon != "" && File.Exists(icon)) ov.SetOverlayFromFile(thumb, icon);
             foreach (var h in new[] { dash, hud })
             {
@@ -63,14 +68,16 @@ namespace NexusOverlay
             uint evSize = (uint)Marshal.SizeOf(typeof(VREvent_t));
             while (running)
             {
-                byte[] f = null; uint w = 0, hgt = 0; string cmd = null;
+                byte[] f = null, fi = null; uint w = 0, hgt = 0, wi = 0, hi = 0; string cmd = null;
                 lock (Lock)
                 {
                     if (frameNew) { f = frame; w = fw; hgt = fh; frameNew = false; }
+                    if (infoNew) { fi = infoFrame; wi = iw; hi = ih; infoNew = false; }
                     cmd = pendingCmd; pendingCmd = null;
                 }
                 if (cmd != null) foreach (var c in cmd.Split('\n')) if (c.Trim() != "") Command(c);
                 if (f != null) Upload(f, w, hgt);
+                if (fi != null && infoOn) UploadInfo(fi, wi, hi);
                 foreach (var h in new[] { dash, hud })
                     while (ov.PollNextOverlayEvent(h, ref ev, evSize)) HandleEvent(ev);
                 while (OpenVR.System.PollNextEvent(ref ev, evSize))
@@ -174,6 +181,37 @@ namespace NexusOverlay
             finally { handle.Free(); }
         }
 
+        static void UploadInfo(byte[] bgra, uint w, uint h)
+        {
+            for (int i = 0; i + 3 < bgra.Length; i += 4) { byte b = bgra[i]; bgra[i] = bgra[i + 2]; bgra[i + 2] = b; }
+            var handle = GCHandle.Alloc(bgra, GCHandleType.Pinned);
+            try { OpenVR.Overlay.SetOverlayRaw(info, handle.AddrOfPinnedObject(), w, h, 4); }
+            finally { handle.Free(); }
+        }
+        // HUD: neben dem Arm-Fenster (gleiche Hand, weiter Richtung Ellbogen) oder unten im Blickfeld (am Kopf)
+        static void ApplyInfo()
+        {
+            var ov = OpenVR.Overlay;
+            if (!infoOn) { ov.HideOverlay(info); return; }
+            ov.SetOverlayWidthInMeters(info, Math.Max(0.1f, Math.Min(1.5f, infoWidth)));
+            ov.SetOverlayAlpha(info, Math.Max(0.1f, Math.Min(1f, infoAlpha)));
+            if (infoPlace == "head")
+            {
+                var m = M(1, 0, 0, 0, 0, 1, 0, -0.32f, 0, 0, 1, -1.1f);
+                ov.SetOverlayTransformTrackedDeviceRelative(info, 0, ref m);
+            }
+            else
+            {
+                uint dev = OpenVR.System.GetTrackedDeviceIndexForControllerRole(hand == "right" ? ETrackedControllerRole.RightHand : ETrackedControllerRole.LeftHand);
+                if (dev == OpenVR.k_unTrackedDeviceIndexInvalid) dev = 0;
+                double a = -60 * Math.PI / 180; float c = (float)Math.Cos(a), s = (float)Math.Sin(a);
+                float side = hand == "right" ? -0.02f : 0.02f;
+                var m = M(1, 0, 0, side, 0, c, -s, 0.08f, 0, s, c, 0.27f);
+                ov.SetOverlayTransformTrackedDeviceRelative(info, dev, ref m);
+            }
+            ov.ShowOverlay(info);
+        }
+
         static void SetMouseScale(uint w, uint h)
         {
             curW = w; curH = h;
@@ -194,6 +232,7 @@ namespace NexusOverlay
                 mode = Str(json, "mode") ?? mode;
                 hand = Str(json, "hand") ?? hand;
                 width = Num(json, "width") ?? width;
+                if (infoOn) ApplyInfo();
                 alpha = Num(json, "alpha") ?? alpha;
                 distance = Num(json, "distance") ?? distance;
                 var g = Num(json, "gaze");
@@ -203,6 +242,16 @@ namespace NexusOverlay
             else if (cmd == "show" || (cmd == "toggle" && !hudVisible)) { hudVisible = mode != "off"; ApplyLayout(); if (hudVisible) ov.ShowOverlay(hud); }
             else if (cmd == "hide" || cmd == "toggle") { hudVisible = false; ov.HideOverlay(hud); }
             else if (cmd == "quit") running = false;
+            else if (cmd == "info")
+            {
+                var on = Num(json, "show"); if (on.HasValue) infoOn = on.Value > 0;
+                infoPlace = Str(json, "place") ?? infoPlace;
+                hand = Str(json, "hand") ?? hand;
+                infoWidth = Num(json, "width") ?? infoWidth;
+                infoAlpha = Num(json, "alpha") ?? infoAlpha;
+                ApplyInfo();
+                return;
+            }
             Out("{\"ev\":\"visible\",\"v\":" + (hudVisible ? "true" : "false") + ",\"mode\":" + Q(mode) + "}");
         }
 
@@ -261,6 +310,14 @@ namespace NexusOverlay
                         var px = new byte[len - 8];
                         Buffer.BlockCopy(data, 8, px, 0, px.Length);
                         lock (Lock) { frame = px; fw = w; fh = h; frameNew = true; }
+                    }
+                    else if (head[0] == 3 && len >= 8)
+                    {
+                        uint w = BitConverter.ToUInt32(data, 0), h = BitConverter.ToUInt32(data, 4);
+                        if (w * h * 4 != len - 8) continue;
+                        var px = new byte[len - 8];
+                        Buffer.BlockCopy(data, 8, px, 0, px.Length);
+                        lock (Lock) { infoFrame = px; iw = w; ih = h; infoNew = true; }
                     }
                     else if (head[0] == 2)
                     {

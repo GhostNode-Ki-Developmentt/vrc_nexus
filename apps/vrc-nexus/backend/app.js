@@ -163,6 +163,7 @@ class NexusApp {
             if (act === 'media_status') return this.media ? this.media.status() : { available: false };
             if (act === 'media_ctl') { if (!this.media) throw new UserError('Nur in der Windows-App.'); return this.media.control(str(input.cmd), str(input.id)); }
             if (act.startsWith('auto_')) return await this.auto.action(act, input);
+            if (act === 'hud_state') return this.hudState();
             if (act.startsWith('subs_')) { if (!this.subs) throw new UserError('Übersetzer gibt es nur in der Windows-App.'); return await this.subs.action(act, input); }
             if (act.startsWith('speech_')) { if (!this.speech) throw new UserError('Spracheingabe gibt es nur in der Windows-App.'); return await this.speech.action(act, input); }
             if (act === 'overlay_act') return await this.tools.apiAction(str(input.action), input);
@@ -239,6 +240,19 @@ class NexusApp {
         if (!mime) throw new UserError('Bitte ein Bild (PNG, JPG, GIF oder WebP) wählen.');
         this.db.setSetting('ui_bg_file', 'data:' + mime + ';base64,' + b.toString('base64'));
         return Object.assign(this.settings.save({ 'ui.bg_image': 'local:' + Date.now() }), { msg: 'Hintergrundbild gesetzt.' });
+    }
+
+    /** Inhalt für das SteamVR-HUD: gewählte Infos + die letzten Untertitel */
+    hudState() {
+        const s = this.settings.all(), v = this.game.values();
+        let fr = 0; try { fr = this.vrc.friendList().filter(f => f.state === 'online').length; } catch (e) { /* ohne Konto */ }
+        const ALL = { zeit: ['🕒', v.zeit, ''], welt: ['🌐', v.welt, ''], spieler: ['👥', v.spieler, 'Spieler'], dauer: ['⏱', v.dauer, ''], musik: ['🎵', v.musik || '', ''],
+            freunde: ['🟢', String(fr), 'Freunde online'], avatar: ['🎭', v.avatar, ''], region: ['📍', v.region, ''] };
+        const items = str(s['vr.overlay_hud_items']).split(/[\s,;]+/).filter(k => ALL[k] && ALL[k][1] && ALL[k][1] !== '–').map(k => ({ key: k, icon: ALL[k][0], value: cut(ALL[k][1], 60), label: ALL[k][2] }));
+        const subs = this.subs, now = Date.now();
+        const lines = s['vr.overlay_hud_subs'] !== false && subs ? subs.recent().filter(l => now - l.t < 30000).slice(-3) : [];
+        const c = subs ? subs.cfg() : {};
+        return { items, lines, target: subs ? subs.target(c) : 'DE', show_orig: !!c.show_orig };
     }
 
     async toolsExport(kind) {

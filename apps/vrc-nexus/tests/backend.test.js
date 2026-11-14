@@ -1212,6 +1212,11 @@ test('2.8.0: Sprache automatisch erkennen (whisper-Ausgabe), Sprachbefehle → O
     assert.ok(r.line.unsure && !r.line.tr, 'unsicher → nicht übersetzen, markieren');
     app.settings.save({ 'ui.lang': 'en' });
     assert.strictEqual(app.subs.target(app.subs.cfg()), 'EN-GB', 'Ziel folgt der App-Sprache');
+    const hud = await app.post({ act: 'hud_state' }, {});
+    assert.ok(hud.items.some(i => i.key === 'zeit') && hud.lines.length === 3 && hud.lines[2].unsure, 'HUD: Infos + letzte 3 Untertitel');
+    app.settings.save({ 'vr.overlay_hud_subs': false, 'vr.overlay_hud_items': 'freunde' });
+    const hud2 = await app.post({ act: 'hud_state' }, {});
+    assert.strictEqual(hud2.lines.length, 0); assert.deepStrictEqual(hud2.items.map(i => i.key), ['freunde']);
     const st = await app.post({ act: 'subs_state' }, {});
     assert.ok(st.lines.some(l => l.who === 'me' && l.tr === '[DE] Bonjour'), 'eigene Untertitel');
     delete process.env.NEXUS_FAKE_WHISPER;

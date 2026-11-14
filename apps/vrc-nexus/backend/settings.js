@@ -124,6 +124,12 @@ const FIELDS = [
     ['vr.overlay_fps', 'vr', 'SteamVR-Overlay', 'number', 10, 'Bilder pro Sekunde', 'Mehr = flüssiger, aber mehr CPU.', [1, 30]],
     ['vr.overlay_show', 'vr', 'SteamVR-Overlay', 'bool', false, 'Handgelenk-/Freies Fenster beim Start zeigen', 'Ein-/Ausblenden jederzeit mit dem Controller: linke obere Taste (B / Y / Menü) doppelt drücken – änderbar in SteamVR → Einstellungen → Controller → Belegung → VRC Nexus.'],
     ['vr.overlay_gaze', 'vr', 'SteamVR-Overlay', 'bool', true, 'Nur bedienbar, wenn ich draufschaue', 'Sonst ist das Fenster halb durchsichtig und der Laser geht an VRChat – so bleibt VRChat bedienbar, während das Overlay offen ist.'],
+    ['vr.overlay_hud', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'bool', false, 'Zweites Fenster mit Infos & Untertiteln', 'Nur zum Ablesen (nicht bedienbar). Läuft mit dem SteamVR-Overlay oben.'],
+    ['vr.overlay_hud_place', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'select', 'wrist', 'Platz', '', [['wrist', 'neben dem Arm-Fenster'], ['head', 'unten im Blickfeld (wie Untertitel)']]],
+    ['vr.overlay_hud_items', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'text', 'zeit,welt,spieler,dauer,musik,freunde', 'Infos', 'Kommagetrennt: zeit, welt, spieler, dauer, musik, freunde, avatar, region – leer = nur Untertitel'],
+    ['vr.overlay_hud_subs', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'bool', true, 'Untertitel zeigen', 'Eigene Sprache und der Übersetzer „VRChat → Text“ (Spiel & OSC → Übersetzer).'],
+    ['vr.overlay_hud_width', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'number', 28, 'Breite (cm)', '', [10, 150]],
+    ['vr.overlay_hud_alpha', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'number', 90, 'Deckkraft (%)', '', [10, 100]],
     ['vr.overlay_phrases', 'vr', 'SteamVR-Overlay', 'textarea', 'Hallo!\nWie geht\'s?\nBin gleich zurück\nDanke!\nGute Nacht 🌙\nKomme rüber!\nLol 😂\nAFK, kurz Trinken', 'Schnell-Sätze im Overlay (eine Zeile = ein Knopf)', ''],
     ['vr.overlay_translate', 'vr', 'SteamVR-Overlay', 'bool', false, 'Overlay-Chat übersetzen', 'Ziel wie bei der Übersetzung eingestellt.'],
     // ---------- Medien ----------
