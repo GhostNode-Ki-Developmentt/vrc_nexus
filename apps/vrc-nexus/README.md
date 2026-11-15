@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.5 – Intiface auf dem Handy: klare Hinweise
+
+- **Intiface auf dem Handy**: Die Fehlermeldung nennt jetzt genau, was am Handy eingestellt sein muss („Listen on all network interfaces“, Server neu starten, gleiches WLAN, Akku-Optimierung für Intiface aus). In der Spielzeug-Karte steht ein Hinweis dazu.
+
 ### Neu in 2.9.4 – Intiface-Verbindung: automatische Adresse & klare Fehler
 
 - **Intiface verbinden – bessere Erkennung**: Antwortet die eingetragene Netzwerk-IP nicht, Intiface aber unter `127.0.0.1`, stellt VRC Nexus die Adresse **automatisch** um (Intiface hört von Haus aus nur auf dem eigenen PC).

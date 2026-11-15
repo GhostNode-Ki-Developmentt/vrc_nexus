@@ -94,7 +94,7 @@ class Toys {
         if (!open) {
             this.state = 'getrennt';
             this.error = local ? 'Auf Port ' + port + ' läuft nichts – in Intiface Central „Start Server“ drücken und den Port prüfen (Einstellungen → Server Port).'
-                : 'Unter ' + u.hostname + ':' + port + ' läuft nichts. Läuft Intiface auf diesem PC, ws://127.0.0.1:' + port + ' nehmen; auf einem anderen PC dort „Listen on all network interfaces“ einschalten und die Firewall freigeben.';
+                : 'Unter ' + u.hostname + ':' + port + ' antwortet nichts. Läuft Intiface auf dem Handy oder einem anderen PC: dort in Intiface unter Settings → Server „Listen on all network interfaces“ einschalten, Server neu starten, gleiches WLAN, Handy wach lassen (Akku-Optimierung für Intiface aus). Läuft es auf diesem PC: ws://127.0.0.1:' + port + ' nehmen.';
             throw new UserError(this.error);
         }
         return new Promise((resolve, reject) => {

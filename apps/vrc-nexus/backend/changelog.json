@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.9.5",
+  "title": "Intiface auf dem Handy: klare Hinweise",
+  "body": "- **Intiface auf dem Handy**: Die Fehlermeldung nennt jetzt genau, was am Handy eingestellt sein muss („Listen on all network interfaces“, Server neu starten, gleiches WLAN, Akku-Optimierung für Intiface aus). In der Spielzeug-Karte steht ein Hinweis dazu."
+ },
+ {
   "version": "2.9.4",
   "title": "Intiface-Verbindung: automatische Adresse & klare Fehler",
   "body": "- **Intiface verbinden – bessere Erkennung**: Antwortet die eingetragene Netzwerk-IP nicht, Intiface aber unter `127.0.0.1`, stellt VRC Nexus die Adresse **automatisch** um (Intiface hört von Haus aus nur auf dem eigenen PC).\n- **Klare Fehlermeldungen** statt „nicht erreichbar“: „auf dem Port läuft nichts → Start Server drücken“, „andere IP → Listen on all network interfaces / Firewall“ oder „Intiface lehnt ab → **schon ein anderes Programm verbunden** (z. B. VRCFury Haptics, OscGoesBrrr) – Intiface erlaubt nur eine Verbindung“."
