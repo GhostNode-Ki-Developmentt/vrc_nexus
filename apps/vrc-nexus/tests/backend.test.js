@@ -1288,6 +1288,91 @@ test('2.8.7: Stream-Deck-Plugin – Version melden und Update starten', async ()
     app.tools.stop();
 });
 
+test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-Werkzeuge, Intiface + OGB, Handy-Fernbedienung', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const OWNER = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', FRIEND = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444', OTHER = 'usr_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWNER);
+    const mk = async uid => {
+        const db = await openDatabase(null);
+        const app = new NexusApp({ db, crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-290-')) } });
+        app.game.osc.stopListen();
+        app.vrc.account = () => (uid ? { vrc_id: uid, me: { currentAvatar: '' } } : null);
+        return app;
+    };
+    const own = await mk(OWNER), fr = await mk(FRIEND), ot = await mk(OTHER);
+    // Besitzer
+    let st = await own.post({ act: 'nsfw_state' }, {});
+    assert.ok(st.access.owner && st.access.unlocked);
+    assert.strictEqual((await fr.post({ act: 'nsfw_state' }, {})).access.unlocked, false);
+    await assert.rejects(fr.post({ act: 'nsfw_admin_keypair' }, {}), /Besitzer/);
+    await assert.rejects(fr.post({ act: 'backup_status' }, {}), /Besitzer/, 'Dashboard/Cloud nur für den Besitzer');
+    const kp = await own.post({ act: 'nsfw_admin_keypair' }, {});
+    assert.ok(kp.pub && kp.owner_key === kp.pub);
+    const iss = await own.post({ act: 'nsfw_admin_issue', uid: 'https://vrchat.com/home/user/' + FRIEND, name: 'Foxy', days: '30', features: 'nsfw,toys,remote' }, {});
+    assert.ok(/^NXK1\./.test(iss.token) && iss.items[0].uid === FRIEND);
+    // andere Apps kennen den öffentlichen Schlüssel (kommt in TRUSTED)
+    fr.nsfw.trusted.push(kp.pub); ot.nsfw.trusted.push(kp.pub);
+    await assert.rejects(ot.post({ act: 'nsfw_unlock', token: iss.token }, {}), /anderen VRChat-Konto/, 'weitergeben bringt nichts');
+    const forged = iss.token.replace(/\.([\w-]+)\./, (m, b) => '.' + Buffer.from(JSON.stringify(Object.assign(JSON.parse(Buffer.from(b.replace(/-/g, '+').replace(/_/g, '/'), 'base64')), { uid: OTHER }))).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') + '.');
+    await assert.rejects(ot.post({ act: 'nsfw_unlock', token: forged }, {}), /Unterschrift/, 'umschreiben geht nicht');
+    await assert.rejects(fr.post({ act: 'nsfw_panic' }, {}), /Nicht freigeschaltet/);
+    st = await fr.post({ act: 'nsfw_unlock', token: iss.token }, {});
+    assert.ok(st.access.unlocked && st.access.features.includes('toys'));
+    // Werkzeuge
+    const A1 = 'avtr_' + '1'.repeat(8) + '-1111-2222-3333-444444444444', A2 = 'avtr_' + '2'.repeat(8) + '-1111-2222-3333-444444444444', SAFE = 'avtr_' + '3'.repeat(8) + '-1111-2222-3333-444444444444';
+    const sel = []; fr.tools.call = async (m, p) => { if (/select$/.test(p)) sel.push(p.split('/')[2]); return {}; };
+    const chat = []; fr.game.osc.chatbox = async t => { chat.push(t); };
+    await fr.post({ act: 'nsfw_cfg', safe_avatar: SAFE, pairs: JSON.stringify([{ name: 'Fuchs', sfw: A1, nsfw: A2 }, { name: 'kaputt', sfw: 'x', nsfw: A2 }]), yes: 'Kuscheln', no: 'Fotos' }, {});
+    assert.strictEqual(fr.nsfw.cfg().pairs.length, 1);
+    let r = await fr.post({ act: 'nsfw_avatar', i: '0' }, {}); assert.ok(r.nsfw && sel.pop() === A2);
+    r = await fr.post({ act: 'nsfw_avatar', i: '0' }, {}); assert.ok(!r.nsfw && sel.pop() === A1);
+    r = await fr.post({ act: 'nsfw_boundaries' }, {}); assert.ok(/🟢 Kuscheln/.test(chat.pop()) && /🔴 Fotos/.test(r.text));
+    // Intiface (nachgebaut) + OGB
+    const sent = [];
+    class FakeWS { constructor() { this.readyState = 0; setTimeout(() => { this.readyState = 1; this.onopen(); }, 5); }
+        send(t) { const m = JSON.parse(t)[0], k = Object.keys(m)[0], id = m[k].Id; sent.push(m);
+            const reply = k === 'RequestServerInfo' ? { ServerInfo: { Id: id, ServerName: 'Fake Intiface', MaxPingTime: 0 } }
+                : k === 'RequestDeviceList' ? { DeviceList: { Id: id, Devices: [{ DeviceIndex: 0, DeviceName: 'Testgerät', DeviceMessages: { ScalarCmd: [{ StepCount: 20, ActuatorType: 'Vibrate' }] } }] } } : { Ok: { Id: id } };
+            setTimeout(() => this.onmessage({ data: JSON.stringify([reply]) }), 1); }
+        close() { this.readyState = 3; } }
+    fr.toys.WebSocket = FakeWS;
+    st = await fr.post({ act: 'toys_connect' }, {});
+    assert.ok(st.connected && st.devices[0].name === 'Testgerät');
+    await fr.post({ act: 'toys_set', device: '0', level: '0.5' }, {});
+    assert.strictEqual(sent.filter(m => m.ScalarCmd).pop().ScalarCmd.Scalars[0].Scalar, 0.5);
+    await fr.post({ act: 'toys_cfg', ogb: '1', ogb_self: '0', ogb_min: '0' }, {});
+    fr.toys.onOsc('/avatar/parameters/OGB/Orf/Vag/PenOthers', [0.8]); await U.sleep(150);
+    assert.strictEqual(sent.filter(m => m.ScalarCmd).pop().ScalarCmd.Scalars[0].Scalar, 0.8, 'OGB: Nähe → Stärke');
+    const n0 = sent.length; fr.toys.onOsc('/avatar/parameters/OGB/Pen/Dick/TouchSelf', [1]); await U.sleep(150);
+    assert.strictEqual(sent.length, n0, 'Self ignoriert');
+    r = await fr.post({ act: 'nsfw_panic' }, {});
+    assert.ok(fr.nsfw.private && sent.some(m => m.StopAllDevices) && sel.pop() === SAFE && /Panik/.test(r.msg));
+    assert.strictEqual(await fr.tools.rpcActivity(), null, 'Privat-Modus: kein Discord-Status');
+    // Handy-Fernbedienung (nur 127.0.0.1 im Test)
+    process.env.NEXUS_REMOTE_HOST = '127.0.0.1';
+    const port = 17000 + Math.floor(Math.random() * 2000);
+    const rs = await fr.post({ act: 'remote_cfg', on: '1', port: String(port) }, {});
+    await U.sleep(100);
+    assert.ok(rs.urls.length >= 0 && rs.token.length > 10);
+    const base = 'http://127.0.0.1:' + port;
+    assert.strictEqual((await fetch(base + '/?t=falsch')).status, 401);
+    const page = await (await fetch(base + '/?t=' + rs.token)).text();
+    assert.ok(/PANIK/.test(page));
+    const rst = await (await fetch(base + '/state?t=' + rs.token)).json();
+    assert.ok(rst.private === true && rst.pairs.length === 1 && rst.toys.connected);
+    const bad = await fetch(base + '/act?t=' + rs.token, { method: 'POST', body: JSON.stringify({ act: 'nsfw_admin_issue' }) });
+    assert.strictEqual(bad.status, 400, 'nur erlaubte Befehle');
+    const okr = await (await fetch(base + '/act?t=' + rs.token, { method: 'POST', body: JSON.stringify({ act: 'nsfw_private', on: '0' }) })).json();
+    assert.strictEqual(okr.private, false);
+    // Sperren beim Besitzer
+    const rv = await own.post({ act: 'nsfw_admin_revoke', id: iss.items[0].id }, {});
+    assert.ok(rv.items[0].revoked);
+    fr.remote.stopServer(); fr.toys.stop();
+    for (const a of [own, fr, ot]) a.tools.stop();
+    delete process.env.NEXUS_OWNER_HASH; delete process.env.NEXUS_REMOTE_HOST;
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

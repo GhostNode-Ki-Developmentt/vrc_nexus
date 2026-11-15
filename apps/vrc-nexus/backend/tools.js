@@ -392,6 +392,7 @@ class Tools {
         if (st.running && !this.wasRunning) this.onVrcStart();
         if (s['int.rpc']) await this.updateRpc();
         await this.vrcWatch().catch(e => this.debug('vrcwatch', e));
+        if (this.app.remote) { try { this.app.remote.apply(); } catch (e) { this.debug('remote', e); } }
         if (this.host.setTray && s['sys.tray_count']) {
             try { const fr = this.app.vrc.friendList(); this.host.setTray('VRC Nexus · ' + fr.filter(f => f.state === 'online').length + ' im Spiel, ' + fr.filter(f => f.state === 'active').length + ' online'); } catch (e) { /* egal */ }
         }
@@ -430,6 +431,7 @@ class Tools {
     }
     /** Discord-Status zusammenbauen (ohne Senden – testbar) */
     async rpcActivity() {
+        if (this.app.nsfw && this.app.nsfw.private) return null;   // Privat-Modus
         const s = this.settings.all();
         const st = this.app.game.state;
         if (!st.running || !st.worldId) return null;

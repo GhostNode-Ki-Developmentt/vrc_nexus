@@ -384,7 +384,7 @@ class ChatMods {
     }
     async tick() {
         const c = this.cfg();
-        if (!c.on) return;
+        if (!c.on || (this.app.nsfw && this.app.nsfw.private)) return;
         await this.refresh(c);
         if (Date.now() - this.last.send < c.seconds * 1000) return;
         if (c.only_game && !this.app.game.state.running) return;

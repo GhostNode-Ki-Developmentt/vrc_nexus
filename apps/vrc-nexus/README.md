@@ -20,6 +20,17 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.0 – ❤️ NSFW / ERP mit Freischalt-Schlüsseln, Intiface + OGB, Handy-Fernbedienung
+
+- **❤️ NSFW / ERP**: neuer Menüpunkt, der **nur mit gültigem Freischalt-Schlüssel** (bzw. für den Besitzer) erscheint. Schlüssel eintragen unter Einstellungen → Erweitert → 🔑 Freischalt-Schlüssel.
+  - **🚨 Panik-Knopf**: sicherer Avatar, Chatbox leeren & Module aus, Privat-Modus, Spielzeug stopp – einzeln wählbar.
+  - **🕶 Privat-Modus**: kein Discord-Status, keine Chatbox-Module, kein Rotator.
+  - **SFW ↔ NSFW-Avatarpaare** per Knopf umschalten, **Grenzen-Karte** (🟢 Ja / 🟡 Vielleicht / 🔴 Nein) in die Chatbox, **18+-Instanz** (Invite oder 18+-Gruppe mit Altersschranke) mit Einladung an dich.
+  - **🎮 Spielzeug über Intiface Central (Buttplug.io)**: verbinden, Geräte suchen, Stärke-Regler je Gerät, Not-Aus, Höchststärke, automatisch aus ohne Signal.
+  - **💞 OGB / SPS**: Avatar-Parameter im OscGoesBrrr-/VRCFury-Format (`…/PenOthers`, `…/TouchOthers`, `…/FrotOthers`) steuern das Spielzeug automatisch – eigene Berührungen optional; dazu eigene Regeln „Parameter → Stärke“.
+  - **📱 Handy-Fernbedienung**: kleine Seite im Heimnetz über die IP des PCs + eigenen Schlüssel (Panik, Privat-Modus, Avatar-Paare, Grenzen-Karte, Spielzeug-Regler). Eigener Port, eigener Schlüssel – die Stream-Deck-Schnittstelle bleibt nur auf diesem PC.
+- **👑 Besitzer & Admin**: Admin- und Dashboard-Funktionen (Dashboard-Verbindung, Cloud-Sicherung) gibt es nur für das Besitzer-Konto (im Code steht nur ein Hash der VRChat-ID). Der Besitzer erzeugt **Freischalt-Schlüssel** – Ed25519-unterschrieben, **fest an eine VRChat-User-ID gebunden** (weitergeben oder umschreiben geht nicht), mit Ablauf, Rechten (NSFW, Spielzeug, Handy) und Sperren-Knopf.
+
 ### Neu in 2.8.8 – Discord-Status ohne Einrichtung
 
 - **Discord-Status ohne Einrichtung**: VRC Nexus hat jetzt eine eigene Discord-Anwendung fest eingebaut – unter Einstellungen → Integrationen → Discord Rich Presence einfach einschalten, keine Client-ID mehr nötig.

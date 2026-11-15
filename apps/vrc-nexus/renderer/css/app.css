@@ -653,3 +653,21 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .ab-head .ab-upd { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: 46%; }
 .ab-head .ab-upd .upd-new { margin: 0; }
 @media (max-width: 760px) { .ab-head { flex-wrap: wrap; } .ab-head .ab-upd { margin-left: 0; align-items: flex-start; max-width: none; } }
+
+/* ---------- ❤️ NSFW / ERP ---------- */
+#tabs .ns-tab span { filter: drop-shadow(0 0 4px rgba(255, 64, 129, 0.6)); }
+.ns-title { color: #ff6b9d; }
+.ns-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0 14px; }
+.ns-panic { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; font-weight: 800; letter-spacing: 2px; padding: 12px 26px; }
+.ns-stop { background: #7f1d1d !important; color: #fff !important; width: 100%; margin: 8px 0; }
+.ns-pairs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ns-edit { margin-top: 6px; } .ns-edit textarea { width: 100%; }
+.ns-bnd { display: flex; flex-direction: column; gap: 6px; } .ns-bnd label { display: flex; flex-direction: column; gap: 2px; }
+.ns-devs { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ns-dev { display: grid; grid-template-columns: minmax(90px, 1fr) 3fr 50px; gap: 10px; align-items: center; }
+.ns-dev input[type=range] { accent-color: #ff6b9d; }
+.ns-toys, .ns-admin { grid-column: 1 / -1; }
+.ns-url { word-break: break-all; font-size: 0.78rem; flex: 1; }
+.ns-issue { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; } .ns-issue input[name=uid] { flex: 1 1 280px; }
+.ns-newtok { padding: 8px; border: 1px dashed var(--accent-gold); margin: 8px 0; }
+.ns-keys tr.ns-rev td { opacity: 0.45; text-decoration: line-through; } .ns-keys tr.ns-rev td:last-child { text-decoration: none; opacity: 1; }

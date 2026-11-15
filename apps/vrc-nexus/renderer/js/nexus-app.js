@@ -628,6 +628,13 @@
         }).catch(fail(box));
     }
     document.addEventListener('submit', e => {
+        if (e.target.id !== 'nsUnlock') return;
+        e.preventDefault();
+        api('nsfw_unlock', { token: e.target.token.value }).then(d => { toast(d.msg); e.target.reset(); const m = $('#nsUnlockMsg'); if (m) m.textContent = d.access.unlocked ? '✔ ' + (d.access.features || []).join(', ') : ''; if (window.NexusNsfw) window.NexusNsfw.refresh(); })
+            .catch(x => { toast(x.message, true); const m = $('#nsUnlockMsg'); if (m) m.textContent = '⚠ ' + x.message; });
+    });
+    document.addEventListener('click', e => { if (e.target.id === 'nsLock') api('nsfw_unlock', { token: '' }).then(d => { toast(d.msg); if (window.NexusNsfw) window.NexusNsfw.refresh(); }); });
+    document.addEventListener('submit', e => {
         const f = e.target;
         if (f.id === 'bkPass') { e.preventDefault(); run('backup_pass', { pass: f.pass.value }, d => backupPanel(d.msg)).catch(() => {}); }
         if (f.id === 'bkCfg') { e.preventDefault(); run('backup_cfg', { auto: f.auto.checked ? '1' : '', keep: f.keep.value }, () => backupPanel()).catch(() => {}); }
@@ -654,7 +661,7 @@
         const d = setData, box = $('#setBox');
         const MOBILE_HIDE = /^(upd\.mode|link\.(upload|remote)|sys\.|vr\.|media\.|int\.|social\.(players|memo)|notify\.(player_|screenshot|vrc_start)|adv\.(debug|devtools)|ui\.(wide|sticky_menu))/;
         const visible = f => !MOBILE || !MOBILE_HIDE.test(f.key);
-        const tabsShown = Object.keys(d.schema.tabs).filter(t => t === 'about' || d.schema.fields.some(f => f.tab === t && visible(f)));
+        const tabsShown = Object.keys(d.schema.tabs).filter(t => (t !== 'link' || document.body.classList.contains('is-owner')) && (t === 'about' || d.schema.fields.some(f => f.tab === t && visible(f))));
         if (!tabsShown.includes(setTab)) setTab = tabsShown[0];
         const fields = d.schema.fields.filter(f => f.tab === setTab && visible(f));
         const secs = [...new Set(fields.map(f => f.section))];
@@ -664,7 +671,9 @@
             link: '<div class="set-sec"><h3>Geräte-Token</h3><div id="linkBox"><div class="vx-loading">Lade …</div></div></div>',
             notify: '<div class="set-sec"><h3>Test</h3><button type="button" class="btn btn-sm" data-act="test">🔔 Test-Benachrichtigung (alle eingeschalteten Wege)</button></div>',
             int: '<div class="set-sec"><h3>Status</h3><p class="vx-small">Lokale Schnittstelle: ' + esc(d.status.api) + ' · Discord: ' + esc(d.status.rpc) + '</p></div>',
-            adv: '<div class="set-sec"><h3>Daten &amp; Wartung</h3><div class="nx-row"><button type="button" class="btn btn-sm" data-act="cache">🧹 Profil-Zwischenspeicher leeren</button><button type="button" class="btn btn-sm" data-act="vacuum">🗜 Datenbank optimieren</button>'
+            adv: '<div class="set-sec"><h3>🔑 Freischalt-Schlüssel</h3><p class="nx-hint">Zusätzliche Bereiche (z. B. ❤️ NSFW / ERP) – den Schlüssel bekommst du vom Besitzer. Er gilt nur für dein VRChat-Konto.</p>'
+                + '<form class="nx-row" id="nsUnlock"><input type="password" name="token" placeholder="NXK1.…" autocomplete="off" style="flex:1"><button class="btn btn-sm btn-gold">🔓 Freischalten</button><button type="button" class="btn btn-sm" id="nsLock">Entfernen</button></form><div class="nx-hint" id="nsUnlockMsg"></div></div>'
+                + '<div class="set-sec"><h3>Daten &amp; Wartung</h3><div class="nx-row"><button type="button" class="btn btn-sm" data-act="cache">🧹 Profil-Zwischenspeicher leeren</button><button type="button" class="btn btn-sm" data-act="vacuum">🗜 Datenbank optimieren</button>'
                 + '<a class="btn btn-sm" href="nexus.php?tools_export=settings">⬇ Einstellungen exportieren</a><label class="btn btn-sm">⬆ Importieren<input type="file" accept=".json" id="setImport" hidden></label>'
                 + '<button type="button" class="btn btn-sm btn-danger" data-act="reset">↺ Alles zurücksetzen</button></div></div>',
         }[setTab] || '';
