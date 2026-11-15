@@ -20,20 +20,25 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
-### Neu in 2.13.2 – Discord-Knopf in „Über die App“
+### New in 2.13.3 – English changelogs
 
-- 💬 Der Discord-Knopf sitzt jetzt in der Karte „ℹ️ Über die App“ statt oben neben der Version.
+- 🌍 **Changelogs in English:** from now on the changelog (app “About” page, GitHub releases, Discord news) is written in English, including the download table and Discord fields.
+- 🧹 Release notes no longer include the commit message.
 
-### Neu in 2.13.1 – Discord unter Über
+### New in 2.13.2 – Discord button in “About the app”
 
-- 💬 **Discord unter „Über“:** Knopf „Discord beitreten“ (discord.gg/YaktdxVr2C). Der Link lässt sich vor jedem Build über das GitHub-Secret oder die Variable `DISCORD_INVITE` ändern – ohne Code-Änderung.
-- 📣 Die Discord-News enthalten jetzt auch den Einladungslink.
+- 💬 The Discord button now sits in the “ℹ️ About the app” card instead of next to the version at the top.
 
-### Neu in 2.13.0 – Discord-News & getrennter Changelog
+### New in 2.13.1 – Discord in About
 
-- 📣 **News in Discord:** Jedes Update postet automatisch eine Nachricht mit Changelog und Download-Links in den Discord-Kanal (Webhook als GitHub-Secret `DISCORD_WEBHOOK`). Ein **extra Webhook** (`DISCORD_WEBHOOK_NSFW`) bekommt den 🔞-Teil in einen eigenen Kanal – nur bei Versionen, die einen haben.
-- 📝 **Changelog in den GitHub-Releases** (und damit auch im Update-Hinweis der App).
-- 🔞 **Getrennter NSFW-Changelog:** öffentlich (README, GitHub, Discord-News) steht dafür nur „🔞 ***“; in der App unter „Über“ erscheint der NSFW-Teil nur, wenn NSFW freigeschaltet ist.
+- 💬 **Discord in “About”:** “Join Discord” button (discord.gg/YaktdxVr2C). The link can be changed before each build via the GitHub secret or variable `DISCORD_INVITE` – no code change needed.
+- 📣 Discord news posts now include the invite link.
+
+### New in 2.13.0 – Discord news & separate changelog
+
+- 📣 **News in Discord:** every update automatically posts a message with changelog and download links to the Discord channel (webhook as GitHub secret `DISCORD_WEBHOOK`). An **extra webhook** (`DISCORD_WEBHOOK_NSFW`) receives the 🔞 part in its own channel – only for versions that have one.
+- 📝 **Changelog in the GitHub releases** (and therefore in the app’s update notice).
+- 🔞 **Separate NSFW changelog:** public places (README, GitHub, Discord news) only show “🔞 ***”; in the app under “About” the NSFW part appears only when NSFW is unlocked.
 
 ### Neu in 2.12.1 – 🔞 ***
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Baut backend/changelog.json aus den „### Neu in X.Y.Z …“-Abschnitten der README (für die Seite „Über VRC Nexus“)
+/* Baut backend/changelog.json aus den „### New in X.Y.Z …“-Abschnitten (ältere: „Neu in“) der README (für die Seite „Über VRC Nexus“)
  * und backend/changelog-nsfw.json aus backend/CHANGELOG-NSFW.md (🔞 nur in der App sichtbar, wenn freigeschaltet –
  * öffentlich steht dafür „🔞 ***“).
  * Aufruf: node scripts/changelog-build.js  (läuft auch im Test – meldet, wenn die Datei veraltet ist) */
@@ -13,7 +13,7 @@ function parse(file) {
     const out = [];
     let cur = null;
     for (const line of md) {
-        const m = /^### Neu in (\d+\.\d+\.\d+)\s*(?:[–-]\s*(.*))?$/.exec(line);
+        const m = /^### (?:Neu|New) in (\d+\.\d+\.\d+)\s*(?:[–-]\s*(.*))?$/.exec(line);
         if (m) { cur = { version: m[1], title: (m[2] || '').trim(), body: [] }; out.push(cur); continue; }
         if (cur && /^#{1,3} /.test(line)) cur = null;          // nächster Abschnitt, der kein Changelog ist
         if (cur) cur.body.push(line);

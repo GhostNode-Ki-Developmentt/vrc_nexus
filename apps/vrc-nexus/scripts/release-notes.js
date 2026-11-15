@@ -17,8 +17,8 @@ function discord(ver, url) {
     if (body.length > 3800) body = body.slice(0, 3800).replace(/\n[^\n]*$/, '') + '\n…';
     return {
         username: 'VRC Nexus', avatar_url: ICON, allowed_mentions: { parse: [] },
-        embeds: [{ title: '🚀 VRC Nexus ' + ver + (s && s.title ? ' – ' + s.title : ''), url: url || undefined, color: 0xf5c242, description: body || 'Neue Version.', thumbnail: { url: ICON },
-            fields: [{ name: '⬇️ Download', value: url ? '[Windows · Android · Stream Deck](' + url + ')' : 'GitHub-Releases' }, { name: '🔄 Update', value: 'In der App: Einstellungen → Über → Nach Updates suchen' }].concat(invite() ? [{ name: '💬 Discord', value: invite() }] : []),
+        embeds: [{ title: '🚀 VRC Nexus ' + ver + (s && s.title ? ' – ' + s.title : ''), url: url || undefined, color: 0xf5c242, description: body || 'New version.', thumbnail: { url: ICON },
+            fields: [{ name: '⬇️ Download', value: url ? '[Windows · Android · Stream Deck](' + url + ')' : 'GitHub Releases' }, { name: '🔄 Update', value: 'In the app: Settings → About → Check for updates' }].concat(invite() ? [{ name: '💬 Discord', value: invite() }] : []),
             footer: { text: 'VRC Nexus' }, timestamp: new Date().toISOString() }] };
 }
 /** 🔞 eigener Kanal: nur der NSFW-Teil der Version */
@@ -30,13 +30,13 @@ function discordNsfw(ver, url) {
     return {
         username: 'VRC Nexus After Dark', avatar_url: AD_ICON, allowed_mentions: { parse: [] },
         embeds: [{ title: '🔞 VRC Nexus After Dark · ' + ver + (s.title ? ' – ' + s.title : ''), url: url || undefined, color: 0xff6fb5, description: body, thumbnail: { url: AD_ICON }, image: process.env.NSFW_BANNER === '1' ? { url: AD_LOGO } : undefined,
-            fields: [{ name: '🔓 Freischalten', value: 'Nur mit Freischalt-Schlüssel sichtbar und nutzbar (NSFW → in der App).' }, { name: '⬇️ Download', value: url ? '[Windows · Android](' + url + ')' : 'GitHub-Releases' }],
+            fields: [{ name: '🔓 Unlock', value: 'Only visible and usable with an unlock key (NSFW section in the app).' }, { name: '⬇️ Download', value: url ? '[Windows · Android](' + url + ')' : 'GitHub Releases' }],
             footer: { text: 'VRC Nexus After Dark · 18+' }, timestamp: new Date().toISOString() }] };
 }
 if (require.main === module) {
     const ver = process.argv[2], s = section(ver);
     if (process.argv.includes('--discord-nsfw')) { const d = discordNsfw(ver, process.env.RELEASE_URL || ''); process.stdout.write(d ? JSON.stringify(d) : ''); }
     else if (process.argv.includes('--discord')) process.stdout.write(JSON.stringify(discord(ver, process.env.RELEASE_URL || '')));
-    else process.stdout.write(s ? '### Neu in ' + ver + (s.title ? ' – ' + s.title : '') + '\n\n' + s.body + '\n' : '');
+    else process.stdout.write(s ? '### New in ' + ver + (s.title ? ' – ' + s.title : '') + '\n\n' + s.body + '\n' : '');
 }
 module.exports = { section, sectionNsfw, discord, discordNsfw };

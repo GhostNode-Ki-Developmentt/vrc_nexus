@@ -1,6 +1,6 @@
-# 🔞 NSFW-Changelog
+# 🔞 NSFW changelog
 
-Wird in der App unter „Über“ nur angezeigt, wenn NSFW freigeschaltet ist. In README, GitHub-Release und Discord steht dafür „🔞 ***“.
+Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
 ### Neu in 2.12.1 – Selbsttest der Fernsteuerung
 

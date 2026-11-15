@@ -107,13 +107,13 @@ jobs:
           TAG="vrc-nexus-v$VER"
           MSG=$(printf '%s' "$HEAD_MSG" | head -n 1)
           NOTES=$(printf '%s\n' "## VRC Nexus $VER" "" "$CL" "" \
-            "| Datei | Wofür |" "|---|---|" \
-            "| VRC-Nexus-$VER-Setup.exe | Windows-Installer |" \
-            "| VRC-Nexus-$VER-portable.exe | Windows ohne Installation |" \
-            "| VRC-Nexus-$VER-android.apk | Android (ohne PC-Funktionen) |" \
-            "| VRC-Nexus.streamDeckPlugin | Stream-Deck-Plugin (Doppelklick installiert) |" "" \
-            "Die Windows-Dateien werden gerade gebaut. Ohne Signatur: Windows SmartScreen → „Weitere Informationen“ → „Trotzdem ausführen“; Android fragt nach „Installation aus unbekannten Quellen“." "" \
-            "Stand: ${GITHUB_SHA:0:7} vom $(date -u '+%d.%m.%Y %H:%M') UTC – $MSG")
+            "| File | What for |" "|---|---|" \
+            "| VRC-Nexus-$VER-Setup.exe | Windows installer |" \
+            "| VRC-Nexus-$VER-portable.exe | Windows portable (no install) |" \
+            "| VRC-Nexus-$VER-android.apk | Android (without PC features) |" \
+            "| VRC-Nexus.streamDeckPlugin | Stream Deck plugin (double-click to install) |" "" \
+            "The Windows files are still being built. Unsigned: Windows SmartScreen → “More info” → “Run anyway”; Android asks to allow installing from unknown sources." "" \
+            "Build: ${GITHUB_SHA:0:7} · $(date -u '+%Y-%m-%d %H:%M') UTC")
           if ! gh release view "$TAG" -R "$REPO" > /dev/null 2>&1; then
             gh release create "$TAG" -R "$REPO" --target "$GITHUB_SHA" --title "VRC Nexus $VER" --notes "$NOTES" || sleep 15
           fi
