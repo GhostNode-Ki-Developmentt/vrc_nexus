@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### New in 2.13.4 – Translations completed
+
+- 🌍 **Translations:** NSFW section (overview, toys & links, fun stuff, remote control, phone), Admin and “About” are now fully translated into English, French and Japanese (148 new texts).
+
 ### New in 2.13.3 – English changelogs
 
 - 🌍 **Changelogs in English:** from now on the changelog (app “About” page, GitHub releases, Discord news) is written in English, including the download table and Discord fields.

@@ -434,3 +434,151 @@ endlos	endless	sans fin	無限
 Deine User-ID	Your user ID	Ton ID utilisateur	あなたのユーザーID
 User-ID des Partners	Partner's user ID	ID du partenaire	相手のユーザーID
 💬 Discord beitreten	💬 Join Discord	💬 Rejoindre Discord	💬 Discordに参加
+PANIK	PANIC	PANIQUE	パニック
+Privat-Modus aus	Private mode off	Mode privé désactivé	プライベートモード オフ
+SFW ↔ NSFW-Avatar	SFW ↔ NSFW avatar	Avatar SFW ↔ NSFW	SFW ↔ NSFWアバター
+Paare bearbeiten	Edit pairs	Modifier les paires	ペアを編集
+Sicherer Avatar (Panik	Safe avatar (panic	Avatar sûr (panique	安全なアバター（パニック）
+Panik-Knopf	Panic button	Bouton panique	パニックボタン
+Auch auf dem Handy und als Stream-Deck-Befehl. Was passiert	Also on the phone and as a Stream Deck command. What happens	Aussi sur le téléphone et comme commande Stream Deck. Ce qui se passe	スマホやStream Deckコマンドからも使えます。動作内容
+sicheren Avatar anziehen	switch to safe avatar	mettre l’avatar sûr	安全なアバターに着替える
+Chatbox leeren & Module aus	Clear chatbox & turn modules off	Vider la chatbox & couper les modules	チャットボックスを消去＆モジュールをオフ
+Privat-Modus an (kein Discord-Status, keine Chatbox	Private mode on (no Discord status, no chatbox	Mode privé activé (pas de statut Discord, pas de chatbox	プライベートモード オン（Discordステータスなし、チャットボックスなし）
+Spielzeug sofort stoppen	Stop toys immediately	Arrêter les jouets immédiatement	おもちゃを即停止
+Grenzen-Karte	Boundaries card	Carte des limites	境界カード
+Vielleicht	Maybe	Peut-être	たぶん
+18+-Instanz	18+ instance	Instance 18+	18+インスタンス
+Neue Instanz in deiner aktuellen Welt + Einladung an dich	New instance in your current world + invite to you	Nouvelle instance dans ton monde actuel + invitation pour toi	現在のワールドに新しいインスタンス＋自分への招待
+Invite-Instanz	Invite instance	Instance sur invitation	招待インスタンス
+18+-Gruppen-Instanz	18+ group instance	Instance de groupe 18+	18+グループインスタンス
+18+-Gruppe	18+ group	Groupe 18+	18+グループ
+Schlüssel-Generator & Besitzer-Werkzeuge haben jetzt einen eigenen Menüpunkt	Key generator & owner tools now have their own menu entry	Le générateur de clés et les outils du propriétaire ont maintenant leur propre menu	キー生成とオーナー用ツールは専用メニューに移動しました
+Zum Admin	To Admin	Vers l’admin	管理へ
+Name | avtr_… (SFW) | avtr_… (NSFW) – eine Zeile pro Paar	Name | avtr_… (SFW) | avtr_… (NSFW) – one line per pair	Nom | avtr_… (SFW) | avtr_… (NSFW) – une ligne par paire	名前 | avtr_…（SFW）| avtr_…（NSFW）– 1行に1ペア
+grp_… (mit Altersschranke	grp_… (with age verification	grp_… (avec vérification d’âge	grp_…（年齢確認あり）
+Spielzeug (Intiface / Buttplug.io	Toys (Intiface / Buttplug.io	Jouets (Intiface / Buttplug.io	おもちゃ（Intiface / Buttplug.io）
+Trennen	Disconnect	Déconnecter	切断
+Geräte suchen	Search devices	Chercher des appareils	デバイスを検索
+Alles stoppen	Stop everything	Tout arrêter	すべて停止
+Höchststärke	Max strength	Intensité max	最大強度
+Aus nach	Off after	Arrêt après	停止まで
+s ohne Signal	s without signal	s sans signal	秒 信号なし
+Geräte verknüpfen	Link devices	Lier les appareils	デバイスを連携
+Verknüpfungen aktiv	Links active	Liaisons actives	連携オン
+(Not-Aus und Panik schalten das wieder aus)	(emergency stop and panic turn this off again)	(l’arrêt d’urgence et la panique les désactivent)	（緊急停止とパニックでオフになります）
+Pro Gerät eine oder mehrere Quellen: SPS-Plugs, SPS-Sockets, SPS-Touch-Zonen (OSC-Parameter im OGB-/VRCFury-Format), Konstant oder ein beliebiger Avatar-Parameter. Die stärkste Quelle zählt. OSC in VRChat muss an sein	Per device one or more sources: SPS plugs, SPS sockets, SPS touch zones (OSC parameters in OGB/VRCFury format), constant or any avatar parameter. The strongest source wins. OSC must be enabled in VRChat	Une ou plusieurs sources par appareil : plugs SPS, sockets SPS, zones tactiles SPS (paramètres OSC au format OGB/VRCFury), constante ou n’importe quel paramètre d’avatar. La source la plus forte l’emporte. L’OSC doit être activé dans VRChat	デバイスごとに1つ以上のソース：SPSプラグ、SPSソケット、SPSタッチゾーン（OGB/VRCFury形式のOSCパラメータ）、一定値、任意のアバターパラメータ。最も強いソースが優先。VRChatでOSCをオンにしてください
+Avatar-Debugger öffnen	Open avatar debugger	Ouvrir le débogueur d’avatar	アバターデバッガーを開く
+zeigt, ob SPS-Werte ankommen und wie die Zonen heißen	shows whether SPS values arrive and what the zones are called	montre si les valeurs SPS arrivent et comment s’appellent les zones	SPS値が届いているか、ゾーン名を表示
+SPS-Plugs	SPS plugs	Plugs SPS	SPSプラグ
+Auslösen bei diesen Plugs	Trigger on these plugs	Déclencher sur ces plugs	これらのプラグで反応
+alle Plugs	all plugs	tous les plugs	すべてのプラグ
+(noch keine gesehen – Avatar mit SPS tragen)	(none seen yet – wear an avatar with SPS)	(aucun vu – porte un avatar avec SPS)	（まだ検出なし – SPS付きアバターを着用）
+Einschließen	Include	Inclure	含める
+Ausschließen	Exclude	Exclure	除外
+berührt werden von	touched by	touché par	触れる相手
+fremde SPS-Sockets	others’ SPS sockets	sockets SPS des autres	他人のSPSソケット
+fremde Hände / Füße / Kopf	others’ hands / feet / head	mains / pieds / tête des autres	他人の手／足／頭
+fremde SPS-Plugs	others’ SPS plugs	plugs SPS des autres	他人のSPSプラグ
+meine SPS-Sockets	my SPS sockets	mes sockets SPS	自分のSPSソケット
+meine Hände / Füße	my hands / feet	mes mains / pieds	自分の手／足
+Totzone	Dead zone	Zone morte	デッドゾーン
+unter … ×10 % aus	off below … ×10 %	arrêt sous … ×10 %	10 % 未満でオフ
+Mutator	Mutator	Modificateur	ミューテーター
+Skalieren	Scale	Échelle	スケール
+Bewegung	Motion	Mouvement	動き
+Konstant	Constant	Constante	一定
+Verknüpfen mit	Link with	Lier avec	連携先
+SPS-Sockets	SPS sockets	Sockets SPS	SPSソケット
+SPS-Touch-Zonen	SPS touch zones	Zones tactiles SPS	SPSタッチゾーン
+Auslösen bei diesen Sockets	Trigger on these sockets	Déclencher sur ces sockets	これらのソケットで反応
+meine SPS-Plugs	my SPS plugs	mes plugs SPS	自分のSPSプラグ
+Einfacher OGB-Modus (alle Geräte gleich	Simple OGB mode (all devices the same	Mode OGB simple (tous les appareils pareil	シンプルOGBモード（全デバイス同じ）
+OGB-/SPS-Parameter steuern alle Geräte (Nähe = Stärke	OGB/SPS parameters control all devices (proximity = strength	Les paramètres OGB/SPS contrôlent tous les appareils (proximité = intensité	OGB/SPSパラメータで全デバイスを制御（近さ＝強さ）
+auch eigene Berührungen (Self	also own touches (Self	aussi mes propres contacts (Self	自分のタッチも（Self）
+Eigene Regeln (beliebiger Parameter → Stärke	Custom rules (any parameter → strength	Règles perso (tout paramètre → intensité	カスタムルール（任意パラメータ→強さ）
+Regeln aktiv	Rules active	Règles actives	ルール有効
+Muster, 🎁 Überraschung & 📊 Statistik findest du unter	Patterns, 🎁 Surprise & 📊 Stats are under	Motifs, 🎁 Surprise & 📊 Stats sont dans	パターン、🎁 サプライズ、📊 統計は次の場所
+Verknüpfung entfernen	Remove link	Supprimer la liaison	連携を削除
+oder Name eintippen	or type a name	ou tape un nom	または名前を入力
+z. B. Tail_Wag	e.g. Tail_Wag	ex. Tail_Wag	例：Tail_Wag
+Parameter | Gerät (all oder Nummer) | min | max – z. B. Tail_Wag | all | 0.1 | 0.8	Parameter | device (all or number) | min | max – e.g. Tail_Wag | all | 0.1 | 0.8	Paramètre | appareil (all ou numéro) | min | max – ex. Tail_Wag | all | 0.1 | 0.8	パラメータ | デバイス（allまたは番号）| min | max – 例：Tail_Wag | all | 0.1 | 0.8
+Welle	Wave	Vague	ウェーブ
+Puls	Pulse	Pulsation	パルス
+Herzschlag	Heartbeat	Battement de cœur	ハートビート
+Treppe	Stairs	Escalier	ステップ
+Gewitter	Thunderstorm	Orage	雷雨
+Necken	Tease	Taquiner	焦らし
+Achterbahn	Roller coaster	Montagnes russes	ジェットコースター
+Läuft im Hintergrund weiter, auch wenn du die Seite wechselst. Panik und ⏹ stoppen sofort. Verknüpfungen laufen parallel – die stärkere Quelle zählt	Keeps running in the background, even when you switch pages. Panic and ⏹ stop immediately. Links run in parallel – the stronger source wins	Continue en arrière-plan, même si tu changes de page. Panique et ⏹ arrêtent immédiatement. Les liaisons tournent en parallèle – la source la plus forte l’emporte	ページを切り替えてもバックグラウンドで継続。パニックと⏹で即停止。連携と並行動作し、強い方が優先
+Zufälliges Muster, Tempo und Stärke für 20–60 Sekunden – was kommt, verrät die App nicht	Random pattern, speed and strength for 20–60 seconds – the app won’t tell you what’s coming	Motif, vitesse et intensité aléatoires pendant 20–60 secondes – l’app ne dit pas ce qui arrive	20〜60秒間ランダムなパターン・速度・強さ – 何が来るかは秘密
+Geht auch über die 📱 Handy-Fernbedienung	Also works via the 📱 phone remote	Fonctionne aussi via la 📱 télécommande du téléphone	スマホリモコンからも使えます
+Spitze	Peak	Pic	ピーク
+Muster	Patterns	Motifs	パターン
+Ein Klick → Chatbox	One click → chatbox	Un clic → chatbox	ワンクリック→チャットボックス
+in Stimmung	in the mood	d’humeur	その気分
+kuschelig drauf	feeling cuddly	envie de câlins	甘えたい気分
+frech heute	cheeky today	coquin·e aujourd’hui	今日は小悪魔
+nur chillen	just chilling	juste chiller	まったり中
+heute nur SFW	SFW only today	SFW seulement aujourd’hui	今日はSFWのみ
+DMs offen	DMs open	DM ouverts	DM受付中
+schüchtern – sprich mich an	shy – talk to me	timide – parle-moi	人見知り – 話しかけて
+gleich weg	leaving soon	je pars bientôt	もうすぐ落ちます
+Fragt in der Chatbox nach: „Alles okay für dich? 🟢 weiter · 🟡 langsamer · 🔴 stopp“. Auch auf dem Handy	Asks in the chatbox: “Are you okay? 🟢 go on · 🟡 slower · 🔴 stop”. Also on the phone	Demande dans la chatbox : « Ça va pour toi ? 🟢 continuer · 🟡 plus lent · 🔴 stop ». Aussi sur le téléphone	チャットボックスで確認：「大丈夫？🟢 続けて・🟡 ゆっくり・🔴 ストップ」。スマホからも
+Zieh eine Karte – sie wird erst auf Klick in die Chatbox geschickt	Draw a card – it is only sent to the chatbox when you click	Tire une carte – elle n’est envoyée dans la chatbox qu’au clic	カードを引く – クリックするまで送信されません
+Würfelt eine Aktion und eine Stelle	Rolls an action and a spot	Lance une action et un endroit	アクションと場所をランダムに決めます
+Zählt in der Chatbox runter	Counts down in the chatbox	Compte à rebours dans la chatbox	チャットボックスでカウントダウン
+eigener Text	own text	texte perso	自由入力
+Fernsteuerung empfangen	Receive remote control	Recevoir le contrôle à distance	リモート操作を受け付ける
+Heimnetz	Home network	Réseau local	ホームネットワーク
+Internet (GhostNode) – Webseite nicht erreichbar	Internet (GhostNode) – website not reachable	Internet (GhostNode) – site injoignable	インターネット（GhostNode）– サイトに接続できません
+Die gibst du deinem Partner – sonst muss niemand etwas eintragen. Verbindung im selben WLAN direkt, sonst automatisch über deine GhostNode-Seite	Give this to your partner – nobody needs to enter anything else. Same Wi-Fi connects directly, otherwise automatically via your GhostNode site	Donne-la à ton partenaire – personne n’a rien d’autre à saisir. Même Wi-Fi : connexion directe, sinon automatiquement via ton site GhostNode	これを相手に伝えるだけ – 他の入力は不要。同じWi-Fiなら直接、それ以外はGhostNodeサイト経由で自動接続
+Wer darf dich steuern? (eine Zeile	Who may control you? (one line	Qui peut te contrôler ? (une ligne	誰が操作できる？（1行
+Höchststärke von außen	Max strength from outside	Intensité max. depuis l’extérieur	外部からの最大強度
+Geprüft wird: Freigabeliste + gültiger Freischalt-Schlüssel (mit Spielzeug) für genau diese ID. Befehle gelten 60 s und nur einmal; ohne Signal geht der Regler nach 15 s auf 0. 🚨 Panik schaltet den Empfang aus	Checked: allow list + valid unlock key (with toys) for exactly this ID. Commands are valid for 60 s and only once; without signal the slider drops to 0 after 15 s. 🚨 Panic turns receiving off	Vérifié : liste autorisée + clé de déverrouillage valide (avec jouets) pour exactement cet ID. Les commandes valent 60 s et une seule fois ; sans signal le curseur retombe à 0 après 15 s. 🚨 La panique coupe la réception	確認内容：許可リスト＋このID用の有効な解除キー（おもちゃ付き）。コマンドは60秒・1回のみ有効。信号がなければ15秒で0に。🚨 パニックで受信オフ
+Dein Partner muss bei sich „Fernsteuerung empfangen“ anhaben und dich auf seiner Liste haben. 🧪 Zum Testen deine eigene ID eintragen (links „Fernsteuerung empfangen“ an) – dann steuerst du dein eigenes Spielzeug	Your partner needs “Receive remote control” turned on and you on their list. 🧪 To test, enter your own ID (turn on “Receive remote control” on the left) – then you control your own toy	Ton partenaire doit activer « Recevoir le contrôle à distance » et t’avoir sur sa liste. 🧪 Pour tester, entre ton propre ID (active « Recevoir le contrôle à distance » à gauche) – tu contrôles alors ton propre jouet	相手側で「リモート操作を受け付ける」をオンにし、あなたをリストに追加する必要があります。🧪 テストは自分のIDを入力（左の「リモート操作を受け付ける」をオン）– 自分のおもちゃを操作できます
+Muster laufen beim Partner höchstens 5 min und nie stärker als seine Höchststärke	Patterns run at most 5 min at your partner and never stronger than their max strength	Les motifs durent au plus 5 min chez ton partenaire et jamais plus fort que son intensité max	相手側のパターンは最長5分、相手の最大強度を超えません
+usr_… oder Profil-Link	usr_… or profile link	usr_… ou lien de profil	usr_… またはプロフィールリンク
+Eigene ID zum Testen	Own ID for testing	Propre ID pour tester	テスト用に自分のID
+Handy-Fernbedienung	Phone remote	Télécommande téléphone	スマホリモコン
+an (im Heimnetz über die IP dieses PCs	on (in the home network via this PC’s IP	activé (dans le réseau local via l’IP de ce PC	オン（このPCのIPでホームネットワーク内）
+Neuer Schlüssel	New key	Nouvelle clé	新しいキー
+Panik, Privat-Modus, Avatar-Paare, Grenzen-Karte und Spielzeug-Regler. Nur mit dem Schlüssel im Link erreichbar – Link nicht teilen. Windows fragt beim ersten Start evtl. nach der Firewall (privates Netz erlauben	Panic, private mode, avatar pairs, boundaries card and toy sliders. Only reachable with the key in the link – don’t share the link. Windows may ask about the firewall on first start (allow private network	Panique, mode privé, paires d’avatars, carte des limites et curseurs des jouets. Accessible uniquement avec la clé dans le lien – ne partage pas le lien. Windows peut demander le pare-feu au premier démarrage (autoriser le réseau privé	パニック、プライベートモード、アバターペア、境界カード、おもちゃスライダー。リンク内のキーでのみアクセス可能 – 共有しないでください。初回起動時にWindowsがファイアウォールを確認する場合があります（プライベートネットワークを許可）
+Öffentlicher Schlüssel ⚠ noch	Public key ⚠ not yet	Clé publique ⚠ pas encore	公開キー ⚠ まだ
+nicht	not	pas	未
+in der App hinterlegt – an Claude schicken, damit andere Apps deine Schlüssel prüfen können	stored in the app – send it to Claude so other apps can verify your keys	enregistrée dans l’app – envoie-la à Claude pour que les autres apps puissent vérifier tes clés	アプリに登録されていません – 他のアプリがキーを検証できるようClaudeに送ってください
+unbegrenzt	unlimited	illimité	無制限
+Spielzeug	Toys	Jouets	おもちゃ
+Handy	Phone	Téléphone	スマホ
+Schlüssel erzeugen	Create key	Créer une clé	キーを作成
+Rechte	Permissions	Droits	権限
+sperren	block	bloquer	無効化
+Sperren wirkt in dieser App sofort; bei anderen endet der Schlüssel spätestens mit seinem Ablaufdatum	Blocking takes effect immediately in this app; elsewhere the key ends at its expiry date at the latest	Le blocage agit tout de suite dans cette app ; ailleurs la clé expire au plus tard à sa date d’expiration	このアプリでは即時無効。他のアプリでは遅くとも有効期限で失効
+Ereignis simulieren	Simulate event	Simuler un événement	イベントをシミュレート
+Testet Benachrichtigungen, Automatik und Warnungen, ohne dass jemand wirklich kommt	Tests notifications, automations and warnings without anyone actually coming	Teste notifications, automatismes et alertes sans que personne ne vienne vraiment	実際に誰も来なくても通知・自動化・警告をテスト
+Video startet	Video starts	Vidéo démarre	動画開始
+Spielereien	Fun stuff	Amusements	お遊び
+In die Chatbox	To the chatbox	Dans la chatbox	チャットボックスへ
+Admin da	Admin here	Admin là	管理者参上
+Herz-Animation	Heart animation	Animation cœur	ハートアニメ
+3️⃣2️⃣1️⃣ Countdown	Countdown	Compte à rebours	カウントダウン
+Münze	Coin	Pièce	コイン
+In der App	In the app	Dans l’app	アプリ内
+Konfetti	Confetti	Confettis	紙吹雪
+Theme-Disco	Theme disco	Disco des thèmes	テーマディスコ
+Matrix	Matrix	Matrix	マトリックス
+Läuft seit	Running since	Actif depuis	稼働時間
+Speicher	Memory	Mémoire	メモリ
+Fehler-Log schreiben	Write error log	Écrire le journal d’erreurs	エラーログを書く
+API-Konsole (nur lesen	API console (read only	Console API (lecture seule	APIコンソール（読み取り専用）
+Antwort kopieren	Copy response	Copier la réponse	レスポンスをコピー
+VRChat-User-ID (usr_…) oder Profil-Link	VRChat user ID (usr_…) or profile link	ID utilisateur VRChat (usr_…) ou lien de profil	VRChatユーザーID（usr_…）またはプロフィールリンク
+Notiz (z. B. Discord-Name	Note (e.g. Discord name	Note (ex. nom Discord	メモ（例：Discord名）
+ℹ️ Über die App	About the app	À propos de l’app	アプリについて
+News zu jedem Update, Hilfe & Ideen –	News on every update, help & ideas	Nouvelles à chaque mise à jour, aide & idées	アップデート情報、ヘルプ＆アイデア
+App-Grundlage & Datenbank	App foundation & database	Base de l’app & base de données	アプリ基盤＆データベース
+(ggml-org) – Spracherkennung	(ggml-org) – speech recognition	(ggml-org) – reconnaissance vocale	（ggml-org）– 音声認識
+(rhasspy) – Sprachausgabe offline	(rhasspy) – offline text-to-speech	(rhasspy) – synthèse vocale hors ligne	（rhasspy）– オフライン音声合成
+Wetterdaten	Weather data	Données météo	天気データ
+(Valve) – SteamVR-Overlay	(Valve) – SteamVR overlay	(Valve) – overlay SteamVR	（Valve）– SteamVRオーバーレイ
+optionale Dienste	optional services	services optionnels	オプションサービス
+Ideen aus der Community: VRCX, MagicChatbox, TTS Voice Wizard – jeweils eigene Umsetzung	Ideas from the community: VRCX, MagicChatbox, TTS Voice Wizard – each implemented independently	Idées de la communauté : VRCX, MagicChatbox, TTS Voice Wizard – chacune réalisée de façon indépendante	コミュニティのアイデア：VRCX、MagicChatbox、TTS Voice Wizard – すべて独自実装

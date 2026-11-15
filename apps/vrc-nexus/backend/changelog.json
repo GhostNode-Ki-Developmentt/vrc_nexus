@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.13.4",
+  "title": "Translations completed",
+  "body": "- 🌍 **Translations:** NSFW section (overview, toys & links, fun stuff, remote control, phone), Admin and “About” are now fully translated into English, French and Japanese (148 new texts)."
+ },
+ {
   "version": "2.13.3",
   "title": "English changelogs",
   "body": "- 🌍 **Changelogs in English:** from now on the changelog (app “About” page, GitHub releases, Discord news) is written in English, including the download table and Discord fields.\n- 🧹 Release notes no longer include the commit message."
