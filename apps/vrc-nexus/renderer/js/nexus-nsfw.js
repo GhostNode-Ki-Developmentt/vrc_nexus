@@ -136,8 +136,8 @@
             + (x.log.length ? '<details class="ns-edit"' + (a ? ' open' : '') + '><summary class="small">Verlauf</summary><ul class="ns-log">' + x.log.map(l => '<li><span class="muted">' + esc(new Date(l.t * 1000).toLocaleTimeString(window.nxLoc ? nxLoc() : 'de-DE')) + '</span> <b>' + esc(l.who) + '</b> ' + esc(l.txt) + '</li>').join('') + '</ul></details>' : '')
             + '<p class="muted small">Geprüft wird: Freigabeliste + gültiger Freischalt-Schlüssel (mit Spielzeug) für genau diese ID. Befehle gelten 60 s und nur einmal; ohne Signal geht der Regler nach 15 s auf 0. 🚨 Panik schaltet den Empfang aus.</p>');
         const via = k.via === 'lan' ? '🏠 Heimnetz' : k.via === 'web' ? '🌐 Internet' : '';
-        h += sec('🎮 Partner steuern', '<div class="nc-row"><span class="small">User-ID des Partners</span><input type="text" id="trUid" value="' + esc(c.t_uid) + '" placeholder="usr_… oder Profil-Link" style="flex:1"><button type="button" class="btn btn-sm btn-gold" data-ns="tr_ping">📡 Verbinden</button></div>'
-            + (ack || k.err ? '<p class="small ' + (k.err || (ack && !ack.ok) ? 'bad' : 'ok') + '">' + (k.err ? '⚠ ' + esc(k.err) : (ack.ok ? '✔ ' : '⚠ ') + esc(ack.msg) + ' <span class="muted">' + ago(ack.at) + (via ? ' · ' + via : '') + '</span>') + '</p>' : '<p class="muted small">Dein Partner muss bei sich „Fernsteuerung empfangen“ anhaben und dich auf seiner Liste haben.</p>')
+        h += sec('🎮 Partner steuern', '<div class="nc-row"><span class="small">User-ID des Partners</span><input type="text" id="trUid" value="' + esc(c.t_uid) + '" placeholder="usr_… oder Profil-Link" style="flex:1">' + (x.my_uid ? '<button type="button" class="btn btn-sm" data-ns="tr_self" title="Eigene ID zum Testen">🧪 Ich</button>' : '') + '<button type="button" class="btn btn-sm btn-gold" data-ns="tr_ping">📡 Verbinden</button></div>'
+            + (ack || k.err ? '<p class="small ' + (k.err || (ack && !ack.ok) ? 'bad' : 'ok') + '">' + (k.err ? '⚠ ' + esc(k.err) : (ack.ok ? '✔ ' : '⚠ ') + esc(ack.msg) + ' <span class="muted">' + ago(ack.at) + (via ? ' · ' + via : '') + '</span>') + '</p>' : '<p class="muted small">Dein Partner muss bei sich „Fernsteuerung empfangen“ anhaben und dich auf seiner Liste haben. 🧪 Zum Testen deine eigene ID eintragen (links „Fernsteuerung empfangen“ an) – dann steuerst du dein eigenes Spielzeug.</p>')
             + '<div class="ns-dev"><b>Stärke</b><input type="range" min="0" max="100" value="' + k.lv + '" data-trlv="1"><span class="small">' + k.lv + ' %</span></div>'
             + '<div class="ns-pats">' + ((t && t.patterns) || []).map(p => '<button type="button" class="btn btn-sm" data-trpat="' + p.id + '">' + esc(p.name) + '</button>').join('') + '</div>'
             + '<div class="nc-row"><button type="button" class="btn btn-sm" data-ns="tr_surprise">🎁 Überraschung</button><button type="button" class="btn ns-stop" data-ns="tr_stop">⏹ Stopp beim Partner</button></div>'
@@ -177,6 +177,7 @@
         if (a === 'tr_allow') return trCfg({ allow: $v('#trAllow') });
         if (a === 'tr_kick') return api('tremote_kick').then(d => { st.tremote = d; toast(d.msg); render(); }).catch(x => toast(x.message, true));
         if (a === 'tr_ping') return api('tremote_cfg', { t_uid: $v('#trUid') }).then(() => trSend('ping')).catch(x => toast(x.message, true));
+        if (a === 'tr_self') { const i = box.querySelector('#trUid'); if (i && st.tremote) i.value = st.tremote.my_uid; return; }
         if (a === 'tr_surprise') return trSend('surprise');
         if (a === 'tr_stop') return trSend('stop');
         if (a === 'pat_stop') return toysDo('toys_pattern_stop');

@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.12.1 – Selbsttest der Fernsteuerung
+
+- 🧪 **Selbsttest der Fernsteuerung:** Unter „🎮 Partner steuern“ die eigene ID eintragen (oder auf „🧪 Ich“ klicken) – dann steuert die App dein eigenes Spielzeug direkt auf diesem PC, ohne Freigabeliste. „Fernsteuerung empfangen“ muss dafür an sein; die Höchststärke von außen gilt auch hier.
+
 ### Neu in 2.12.0 – Spielzeug-Fernsteuerung über User-ID
 
 - 🌐 **Spielzeug-Fernsteuerung über die User-ID** (NSFW → 🌐 Fernsteuerung): Nexus steuert Nexus – nur die User-ID des Partners eintragen, sonst nichts.

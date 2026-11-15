@@ -1572,6 +1572,14 @@ test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP)
     const { uidHash } = require('../backend/toyremote');
     const r = await fetch(process.env.NEXUS_RELAY_BASE + '/toyrelay.php?a=poll', { method: 'POST', body: JSON.stringify({ to: uidHash(OWN), key: 'x'.repeat(48) }) }).then(x => x.json());
     assert.ok(r.error, 'Briefkasten nur mit Schlüssel');
+    // Selbsttest mit der eigenen ID (ohne Freigabeliste, direkt auf diesem PC)
+    await O.post({ act: 'tremote_cfg', lan: '1', allow: '', t_uid: OWN }, {});
+    await U.sleep(150);
+    st = await O.post({ act: 'tremote_send', c: 'ping' }, {});
+    assert.ok(st.ctrl.ack.ok && st.ctrl.via === 'lan', 'Selbsttest: ' + JSON.stringify(st.ctrl));
+    await O.post({ act: 'tremote_send', c: 'set', lv: '1' }, {});
+    assert.strictEqual(last(), 0.6, 'Selbsttest steuert eigenes Spielzeug (gedeckelt)');
+    assert.strictEqual(O.toyremote.status().active.name, 'Du (Selbsttest)');
     // Panik
     await O.post({ act: 'nsfw_panic' }, {});
     assert.strictEqual(O.toyremote.cfg().recv_on, false, 'Panik schaltet Empfang aus');

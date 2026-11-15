@@ -194,7 +194,8 @@ class ToyRemote {
         if (!c.recv_on || !c[via]) throw new UserError('Fernsteuerung ist hier aus.');
         if (!this.allowed()) throw new UserError('Spielzeug ist hier nicht freigeschaltet.');
         if (!m || m.v !== 1 || !me || str(m.to).toLowerCase() !== me.toLowerCase()) throw new UserError('Falsche Empfänger-ID.');
-        const from = str(m.from), who = c.allow.find(a => a.uid.toLowerCase() === from.toLowerCase());
+        const from = str(m.from), self = from.toLowerCase() === me.toLowerCase();
+        const who = self ? { uid: me, name: 'Du (Selbsttest)' } : c.allow.find(a => a.uid.toLowerCase() === from.toLowerCase());
         if (!who) { this.note(from, '⛔ nicht auf der Freigabeliste'); throw new UserError('Du stehst nicht auf der Freigabeliste.'); }
         const age = Date.now() - Number(m.ts);
         if (!(age > -30000 && age < 60000)) throw new UserError('Befehl zu alt (Uhrzeit prüfen).');
@@ -257,15 +258,16 @@ class ToyRemote {
         const c = this.cfg(), me = this.myId();
         if (!me) throw new UserError('Erst bei VRChat anmelden.');
         if (!UIDRE.test(c.t_uid)) throw new UserError('Erst die User-ID des Partners eintragen.');
-        if (c.t_uid.toLowerCase() === me.toLowerCase() && c.t_via !== 'lan') throw new UserError('Das bist du selbst.');
+        const self = c.t_uid.toLowerCase() === me.toLowerCase();   // Selbsttest: immer direkt auf diesem PC
         const tok = this.token();
         if (!tok) throw new UserError(this.app.nsfw.isOwner() ? 'Als Besitzer erst unter 👑 Admin ein Schlüsselpaar haben.' : 'Kein Freischalt-Schlüssel gespeichert.');
         const m = { v: 1, from: me, to: c.t_uid, tok, ts: Date.now(), n: crypto.randomBytes(10).toString('hex'), c: cmd, a: a || {} };
         this.ctrl.at = Date.now(); this.ctrl.sentAt = Date.now(); this.ctrl.err = '';
         if (cmd === 'set') this.ctrl.lv = Math.max(0, Math.min(1, Number(a && a.lv) || 0));
         if (cmd === 'stop') this.ctrl.lv = 0;
-        let via = c.t_via;
-        if (via === 'auto') {
+        let via = self ? 'lan' : c.t_via;
+        if (self) { this.ctrl.via = 'lan'; if (!c.recv_on || !c.lan) throw new UserError('Selbsttest: erst oben „Fernsteuerung empfangen“ einschalten.'); this.ctrl.addr = '127.0.0.1:' + c.lan_port; }
+        else if (via === 'auto') {
             if (this.ctrl.uid !== c.t_uid || !this.ctrl.via || Date.now() - (this.ctrl.foundAt || 0) > 120000) {
                 this.ctrl.uid = c.t_uid; this.ctrl.foundAt = Date.now();
                 this.ctrl.addr = c.t_addr || await this.discover(c.t_uid);
