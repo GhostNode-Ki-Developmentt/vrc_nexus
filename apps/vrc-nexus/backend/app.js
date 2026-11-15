@@ -187,6 +187,7 @@ class NexusApp {
             if (act.startsWith('mod_')) return await this.mod.action(act, input);
             if (act.startsWith('coll_')) return await this.coll.action(act, input);
             if (act === 'about') return this.about(input);
+            if (act === 'about_supporters') return await this.liveSupporters();
             if (act.startsWith('tts_')) { if (!this.tts) throw new UserError('Die Sprachausgabe gibt es nur in der Windows-App.'); return await this.tts.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }
             if (act.startsWith('backup_')) return await this.backup.action(act, input);
@@ -981,6 +982,21 @@ class NexusApp {
             }
         }
         throw new UserError('Unbekannte Aktion.');
+    }
+    /** 💖 Unterstützer live aus dem Branch supporters-data (alle 12 h von GitHub aktualisiert), 1 h zwischengespeichert; sonst die mitgelieferte Liste */
+    async liveSupporters() {
+        const c = this._sup;
+        if (c && Date.now() - c.at < 3600000) return { supporters: c.list, live: true };
+        const url = process.env.NEXUS_SUPPORTERS_URL || 'https://raw.githubusercontent.com/xxloonaxx/vrc_nexus/supporters-data/supporters.json';
+        try {
+            const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const d = await r.json();
+            if (!Array.isArray(d)) throw new Error('kein Array');
+            const list = d.slice(0, 300).map(x => ({ name: str(x && x.name).slice(0, 40), tier: str(x && x.tier).slice(0, 40) })).filter(x => x.name);
+            this._sup = { at: Date.now(), list };
+            return { supporters: list, live: true };
+        } catch (e) { let l = []; try { l = require('./supporters.json'); } catch (x) { l = []; } return { supporters: l, live: false }; }
     }
     /** Seite „Über VRC Nexus“: Version, System, Changelog (aus backend/changelog.json, gebaut aus der README; 🔞 aus changelog-nsfw.json nur freigeschaltet) */
     about(input = {}) {

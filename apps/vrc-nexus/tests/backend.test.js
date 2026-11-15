@@ -1590,6 +1590,7 @@ test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP)
 });
 
 test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App nur freigeschaltet; Release-Notizen & Discord', async () => {
+    const http = require('http');
     const { NexusApp } = require('../backend/app');
     const { hashId } = require('../backend/nsfw');
     const { buildNsfw } = require('../scripts/changelog-build');
@@ -1623,6 +1624,12 @@ test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App
     assert.strictEqual(app.about().discord, require('../backend/links.json').discord);
     assert.ok(/^https:\/\/discord\.gg\//.test(app.about().discord));
     assert.strictEqual(app.about().patreon, 'https://www.patreon.com/cw/VRCNexusTools'); assert.ok(Array.isArray(app.about().supporters));
+    { const srv = http.createServer((q, r) => r.end(JSON.stringify([{ name: 'Foxy', tier: 'Gold' }, { name: '', tier: 'x' }]))); await new Promise(r => srv.listen(0, '127.0.0.1', r));
+      process.env.NEXUS_SUPPORTERS_URL = 'http://127.0.0.1:' + srv.address().port + '/s.json';
+      const ls = await app.post({ act: 'about_supporters' }, {}); assert.ok(ls.live && ls.supporters.length === 1 && ls.supporters[0].name === 'Foxy', 'live Unterstützer');
+      app._sup = null; srv.close(); process.env.NEXUS_SUPPORTERS_URL = 'http://127.0.0.1:9/x';
+      const off = await app.post({ act: 'about_supporters' }, {}); assert.ok(!off.live && Array.isArray(off.supporters), 'offline → mitgelieferte Liste');
+      delete process.env.NEXUS_SUPPORTERS_URL; }
     assert.ok(d.embeds[0].fields.some(f => f.name === '💬 Discord'), 'Discord-Link in der News');
     delete process.env.NEXUS_OWNER_HASH;
     app.tools.stop(); if (app.toys) app.toys.stop(); if (app.toyremote) app.toyremote.stop();

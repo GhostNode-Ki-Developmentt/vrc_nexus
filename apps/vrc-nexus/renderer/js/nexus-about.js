@@ -19,6 +19,13 @@
         }
         return html + (list ? '</ul>' : '');
     }
+    function supHtml(list) {
+        if (!(list || []).length) return '<p class="small muted">Noch keine – sei die erste Person auf der Liste!</p>';
+        const g = {}; list.forEach(s => (g[s.tier || ''] = g[s.tier || ''] || []).push(s.name));
+        return Object.keys(g).map(k => (k ? '<div class="ab-tier">' + esc(k) + '</div>' : '') + '<div class="ab-names">' + g[k].map(n => '<span>' + esc(n) + '</span>').join('') + '</div>').join('');
+    }
+    /** Unterstützer live nachladen (alle 12 h aktualisiert) */
+    function liveSup() { UI.api('about_supporters').then(r => { const el = document.querySelector('#aboutBox .ab-sup-list'); if (el && r && r.live) el.innerHTML = supHtml(r.supporters); }).catch(() => {}); }
     function render(d) {
         const box = document.getElementById('aboutBox');
         if (!box) return;
@@ -32,7 +39,7 @@
             + (d.total > d.changelog.length ? '<button type="button" class="btn btn-sm" data-ab="more">Ältere Versionen anzeigen (' + (d.total - d.changelog.length) + ')</button>' : '')
             + ' <a class="nc-link" href="' + esc(d.repo) + '" target="_blank" rel="noopener">Alle Releases auf GitHub ↗</a>'
             + (d.patreon ? '<div class="ab-patreon"><a href="' + esc(d.patreon) + '" target="_blank" rel="noopener"><img src="img/patreon-banner.jpg" alt="VRC Nexus on Patreon"></a><div class="ab-pt-row"><span class="small">VRC Nexus ist kostenlos. Wenn dir die App gefällt, unterstütze die Entwicklung auf Patreon.</span><a class="btn ab-pt" href="' + esc(d.patreon) + '" target="_blank" rel="noopener">❤ Auf Patreon unterstützen</a></div>'
-                + '<div class="ab-sup"><h4>💖 Unterstützer</h4>' + ((d.supporters || []).length ? (() => { const g = {}; d.supporters.forEach(s => (g[s.tier || ''] = g[s.tier || ''] || []).push(s.name)); return Object.keys(g).map(k => (k ? '<div class="ab-tier">' + esc(k) + '</div>' : '') + '<div class="ab-names">' + g[k].map(n => '<span>' + esc(n) + '</span>').join('') + '</div>').join(''); })() : '<p class="small muted">Noch keine – sei die erste Person auf der Liste!</p>') + '</div></div>' : '')
+                + '<div class="ab-sup"><h4>💖 Unterstützer</h4><div class="ab-sup-list">' + supHtml(d.supporters) + '</div></div></div>' : '')
             + '</div>'
             + '<div class="nc-card"><h4>ℹ️ Über die App</h4><p class="small">VRC Nexus ist ein Begleit-Programm für VRChat: Freunde & Orte, Spiel-Log, OSC-Steuerung, Chatbox, Spracheingabe & -ausgabe, Stream-Bot, Stream-Deck und mehr – Teil des GHOST-NODE-Dashboards.</p>'
             + (d.discord ? '<div class="ab-discord ab-discord-card"><a class="btn ab-dc" href="' + esc(d.discord) + '" target="_blank" rel="noopener">💬 Discord beitreten</a><span class="small muted">News zu jedem Update, Hilfe & Ideen – <code>' + esc(d.discord.replace(/^https:\/\//, '')) + '</code></span></div>' : '')
@@ -44,6 +51,7 @@
             + '<li>Ideen aus der Community: VRCX, MagicChatbox, TTS Voice Wizard – jeweils eigene Umsetzung</li></ul></div>'
             + '</div>';
         window.dispatchEvent(new Event('nexus-about'));   // Update-Knopf/-Hinweis rechts im Kopf füllen
+        if (d.patreon) liveSup();
     }
     function load() { return UI.api('about', { n }).then(render).catch(e => { const b = document.getElementById('aboutBox'); if (b) b.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; }); }
     document.addEventListener('click', e => {

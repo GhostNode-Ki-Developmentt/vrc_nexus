@@ -1,0 +1,46 @@
+name: Patreon-Unterstützer aktualisieren
+
+# Alle 12 Stunden (und von Hand): aktive Patreon-Unterstützer holen und als supporters.json in den Branch
+# „supporters-data“ legen. Die App lädt die Liste von dort (raw.githubusercontent.com) – der Token bleibt hier.
+on:
+  schedule:
+    - cron: '17 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: patreon-supporters
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unterstützer holen
+        working-directory: apps/vrc-nexus
+        env:
+          PATREON_TOKEN: ${{ secrets.PATREON_TOKEN }}
+        run: |
+          if [ -z "$PATREON_TOKEN" ]; then echo "::warning::Secret PATREON_TOKEN fehlt"; exit 0; fi
+          echo '__unset__' > backend/supporters.json
+          node scripts/patreon-supporters.js
+          if grep -q '__unset__' backend/supporters.json; then echo "::warning::Patreon nicht erreichbar – nichts geändert"; exit 0; fi
+          cp backend/supporters.json "$RUNNER_TEMP/supporters.json"
+      - name: In den Branch supporters-data legen
+        run: |
+          [ -f "$RUNNER_TEMP/supporters.json" ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin supporters-data 2>/dev/null; then git checkout -q -B supporters-data FETCH_HEAD; else git checkout -q --orphan supporters-data; git rm -rqf . ; fi
+          cp "$RUNNER_TEMP/supporters.json" supporters.json
+          git add supporters.json
+          if git diff --cached --quiet; then echo "Keine Änderung."; exit 0; fi
+          git commit -qm "Unterstützer aktualisiert"
+          git push -q origin supporters-data
+          echo "Unterstützer-Liste aktualisiert."
