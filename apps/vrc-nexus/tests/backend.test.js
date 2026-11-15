@@ -1280,6 +1280,11 @@ test('2.8.7: Stream-Deck-Plugin – Version melden und Update starten', async ()
     assert.ok(r.ok && opened[0] === file && /installiert/.test(r.msg));
     fs.rmSync(file);
     await assert.rejects(app.tools.apiAction('plugin_update', {}), /nicht gefunden/);
+    // Discord-Status: ohne eigene Client-ID die von VRC Nexus
+    const ids = []; app.tools.rpc.connect = async id => { ids.push(id); }; app.tools.rpc.setActivity = () => {};
+    await app.tools.updateRpc();
+    app.settings.save({ 'int.rpc_client': '123456789012345678' }); await app.tools.updateRpc();
+    assert.deepStrictEqual(ids, ['1571341160172232884', '123456789012345678']);
     app.tools.stop();
 });
 

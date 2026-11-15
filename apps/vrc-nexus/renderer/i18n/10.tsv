@@ -383,3 +383,6 @@ Inhaltshinweise	Content warnings	Avertissements de contenu	コンテンツ警告
 Vorschau-Video	Preview video	Vidéo d'aperçu	プレビュー動画
 Bild-Datei	Image file	Fichier image	画像ファイル
 Unity	Unity	Unity	Unity
+Eigene Discord Client-ID (optional)	Own Discord client ID (optional)	Propre ID client Discord (facultatif)	独自のDiscordクライアントID（任意）
+Leer lassen = die Discord-Anwendung von VRC Nexus. Nur für eine eigene Anwendung: discord.com/developers → Application ID.	Leave empty = VRC Nexus's Discord application. Only for your own application: discord.com/developers → Application ID.	Laisser vide = l'application Discord de VRC Nexus. Seulement pour ta propre application : discord.com/developers → Application ID.	空欄 = VRC NexusのDiscordアプリ。自分のアプリを使う場合のみ：discord.com/developers → Application ID。
+Nur aktiv, solange du in einer Instanz bist. VRChats eigene Rich Presence ausschalten, sonst streiten sich beide. Funktioniert ohne Einrichtung – einfach einschalten.	Only active while you are in an instance. Turn off VRChat's own Rich Presence, otherwise both conflict. Works without setup – just turn it on.	Actif uniquement dans une instance. Désactive la Rich Presence de VRChat, sinon les deux entrent en conflit. Fonctionne sans configuration – il suffit de l'activer.	インスタンス内にいる間のみ有効。競合を避けるためVRChat自身のリッチプレゼンスはオフにしてください。設定不要 – オンにするだけです。

@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.8 – Discord-Status ohne Einrichtung
+
+- **Discord-Status ohne Einrichtung**: VRC Nexus hat jetzt eine eigene Discord-Anwendung fest eingebaut – unter Einstellungen → Integrationen → Discord Rich Presence einfach einschalten, keine Client-ID mehr nötig.
+- Wer eine eigene Discord-Anwendung nutzen will, kann ihre Client-ID weiterhin eintragen (Feld „Eigene Discord Client-ID (optional)“).
+
 ### Neu in 2.8.7 – Update-Knopf im Stream-Deck-Plugin
 
 - **Stream-Deck-Plugin aktualisieren per Knopf** (Plugin 1.7): In jeder Taste unter „🔌 Verbindung zu VRC Nexus“ zeigt „Verbindung testen“ jetzt die installierte Plugin-Version und die, die mit VRC Nexus kommt – ist eine neuere da, steht „Update verfügbar!“ dabei.

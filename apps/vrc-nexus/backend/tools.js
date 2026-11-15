@@ -14,6 +14,8 @@ const { execFile } = require('child_process');
 const U = require('./util');
 const { UserError, VrcAuthError, now, str, int, cut, arr } = U;
 const { UID, VERSION } = require('./vrchat');
+/** Discord-Anwendung von VRC Nexus (Application ID ist öffentlich, kein Geheimnis) – für den Discord-Status ohne eigene Einrichtung */
+const RPC_CLIENT = '1571341160172232884';
 const { DiscordRpc } = require('./discordrpc');
 const { LocalApi } = require('./localapi');
 
@@ -388,7 +390,7 @@ class Tools {
         const s = this.settings.all();
         const st = this.app.game.state;
         if (st.running && !this.wasRunning) this.onVrcStart();
-        if (s['int.rpc'] && s['int.rpc_client']) await this.updateRpc();
+        if (s['int.rpc']) await this.updateRpc();
         await this.vrcWatch().catch(e => this.debug('vrcwatch', e));
         if (this.host.setTray && s['sys.tray_count']) {
             try { const fr = this.app.vrc.friendList(); this.host.setTray('VRC Nexus · ' + fr.filter(f => f.state === 'online').length + ' im Spiel, ' + fr.filter(f => f.state === 'active').length + ' online'); } catch (e) { /* egal */ }
@@ -463,7 +465,7 @@ class Tools {
     }
     async updateRpc() {
         const s = this.settings.all();
-        await this.rpc.connect(s['int.rpc_client']);
+        await this.rpc.connect(s['int.rpc_client'] || RPC_CLIENT);
         this.rpc.setActivity(await this.rpcActivity());
     }
 
