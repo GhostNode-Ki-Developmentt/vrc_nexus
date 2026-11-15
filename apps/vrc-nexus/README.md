@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.10.2 – Android-Fix
+
+- 🩹 **Android-Fix:** Die Handy-App blieb seit 2.9.x schwarz mit `{"error":"Nur sha1 verfügbar."}`. Die Handy-App kann jetzt auch SHA-256 (für den Admin-/Owner-Check), sie startet wieder normal.
+- Neuer Test prüft, dass die Handy-App jeden Hash kann, den das Backend benutzt.
+
 ### Neu in 2.10.1 – Eigene Hintergründe
 
 - ✨ **Eigene Hintergründe:** 5 mitgelieferte Hintergründe (Synthwave, Polarlicht, Sakura-Nacht, Nexus-Raster, Galaxie) im Hintergrund-Auswahlfenster – oben unter „✨ Eigene“, darunter wie gehabt die VRChat-Galerie.

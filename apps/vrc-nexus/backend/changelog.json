@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.10.2",
+  "title": "Android-Fix",
+  "body": "- 🩹 **Android-Fix:** Die Handy-App blieb seit 2.9.x schwarz mit `{\"error\":\"Nur sha1 verfügbar.\"}`. Die Handy-App kann jetzt auch SHA-256 (für den Admin-/Owner-Check), sie startet wieder normal.\n- Neuer Test prüft, dass die Handy-App jeden Hash kann, den das Backend benutzt."
+ },
+ {
   "version": "2.10.1",
   "title": "Eigene Hintergründe",
   "body": "- ✨ **Eigene Hintergründe:** 5 mitgelieferte Hintergründe (Synthwave, Polarlicht, Sakura-Nacht, Nexus-Raster, Galaxie) im Hintergrund-Auswahlfenster – oben unter „✨ Eigene“, darunter wie gehabt die VRChat-Galerie.\n- Funktionieren auch ohne VRChat-Login (Galerie nicht nötig) und in der Android-App."

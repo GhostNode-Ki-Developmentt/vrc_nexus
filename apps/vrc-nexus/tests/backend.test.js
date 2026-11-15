@@ -1472,6 +1472,15 @@ test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     if (!process.env.CI) assert.ok(Math.max(...tsv) <= fs.statSync(file).mtimeMs + 1000, 'i18n-dict.js ist veraltet – node scripts/i18n-build.js ausführen');
 });
 
+test('2.10.2 Handy-crypto kann alle Hashes, die das Backend nutzt', () => {
+    const shim = path.join(__dirname, '..', '..', 'vrc-nexus-android', 'src', 'shims', 'crypto.js');
+    if (!fs.existsSync(shim)) return;
+    const sc = require(shim), nc = require('crypto'), dir = path.join(__dirname, '..', 'backend'), algs = new Set();
+    for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.js'))) for (const m of fs.readFileSync(path.join(dir, f), 'utf8').matchAll(/createHash\('([a-z0-9]+)'\)/g)) algs.add(m[1]);
+    assert.ok(algs.has('sha256'));
+    for (const a of algs) for (const n of [0, 3, 55, 56, 64, 200]) { const b = nc.randomBytes(n); assert.strictEqual(sc.createHash(a).update(b).digest('hex'), nc.createHash(a).update(b).digest('hex'), a + ' / ' + n); }
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {
