@@ -1,12 +1,15 @@
 #!/usr/bin/env node
-/* Baut backend/changelog.json aus den „### Neu in X.Y.Z …“-Abschnitten der README (für die Seite „Über VRC Nexus“).
+/* Baut backend/changelog.json aus den „### Neu in X.Y.Z …“-Abschnitten der README (für die Seite „Über VRC Nexus“)
+ * und backend/changelog-nsfw.json aus backend/CHANGELOG-NSFW.md (🔞 nur in der App sichtbar, wenn freigeschaltet –
+ * öffentlich steht dafür „🔞 ***“).
  * Aufruf: node scripts/changelog-build.js  (läuft auch im Test – meldet, wenn die Datei veraltet ist) */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const root = path.join(__dirname, '..');
-function build() {
-    const md = fs.readFileSync(path.join(root, 'README.md'), 'utf8').split(/\r?\n/);
+function parse(file) {
+    let md = [];
+    try { md = fs.readFileSync(file, 'utf8').split(/\r?\n/); } catch (e) { return []; }
     const out = [];
     let cur = null;
     for (const line of md) {
@@ -17,9 +20,12 @@ function build() {
     }
     return out.map(e => ({ version: e.version, title: e.title, body: e.body.join('\n').trim() }));
 }
+const build = () => parse(path.join(root, 'README.md'));
+const buildNsfw = () => parse(path.join(root, 'backend', 'CHANGELOG-NSFW.md'));
 if (require.main === module) {
-    const list = build();
+    const list = build(), ns = buildNsfw();
     fs.writeFileSync(path.join(root, 'backend', 'changelog.json'), JSON.stringify(list, null, 1) + '\n');
-    console.log('✔ ' + list.length + ' Versionen → backend/changelog.json');
+    fs.writeFileSync(path.join(root, 'backend', 'changelog-nsfw.json'), JSON.stringify(ns, null, 1) + '\n');
+    console.log('✔ ' + list.length + ' Versionen → backend/changelog.json, ' + ns.length + ' → changelog-nsfw.json');
 }
-module.exports = { build };
+module.exports = { build, buildNsfw, parse };

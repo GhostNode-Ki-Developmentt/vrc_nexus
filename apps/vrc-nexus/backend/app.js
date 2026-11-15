@@ -982,10 +982,18 @@ class NexusApp {
         }
         throw new UserError('Unbekannte Aktion.');
     }
-    /** Seite „Über VRC Nexus“: Version, System, Changelog (aus backend/changelog.json, gebaut aus der README) */
+    /** Seite „Über VRC Nexus“: Version, System, Changelog (aus backend/changelog.json, gebaut aus der README; 🔞 aus changelog-nsfw.json nur freigeschaltet) */
     about(input = {}) {
         let log = [];
         try { log = require('./changelog.json'); } catch (e) { log = []; }
+        // 🔞 NSFW-Teil nur, wenn freigeschaltet – sonst bleibt „🔞 ***“ stehen
+        let ns = [];
+        if (this.nsfw && this.nsfw.access().unlocked) { try { ns = require('./changelog-nsfw.json'); } catch (e) { ns = []; } }
+        if (ns.length) {
+            const by = new Map(ns.map(e => [e.version, e]));
+            log = log.map(e => { const x = by.get(e.version); if (!x) return e; const extra = '**🔞 NSFW' + (x.title ? ' – ' + x.title : '') + '**\n\n' + x.body;
+                return Object.assign({}, e, { body: /^.*🔞 \*\*\*.*$/m.test(e.body) ? e.body.replace(/^.*🔞 \*\*\*.*$/m, extra) : e.body + '\n\n' + extra, nsfw: true }); });
+        }
         const n = Math.max(1, Math.min(50, int(input.n) || 2));
         const up = (() => { try { return this.updater.status(); } catch (e) { return null; } })();
         const pv = typeof process !== 'undefined' && process.versions ? process.versions : {};

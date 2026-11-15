@@ -1589,6 +1589,40 @@ test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP)
     for (const k of ['NEXUS_OWNER_HASH', 'NEXUS_REMOTE_HOST', 'NEXUS_TOY_UDP', 'NEXUS_RELAY_BASE']) delete process.env[k];
 });
 
+test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App nur freigeschaltet; Release-Notizen & Discord', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const { buildNsfw } = require('../scripts/changelog-build');
+    assert.deepStrictEqual(require('../backend/changelog-nsfw.json'), buildNsfw(), 'changelog-nsfw.json ist veraltet');
+    const cl = require.resolve('../backend/changelog.json'), cn = require.resolve('../backend/changelog-nsfw.json');
+    const keep = [require.cache[cl].exports, require.cache[cn].exports];
+    require.cache[cl].exports = [{ version: '9.9.9', title: 'Test', body: '- 🎉 Öffentlich\n- 🔞 *** (nur in der App sichtbar, wenn NSFW freigeschaltet ist)' }];
+    require.cache[cn].exports = [{ version: '9.9.9', title: 'Geheim', body: '- 💋 Geheime Neuerung' }];
+    const OWN = 'usr_' + '1'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWN);
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-213-')) } });
+    app.game.osc.stopListen();
+    let uid = 'usr_' + '2'.repeat(8) + '-1111-2222-3333-444444444444';
+    app.vrc.account = () => ({ vrc_id: uid, me: {}, display_name: 'X' });
+    let b = app.about({ n: 5 }).changelog[0].body;
+    assert.ok(/🔞 \*\*\*/.test(b) && !/Geheim/.test(b), 'gesperrt: nur ***');
+    uid = OWN;
+    b = app.about({ n: 5 }).changelog[0].body;
+    assert.ok(/Geheime Neuerung/.test(b) && /🔞 NSFW – Geheim/.test(b) && !/\*\*\* \(nur/.test(b) && /Öffentlich/.test(b), 'freigeschaltet: NSFW statt ***');
+    require.cache[cl].exports = keep[0]; require.cache[cn].exports = keep[1];
+    // Release-Notizen & Discord-Nachricht aus der README (öffentlicher Teil)
+    const { section, discord } = require('../scripts/release-notes');
+    const { VERSION } = require('../backend/vrchat');
+    assert.ok(section(VERSION), 'aktuelle Version steht in der README');
+    const d = discord(VERSION, 'https://github.com/x/releases/tag/v');
+    assert.ok(d.embeds[0].title.includes(VERSION) && d.embeds[0].description.length <= 4096 && d.allowed_mentions.parse.length === 0);
+    const { discordNsfw } = require('../scripts/release-notes');
+    assert.strictEqual(discordNsfw('0.0.1'), null, 'ohne NSFW-Teil kein Post im NSFW-Kanal');
+    delete process.env.NEXUS_OWNER_HASH;
+    app.tools.stop(); if (app.toys) app.toys.stop(); if (app.toyremote) app.toyremote.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

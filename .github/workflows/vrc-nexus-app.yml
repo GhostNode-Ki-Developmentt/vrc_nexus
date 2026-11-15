@@ -125,13 +125,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           HEAD_MSG: ${{ github.event.head_commit.message }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK_NSFW: ${{ secrets.DISCORD_WEBHOOK_NSFW }}
         run: |
           VER=$(node -p "require('./app/package.json').version")
+          CL=$(node app/scripts/release-notes.js "$VER")
           TAG="vrc-nexus-v$VER"
           MSG=$(printf '%s' "$HEAD_MSG" | head -n 1)
           if [ "$SIGNED" = "1" ]; then SIGNTXT="Die Windows-Dateien sind digital signiert. Android fragt nach „Installation aus unbekannten Quellen“."
           else SIGNTXT="Die Dateien sind nicht signiert: Windows SmartScreen → „Weitere Informationen“ → „Trotzdem ausführen“; Android fragt nach „Installation aus unbekannten Quellen“."; fi
-          NOTES=$(printf '%s\n' "## VRC Nexus $VER" "" \
+          NOTES=$(printf '%s\n' "## VRC Nexus $VER" "" "$CL" "" \
             "| Datei | Wofür |" "|---|---|" \
             "| VRC-Nexus-$VER-Setup.exe | Windows-Installer |" \
             "| VRC-Nexus-$VER-portable.exe | Windows ohne Installation |" \
@@ -142,5 +145,16 @@ jobs:
           if ! gh release view "$TAG" -R "$REPO" > /dev/null 2>&1; then
             gh release create "$TAG" -R "$REPO" --target "$GITHUB_SHA" --title "VRC Nexus $VER" --notes "$NOTES" || sleep 15
           fi
+          FIRST=1; if gh release view "$TAG" -R "$REPO" --json assets -q '.assets[].name' | grep -q 'Setup.exe$'; then FIRST=0; fi
           gh release upload "$TAG" -R "$REPO" --clobber app/dist/*.exe app/streamdeck/VRC-Nexus.streamDeckPlugin
           gh release edit "$TAG" -R "$REPO" --notes "$NOTES"
+          # 📣 Discord: einmal pro Version (nur beim ersten Hochladen), nur wenn das Secret DISCORD_WEBHOOK gesetzt ist
+          if [ -n "$DISCORD_WEBHOOK" ] && [ "$FIRST" = "1" ]; then
+            RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --discord > discord.json
+            curl -sS -f -H "Content-Type: application/json" -d @discord.json "$DISCORD_WEBHOOK" > /dev/null && echo "Discord: gepostet" || echo "::warning::Discord-Webhook fehlgeschlagen"
+          else echo "Discord: übersprungen (kein Secret oder schon gepostet)"; fi
+          # 🔞 extra Webhook: nur der NSFW-Teil, nur wenn die Version einen hat
+          if [ -n "$DISCORD_WEBHOOK_NSFW" ] && [ "$FIRST" = "1" ]; then
+            RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --discord-nsfw > discord-nsfw.json
+            if [ -s discord-nsfw.json ]; then curl -sS -f -H "Content-Type: application/json" -d @discord-nsfw.json "$DISCORD_WEBHOOK_NSFW" > /dev/null && echo "Discord NSFW: gepostet" || echo "::warning::NSFW-Webhook fehlgeschlagen"; else echo "Discord NSFW: kein NSFW-Teil in $VER"; fi
+          fi

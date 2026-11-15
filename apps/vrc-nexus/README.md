@@ -20,6 +20,12 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.13.0 – Discord-News & getrennter Changelog
+
+- 📣 **News in Discord:** Jedes Update postet automatisch eine Nachricht mit Changelog und Download-Links in den Discord-Kanal (Webhook als GitHub-Secret `DISCORD_WEBHOOK`). Ein **extra Webhook** (`DISCORD_WEBHOOK_NSFW`) bekommt den 🔞-Teil in einen eigenen Kanal – nur bei Versionen, die einen haben.
+- 📝 **Changelog in den GitHub-Releases** (und damit auch im Update-Hinweis der App).
+- 🔞 **Getrennter NSFW-Changelog:** öffentlich (README, GitHub, Discord-News) steht dafür nur „🔞 ***“; in der App unter „Über“ erscheint der NSFW-Teil nur, wenn NSFW freigeschaltet ist.
+
 ### Neu in 2.12.1 – Selbsttest der Fernsteuerung
 
 - 🧪 **Selbsttest der Fernsteuerung:** Unter „🎮 Partner steuern“ die eigene ID eintragen (oder auf „🧪 Ich“ klicken) – dann steuert die App dein eigenes Spielzeug direkt auf diesem PC, ohne Freigabeliste. „Fernsteuerung empfangen“ muss dafür an sein; die Höchststärke von außen gilt auch hier.

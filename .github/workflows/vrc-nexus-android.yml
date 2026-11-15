@@ -98,9 +98,10 @@ jobs:
           HEAD_MSG: ${{ github.event.head_commit.message }}
         run: |
           VER=$(node -p "require('./apps/vrc-nexus-android/package.json').version")
+          CL=$(node apps/vrc-nexus/scripts/release-notes.js "$VER")
           TAG="vrc-nexus-v$VER"
           MSG=$(printf '%s' "$HEAD_MSG" | head -n 1)
-          NOTES=$(printf '%s\n' "## VRC Nexus $VER" "" \
+          NOTES=$(printf '%s\n' "## VRC Nexus $VER" "" "$CL" "" \
             "| Datei | Wofür |" "|---|---|" \
             "| VRC-Nexus-$VER-Setup.exe | Windows-Installer |" \
             "| VRC-Nexus-$VER-portable.exe | Windows ohne Installation |" \
