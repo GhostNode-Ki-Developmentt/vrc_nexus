@@ -127,6 +127,7 @@ class Nsfw {
     async panic() {
         const c = this.cfg(), done = [];
         if (c.panic_toys && this.app.toys) { await this.app.toys.stopAll().catch(() => {}); done.push('Spielzeug gestoppt'); }
+        if (this.app.toyremote && this.app.toyremote.cfg().recv_on) { this.app.toyremote.panic(); done.push('Fernsteuerung aus'); }
         if (c.panic_private) { this.private = true; done.push('Privat-Modus an'); }
         if (c.panic_chat) {
             const g = this.app.game; g.suppressRotator = true;
@@ -159,7 +160,7 @@ class Nsfw {
         const a = this.access(), c = this.cfg();
         const out = { access: a, private: this.private, features: FEATURES };
         if (!a.unlocked) return out;
-        Object.assign(out, { cfg: c, current_avatar: str(this.acc() && this.acc().me && this.acc().me.currentAvatar), toys: this.app.toys ? this.app.toys.status() : null, remote: this.app.remote ? this.app.remote.status() : null });
+        Object.assign(out, { cfg: c, current_avatar: str(this.acc() && this.acc().me && this.acc().me.currentAvatar), toys: this.app.toys ? this.app.toys.status() : null, tremote: this.app.toyremote ? this.app.toyremote.status() : null, remote: this.app.remote ? this.app.remote.status() : null });
         if (a.owner) { const k = this.ownerKey(); Object.assign(out, { owner_key: k ? k.pub : '', key_known: !!(k && TRUSTED.includes(k.pub)), issued: this.issued() }); }
         return out;
     }

@@ -67,6 +67,7 @@ class NexusApp {
         this.nsfw = new (require('./nsfw').Nsfw)(this, opts.crypt);
         this.toys = opts.mobile ? null : new (require('./toys').Toys)(this);
         this.remote = opts.mobile ? null : new (require('./remote').Remote)(this);
+        this.toyremote = opts.mobile ? null : new (require('./toyremote').ToyRemote)(this);
         this.game.isPrivate = () => this.nsfw.private;
         this.admin = new (require('./admin').Admin)(this);
         this.tts = opts.mobile ? null : new Tts(this, opts.crypt);
@@ -173,6 +174,7 @@ class NexusApp {
             if (act.startsWith('nsfw_')) return await this.nsfw.action(act, input);
             if (act.startsWith('admin_')) return await this.admin.action(act, input);
             if (act.startsWith('toys_')) { if (!this.toys) throw new UserError('Nur in der Windows-App.'); return await this.toys.action(act, input); }
+            if (act.startsWith('tremote_')) { if (!this.toyremote) throw new UserError('Nur in der Windows-App.'); return await this.toyremote.action(act, input); }
             if (act.startsWith('remote_')) { if (!this.remote) throw new UserError('Nur in der Windows-App.'); return this.remote.action(act, input); }
             // Dashboard-Verbindung & Cloud-Sicherung: nur für den Besitzer
             if ((act.startsWith('backup_') || /^tools_link/.test(act) || act.startsWith('link_')) && !this.nsfw.isOwner()) throw new UserError('Nur für den Besitzer.');

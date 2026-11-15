@@ -20,6 +20,14 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.12.0 – Spielzeug-Fernsteuerung über User-ID
+
+- 🌐 **Spielzeug-Fernsteuerung über die User-ID** (NSFW → 🌐 Fernsteuerung): Nexus steuert Nexus – nur die User-ID des Partners eintragen, sonst nichts.
+  - Im selben WLAN **direkt** (findet den PC des Partners automatisch), sonst **automatisch über die GhostNode-Seite** (privat.sylvanclub.eu, `toyrelay.php`).
+  - **📥 Mich steuern lassen:** Freigabeliste (`usr_… | Name`), Höchststärke von außen, wer gerade steuert, Verlauf, 🚫 Beenden.
+  - **🎮 Partner steuern:** 📡 Verbinden (mit Rückmeldung), Stärke-Regler, alle Muster, 🎁 Überraschung, ⏹ Stopp.
+  - **Sicherheit:** nur IDs auf deiner Liste **und** mit gültigem Freischalt-Schlüssel (Spielzeug) für genau diese ID; Befehle 60 s gültig und nur einmal; ohne Signal nach 15 s aus; Muster max. 5 min; 🚨 Panik schaltet den Empfang aus.
+
 ### Neu in 2.11.0 – NSFW: Untertabs, Muster & Spielereien
 
 - ❤️ **NSFW mit Untertabs:** 🏠 Übersicht · 🎮 Spielzeug (Intiface / Buttplug.io, eigener Untertab) · 🎲 Spielereien · 📱 Handy.

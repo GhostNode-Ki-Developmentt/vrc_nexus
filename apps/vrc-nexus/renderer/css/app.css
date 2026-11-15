@@ -721,3 +721,6 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .ns-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff6fb5, #f5c242); transition: width 0.3s; }
 .ns-stats { display: flex; gap: 18px; margin: 4px 0 6px; } .ns-stats div { display: flex; flex-direction: column; } .ns-stats b { font-size: 1.4rem; color: var(--accent-gold, #f5c242); }
 .ns-card-big { font-size: 1.05rem; padding: 10px 12px; margin: 8px 0; border-left: 3px solid #ff6fb5; background: rgba(255, 111, 181, 0.07); }
+
+.ns-log { margin: 6px 0; padding-left: 16px; font-size: 0.8rem; max-height: 180px; overflow-y: auto; } .ns-log li { margin: 2px 0; }
+#nsfwBox .ok { color: #4ade80; } #nsfwBox .nc-row .small.ok, #nsfwBox .nc-row .small.bad { margin-right: 12px; }

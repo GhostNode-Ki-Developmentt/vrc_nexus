@@ -1512,6 +1512,75 @@ test('2.11.0: NSFW-Spielereien – Muster (alle 8), Dauer läuft ab, Überraschu
     app.toys.stop(); app.tools.stop();
 });
 
+test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP) und Internet-Briefkasten, Freigabeliste, Schlüssel, Doppelt, Höchststärke, Panik', async () => {
+    const http = require('http');
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const OWN = 'usr_' + 'e'.repeat(8) + '-1111-2222-3333-444444444444', PART = 'usr_' + 'f'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWN); process.env.NEXUS_REMOTE_HOST = '127.0.0.1'; process.env.NEXUS_TOY_UDP = '17991';
+    // Briefkasten wie toyrelay.php
+    const boxes = {};
+    const relay = http.createServer(async (req, res) => {
+        let raw = ''; for await (const c of req) raw += c; const d = JSON.parse(raw), a = new URL(req.url, 'http://x').searchParams.get('a'), out = o => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
+        if (a === 'send') { if (!boxes[d.to]) return out({ error: 'Empfänger hat die Fernsteuerung über diese Webseite nicht an.' }); boxes[d.to].m.push(d.msg); return out({ ok: true }); }
+        const b = boxes[d.to] = boxes[d.to] || { k: d.key, m: [] }; if (b.k !== d.key) return out({ error: 'fremd' }); const m = b.m; b.m = []; out({ msgs: m });
+    });
+    await new Promise(r => relay.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_RELAY_BASE = process.env.NEXUS_TEST_RELAY || 'http://127.0.0.1:' + relay.address().port;   // NEXUS_TEST_RELAY = echtes toyrelay.php (php -S)
+    const mk = async uid => { const db = await openDatabase(null); const a = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-212-')) } }); a.game.osc.stopListen(); a.vrc.account = () => ({ vrc_id: uid, me: {}, display_name: uid === OWN ? 'Besitzer' : 'Partner' }); return a; };
+    const O = await mk(OWN), P = await mk(PART);
+    const pub = O.nsfw.makeOwnerKey(); P.nsfw.trusted.push(pub);
+    const { token } = await O.nsfw.issue({ uid: PART, name: 'Partner', features: 'nsfw,toys' });
+    await P.post({ act: 'nsfw_unlock', token }, {});
+    const t = O.toys, sent = []; t.ws = { readyState: 1 }; t.req = async m => { sent.push(m); return {}; };
+    t.devices.set(0, { index: 0, name: 'Testgerät', motors: [{ index: 0, type: 'Vibrate', steps: 100 }] });
+    const last = () => { const l = sent.filter(m => m.ScalarCmd); return l.length ? l[l.length - 1].ScalarCmd.Scalars[0].Scalar : null; };
+    // nicht auf der Liste
+    await O.post({ act: 'tremote_cfg', recv_on: '1', lan_port: '17990', max: '60', allow: '' }, {});
+    await U.sleep(150);
+    await P.post({ act: 'tremote_cfg', t_uid: 'https://vrchat.com/home/user/' + OWN }, {});
+    await assert.rejects(P.post({ act: 'tremote_send', c: 'ping' }, {}), /Freigabeliste/);
+    assert.strictEqual(P.toyremote.status().ctrl.via, 'lan', 'im Heimnetz per UDP gefunden');
+    await O.post({ act: 'tremote_cfg', allow: PART + ' | Partner' }, {});
+    let st = await P.post({ act: 'tremote_send', c: 'ping' }, {});
+    assert.ok(st.ctrl.ack.ok && /verbunden mit Besitzer/.test(st.ctrl.ack.msg), st.ctrl.ack.msg);
+    await P.post({ act: 'tremote_send', c: 'set', lv: '1' }, {});
+    assert.strictEqual(last(), 0.6, 'Höchststärke 60 %');
+    assert.strictEqual(O.toyremote.status().active.name, 'Partner');
+    // Doppelt, falsche ID, kaputter Schlüssel
+    const m = { v: 1, from: PART, to: OWN, tok: token, ts: Date.now(), n: 'ab'.repeat(10), c: 'stop', a: {} };
+    await O.toyremote.receive(m, 'lan');
+    await assert.rejects(O.toyremote.receive(m, 'lan'), /doppelt/);
+    await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: 'cd'.repeat(10), tok: token.slice(0, -4) + 'AAAA' }), 'lan'), /Schlüssel ungültig/);
+    await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: 'ef'.repeat(10), ts: Date.now() - 120000 }), 'lan'), /zu alt/);
+    // ohne Lebenszeichen → aus
+    await P.post({ act: 'tremote_send', c: 'set', lv: '0.5' }, {});
+    assert.strictEqual(last(), 0.3);
+    P.toyremote.ctrl.lv = 0; O.toyremote.remoteAt = Date.now() - 16000; O.toyremote.tick();
+    await U.sleep(20); assert.strictEqual(last(), 0, 'nach 15 s ohne Signal aus');
+    // Internet: Heimnetz beim Besitzer aus → Weg über den Briefkasten
+    await O.post({ act: 'tremote_cfg', lan: '0' }, {});
+    await O.toyremote.pollWeb();
+    P.toyremote.ctrl.via = ''; P.toyremote.ctrl.addr = '';
+    st = await P.post({ act: 'tremote_send', c: 'pattern', id: 'welle', strength: '100' }, {});
+    assert.strictEqual(st.ctrl.via, 'web', 'nicht im Heimnetz → Internet');
+    await U.sleep(50); await O.toyremote.pollWeb(); await U.sleep(50);
+    assert.ok(t.pat && t.pat.id === 'welle' && t.pat.strength <= 0.6 && t.pat.until - t.pat.start <= 600000, 'Muster gedeckelt');
+    await P.toyremote.pollWeb();
+    assert.ok(P.toyremote.status().ctrl.ack && P.toyremote.status().ctrl.ack.via === 'web' && P.toyremote.status().ctrl.ack.ok, 'Antwort über den Briefkasten');
+    // fremder Briefkasten-Schlüssel kann nicht mitlesen
+    const { uidHash } = require('../backend/toyremote');
+    const r = await fetch(process.env.NEXUS_RELAY_BASE + '/toyrelay.php?a=poll', { method: 'POST', body: JSON.stringify({ to: uidHash(OWN), key: 'x'.repeat(48) }) }).then(x => x.json());
+    assert.ok(r.error, 'Briefkasten nur mit Schlüssel');
+    // Panik
+    await O.post({ act: 'nsfw_panic' }, {});
+    assert.strictEqual(O.toyremote.cfg().recv_on, false, 'Panik schaltet Empfang aus');
+    await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: '12'.repeat(10), ts: Date.now() }), 'lan'), /aus/);
+    for (const a of [O, P]) { a.toyremote.stop(); a.toys.stop(); a.tools.stop(); }
+    relay.close();
+    for (const k of ['NEXUS_OWNER_HASH', 'NEXUS_REMOTE_HOST', 'NEXUS_TOY_UDP', 'NEXUS_RELAY_BASE']) delete process.env[k];
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

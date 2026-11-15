@@ -44,11 +44,12 @@
         let h = '<div class="ns-top"><button type="button" class="btn ns-panic" data-ns="panic">🚨 PANIK</button>'
             + '<button type="button" class="btn ' + (st.private ? 'btn-gold' : '') + '" data-ns="private">🕶 Privat-Modus ' + (st.private ? 'AN' : 'aus') + '</button>'
             + '<span class="muted small">' + (a.owner ? '👑 Besitzer' : '🔓 freigeschaltet' + (a.exp ? ' bis ' + esc(new Date(a.exp * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) : '')) + '</span></div>';
-        const tabs = [['main', '🏠 Übersicht'], ['toys', '🎮 Spielzeug', has('toys') && t], ['fun', '🎲 Spielereien'], ['phone', '📱 Handy', has('remote') && r]].filter(x => x.length < 3 || x[2]);
+        const tabs = [['main', '🏠 Übersicht'], ['toys', '🎮 Spielzeug', has('toys') && t], ['fun', '🎲 Spielereien'], ['net', '🌐 Fernsteuerung', has('toys') && st.tremote], ['phone', '📱 Handy', has('remote') && r]].filter(x => x.length < 3 || x[2]);
         if (!tabs.some(x => x[0] === sub)) sub = 'main';
         h += '<div class="chips ns-sub">' + tabs.map(([k, n]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-nsub="' + k + '">' + n + '</button>').join('') + '</div>';
         h += '<div class="nc-grid">';
         if (sub === 'fun') h += funHtml(t, has('toys'));
+        if (sub === 'net' && st.tremote) h += netHtml(st.tremote, t);
         if (sub === 'main') {
         // Avatar-Paare
         h += sec('🎭 SFW ↔ NSFW-Avatar', '<div class="ns-pairs">' + (c.pairs || []).map((p, i) => '<button type="button" class="btn ' + (st.current_avatar === p.nsfw ? 'btn-gold' : '') + '" data-ns="avatar" data-i="' + i + '">'
@@ -121,6 +122,30 @@
         h += sec('⏳ Countdown', '<p class="muted small">Zählt in der Chatbox runter.</p><div class="nc-row">' + [3, 5, 10].map(n => '<button type="button" class="btn btn-sm" data-cd="' + n + '">' + n + '</button>').join('') + '<input type="text" id="nsCdEnd" maxlength="40" value="' + esc(ls('cdend', 'Los! 💋')) + '" style="flex:1"></div>');
         return h;
     }
+    const ago = ms => { const s = Math.round((Date.now() - ms) / 1000); return s < 60 ? 'vor ' + s + ' s' : 'vor ' + Math.round(s / 60) + ' min'; };
+    function netHtml(x, t) {
+        const c = x.cfg, L = x.listen, a = x.active, k = x.ctrl, ack = k.ack;
+        const dot = (o, label) => '<span class="small ' + (o.ok ? 'ok' : o.err ? 'bad' : 'muted') + '">' + (o.ok ? '✔ ' : o.err ? '⚠ ' : '○ ') + label + (o.err ? ' – ' + esc(o.err) : '') + '</span>';
+        let h = sec('📥 Mich steuern lassen', chk('tr_recv_on', c.recv_on, '<b>Fernsteuerung empfangen</b>')
+            + (c.recv_on ? '<p class="nc-row">' + dot(L.lan, 'Heimnetz') + dot(L.web, 'Internet (GhostNode)') + '</p>' : '')
+            + '<div class="nc-row"><span class="small">Deine User-ID</span><code class="ns-url">' + esc(x.my_uid || '–') + '</code>' + (x.my_uid ? '<button type="button" class="vx-copy" data-copy="' + esc(x.my_uid) + '">⧉</button>' : '') + '</div>'
+            + '<p class="muted small">Die gibst du deinem Partner – sonst muss niemand etwas eintragen. Verbindung im selben WLAN direkt, sonst automatisch über deine GhostNode-Seite.</p>'
+            + '<label class="small">✅ Wer darf dich steuern? (eine Zeile: <code>usr_… | Name</code>)</label><textarea id="trAllow" rows="3" placeholder="usr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | Name">' + esc(c.allow.map(z => z.uid + (z.name ? ' | ' + z.name : '')).join('\n')) + '</textarea>'
+            + '<div class="nc-row"><button type="button" class="btn btn-sm" data-ns="tr_allow">💾 Speichern</button><span class="small">Höchststärke von außen</span><input type="range" min="5" max="100" step="5" value="' + c.max + '" data-tr="max"><span class="small">' + c.max + ' %</span></div>'
+            + (a ? '<div class="ns-patrun"><b>🎮 ' + esc(a.name) + '</b> <span class="small">steuert gerade (' + (a.via === 'lan' ? '🏠 Heimnetz' : '🌐 Internet') + ', ' + ago(a.at) + ')</span><div class="ns-bar"><i style="width:' + x.remote_lv + '%"></i></div><button type="button" class="btn btn-sm ns-stop" data-ns="tr_kick">🚫 Beenden</button></div>' : '')
+            + (x.log.length ? '<details class="ns-edit"' + (a ? ' open' : '') + '><summary class="small">Verlauf</summary><ul class="ns-log">' + x.log.map(l => '<li><span class="muted">' + esc(new Date(l.t * 1000).toLocaleTimeString(window.nxLoc ? nxLoc() : 'de-DE')) + '</span> <b>' + esc(l.who) + '</b> ' + esc(l.txt) + '</li>').join('') + '</ul></details>' : '')
+            + '<p class="muted small">Geprüft wird: Freigabeliste + gültiger Freischalt-Schlüssel (mit Spielzeug) für genau diese ID. Befehle gelten 60 s und nur einmal; ohne Signal geht der Regler nach 15 s auf 0. 🚨 Panik schaltet den Empfang aus.</p>');
+        const via = k.via === 'lan' ? '🏠 Heimnetz' : k.via === 'web' ? '🌐 Internet' : '';
+        h += sec('🎮 Partner steuern', '<div class="nc-row"><span class="small">User-ID des Partners</span><input type="text" id="trUid" value="' + esc(c.t_uid) + '" placeholder="usr_… oder Profil-Link" style="flex:1"><button type="button" class="btn btn-sm btn-gold" data-ns="tr_ping">📡 Verbinden</button></div>'
+            + (ack || k.err ? '<p class="small ' + (k.err || (ack && !ack.ok) ? 'bad' : 'ok') + '">' + (k.err ? '⚠ ' + esc(k.err) : (ack.ok ? '✔ ' : '⚠ ') + esc(ack.msg) + ' <span class="muted">' + ago(ack.at) + (via ? ' · ' + via : '') + '</span>') + '</p>' : '<p class="muted small">Dein Partner muss bei sich „Fernsteuerung empfangen“ anhaben und dich auf seiner Liste haben.</p>')
+            + '<div class="ns-dev"><b>Stärke</b><input type="range" min="0" max="100" value="' + k.lv + '" data-trlv="1"><span class="small">' + k.lv + ' %</span></div>'
+            + '<div class="ns-pats">' + ((t && t.patterns) || []).map(p => '<button type="button" class="btn btn-sm" data-trpat="' + p.id + '">' + esc(p.name) + '</button>').join('') + '</div>'
+            + '<div class="nc-row"><button type="button" class="btn btn-sm" data-ns="tr_surprise">🎁 Überraschung</button><button type="button" class="btn ns-stop" data-ns="tr_stop">⏹ Stopp beim Partner</button></div>'
+            + '<p class="muted small">Muster laufen beim Partner höchstens 5 min und nie stärker als seine Höchststärke.</p>');
+        return h;
+    }
+    const trSend = (c, extra) => api('tremote_send', Object.assign({ c }, extra || {})).then(d => { st.tremote = d; if (c !== 'set') toast(d.msg); render(); }).catch(x => { toast(x.message, true); refreshAccess(); });
+    const trCfg = data => api('tremote_cfg', data).then(d => { st.tremote = d; toast(d.msg); render(); }).catch(x => toast(x.message, true));
     const chat = (text, sound) => api('nsfw_chat', { text, sound: sound === false ? '0' : '1' }).then(d => toast(d.msg)).catch(x => toast(x.message, true));
     let cdRun = false;
     async function countdown(n) {
@@ -141,6 +166,7 @@
         const mb = e.target.closest('[data-mood]'); if (mb) return chat(MOODS[+mb.dataset.mood]);
         const tb = e.target.closest('[data-tod]'); if (tb) { tod = (tb.dataset.tod === 't' ? '💭 Wahrheit: ' : '🔥 Pflicht: ') + pick(tb.dataset.tod === 't' ? TRUTH : DARE); return render(); }
         const cb = e.target.closest('[data-cd]'); if (cb) return countdown(+cb.dataset.cd);
+        const tp = e.target.closest('[data-trpat]'); if (tp) return trSend('pattern', { id: tp.dataset.trpat, speed: pc.speed, strength: pc.strength, seconds: 300 });
         const b = e.target.closest('[data-ns]');
         if (!b) return;
         const a = b.dataset.ns;
@@ -148,6 +174,11 @@
         const simple = { panic: 'nsfw_panic', private: 'nsfw_private', boundaries: 'nsfw_boundaries' };
         if (simple[a]) return api(simple[a]).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));
         if (a === 'avatar') return api('nsfw_avatar', { i: b.dataset.i }).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));
+        if (a === 'tr_allow') return trCfg({ allow: $v('#trAllow') });
+        if (a === 'tr_kick') return api('tremote_kick').then(d => { st.tremote = d; toast(d.msg); render(); }).catch(x => toast(x.message, true));
+        if (a === 'tr_ping') return api('tremote_cfg', { t_uid: $v('#trUid') }).then(() => trSend('ping')).catch(x => toast(x.message, true));
+        if (a === 'tr_surprise') return trSend('surprise');
+        if (a === 'tr_stop') return trSend('stop');
         if (a === 'pat_stop') return toysDo('toys_pattern_stop');
         if (a === 'surprise') return toysDo('toys_surprise');
         if (a === 'stats_reset') return toysDo('toys_stats_reset');
@@ -179,6 +210,7 @@
     const $v = s => { const el = box.querySelector(s); return el ? el.value : ''; };
     function onChange(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onChange(e, render)) return;
+        const tm = e.target.closest('[data-tr]'); if (tm) return trCfg({ [tm.dataset.tr]: tm.value });
         const pe = e.target.closest('[data-pc]');
         if (pe) {
             pc[pe.dataset.pc] = pe.dataset.pc === 'device' ? pe.value : Number(pe.value); lsSet('pat', pc);
@@ -190,12 +222,16 @@
         if (!el) return;
         const k = el.dataset.nk, v = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
         if (/^panic_/.test(k)) return save({ [k]: v });
+        if (k === 'tr_recv_on') return trCfg({ recv_on: v });
         if (k === 'remote_on') return api('remote_cfg', { on: v }).then(d => { st.remote = d; toast(d.msg); setTimeout(() => refreshAccess(), 600); render(); }).catch(x => toast(x.message, true));
         return toysDo('toys_cfg', { [k]: v });
     }
-    let slideT = null;
+    let slideT = null, trT = null;
     function onInput(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onInput(e)) return;
+        const tl = e.target.closest('input[type=range][data-trlv]');
+        if (tl) { const s = tl.parentNode.querySelector('span'); if (s) s.textContent = tl.value + ' %'; clearTimeout(trT); trT = setTimeout(() => trSend('set', { lv: tl.value / 100 }), 350); return; }
+        const tr = e.target.closest('input[type=range][data-tr]'); if (tr) { const s = tr.nextElementSibling; if (s) s.textContent = tr.value + ' %'; return; }
         const pe = e.target.closest('input[type=range][data-pc]');
         if (pe) { const b = pe.parentNode.querySelector('b'); if (b) b.textContent = pe.dataset.pc === 'speed' ? pe.value + '×' : pe.value + ' %'; return; }
         const r = e.target.closest('input[type=range][data-dev]');
