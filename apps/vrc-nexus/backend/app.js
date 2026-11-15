@@ -135,6 +135,7 @@ class NexusApp {
         const block = (h, open, close, keep) => h.replace(new RegExp(open + '([\\s\\S]*?)' + close, 'g'), (m, inner) => (keep ? inner : ''));
         html = block(html, '\\{\\{IF_LOGIN\\}\\}', '\\{\\{END_LOGIN\\}\\}', !acc);
         html = block(html, '\\{\\{IF_CONNECTED\\}\\}', '\\{\\{END_CONNECTED\\}\\}', !!acc);
+        if (!this.nsfw || !this.nsfw.isOwner()) html = html.replace(/^.*(data-tab="admin"|data-pane="admin"|nexus-admin\.js).*\n/gm, '');   // fremdes Konto: Admin gar nicht ausliefern
         const status = ['join me', 'active', 'ask me', 'busy'].map(s => '<label style="--sc: ' + U.VRC_STATUS[s][1] + ';"><input type="radio" name="status" value="' + esc(s) + '"><span>' + esc(U.VRC_STATUS[s][0]) + '</span></label>').join('\n');
         const vrcx = { ui: this.settings.ui(), mobile: !!this.mobile, connected: !!acc, status: Object.fromEntries(Object.entries(U.VRC_STATUS).map(([k, v]) => [k, { label: v[0], color: v[1] }])), syncMin: SYNC_MIN, discord: false, app: true, version: VERSION };
         const map = { LOGIN_HIDDEN: p ? 'hidden' : '', TFA_HIDDEN: p ? '' : 'hidden', TFA_TYPES: esc((p || []).join(',')), STATUS_RADIOS: status, SYNC_MIN: SYNC_MIN, OFFLINE_MIN: OFFLINE_SYNC / 60,

@@ -20,6 +20,15 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.2 – Spielzeug-Verknüpfungen (SPS) & Admin nur für den Besitzer
+
+- **🔗 Spielzeug-Verknüpfungen** (❤️ NSFW / ERP → Spielzeug): pro Gerät beliebig viele Quellen, die stärkste zählt:
+  - **SPS-Plugs, SPS-Sockets, SPS-Touch-Zonen** (Avatar-Parameter im OGB-/VRCFury-Format) – mit **Einschließen/Ausschließen** einzelner Zonen nach Namen (gesehene Zonen stehen zur Auswahl) und **„berührt von“**: fremde Sockets/Plugs, fremde Hände/Füße/Kopf, eigene Sockets/Plugs, eigene Hände.
+  - **Konstant** (fester Wert) und **Avatar-Parameter** (beliebiger Parameter).
+  - **Mutatoren** je Verknüpfung: **Skalieren**, **Totzone**, **Bewegung** (Stärke nach Bewegung statt Tiefe).
+  - Geräte bleiben mit ihren Verknüpfungen gespeichert, auch wenn sie gerade nicht verbunden sind; Live-Pegel je Gerät. Hauptschalter „Verknüpfungen aktiv“ – Not-Aus und Panik schalten ihn aus.
+- **👑 Admin nur für den Besitzer ausgeliefert**: Meldet sich ein anderes Konto an, sind Admin-Menüpunkt, Admin-Seite und Admin-Skript gar nicht in der App-Seite enthalten (nicht nur versteckt); alle Admin-Befehle verweigert die App sowieso.
+
 ### Neu in 2.9.1 – 👑 Admin als eigener Menüpunkt mit Spielereien
 
 - **👑 Admin als eigener Menüpunkt** in der Seitenleiste (nur für den Besitzer sichtbar und nutzbar):

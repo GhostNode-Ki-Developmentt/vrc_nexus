@@ -1402,6 +1402,45 @@ test('2.9.1: Admin (nur Besitzer) – Systeminfo, API-Konsole nur lesen, Ereigni
     app.tools.stop();
 });
 
+test('2.9.2: Spielzeug-Verknüpfungen (SPS-Plugs/Sockets/Touch, Ein-/Ausschließen, berührt von, Mutatoren) + Admin nur für Besitzer ausgeliefert', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const OWNER = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWNER);
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-292-')) } });
+    app.game.osc.stopListen();
+    let uid = OWNER;
+    app.vrc.account = () => ({ vrc_id: uid, me: {}, display_name: 'X' });
+    assert.ok(/data-tab="admin"/.test(app.page()) && /nexus-admin\.js/.test(app.page()), 'Besitzer bekommt Admin');
+    uid = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444';
+    const pg = app.page();
+    assert.ok(!/data-tab="admin"/.test(pg) && !/data-pane="admin"/.test(pg) && !/nexus-admin\.js/.test(pg), 'fremdes Konto: Admin gar nicht in der Seite');
+    uid = OWNER;
+    const t = app.toys, sent = [];
+    t.ws = { readyState: 1 }; t.req = async m => { sent.push(m); return {}; };
+    t.devices.set(0, { index: 0, name: 'Power Masturbator', motors: [{ index: 0, type: 'Vibrate', steps: 100 }] });
+    t.devices.set(1, { index: 1, name: 'Deep Diver', motors: [{ index: 0, type: 'Vibrate', steps: 100 }] });
+    const last = i => { const l = sent.filter(m => m.ScalarCmd && m.ScalarCmd.DeviceIndex === i); return l.length ? l[l.length - 1].ScalarCmd.Scalars[0].Scalar : null; };
+    app.toys.saveCfg({ links_on: '1', idle_stop: '5', links: JSON.stringify({
+        'Power Masturbator': [{ type: 'plugs', include: [], exclude: ['Finger'], src: { pen_others: true, touch_others: false } }],
+        'Deep Diver': [{ type: 'sockets', include: ['Vag'], src: { pen_others: true }, mut: [{ t: 'dead', v: 2 }, { t: 'scale', v: 2 }] }, { type: 'constant', value: 10 }] }) });
+    const osc = (n, v) => t.onOsc('/avatar/parameters/' + n, [v]);
+    osc('OGB/Pen/Dick/PenOthers', 0.6); osc('OGB/Pen/Finger/PenOthers', 0.9); osc('OGB/Pen/Dick/TouchOthers', 0.95);
+    osc('OGB/Orf/Vag/PenOthers', 0.4); osc('OGB/Orf/Anal/PenOthers', 1);
+    t.compute(); await U.sleep(20);
+    assert.strictEqual(last(0), 0.6, 'Plug „Dick“ von fremdem Socket; Finger ausgeschlossen; Hände aus');
+    assert.strictEqual(last(1), 0.5, 'Socket „Vag“: Totzone 20 % → 0,25, ×2 = 0,5 (Anal nicht eingeschlossen)');
+    osc('OGB/Orf/Vag/PenOthers', 0);
+    t.compute(); await U.sleep(20);
+    assert.strictEqual(last(1), 0.1, 'nichts drin → Konstant 10 % bleibt');
+    assert.ok(t.status().zones.plugs.includes('Dick') && t.status().zones.sockets.includes('Anal'), 'gefundene Zonen für die Auswahl');
+    await app.post({ act: 'toys_stop' }, {});
+    assert.strictEqual(app.toys.cfg().links_on, false, 'Not-Aus schaltet Verknüpfungen aus');
+    delete process.env.NEXUS_OWNER_HASH;
+    app.toys.stop(); app.tools.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

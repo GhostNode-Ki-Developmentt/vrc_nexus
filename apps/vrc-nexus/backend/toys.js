@@ -7,14 +7,24 @@
  */
 const { str, int, arr, cut, UserError } = require('./util');
 
-const DEF = { url: 'ws://127.0.0.1:12345', auto: false, max: 100, rules: [], idle_stop: 3, ogb: false, ogb_self: false, ogb_device: 'all', ogb_min: 0.05 };
+const DEF = { url: 'ws://127.0.0.1:12345', auto: false, max: 100, rules: [], idle_stop: 3, ogb: false, ogb_self: false, ogb_device: 'all', ogb_min: 0.05, links: {}, links_on: false };
 /** OGB-/SPS-kompatible Avatar-Parameter (OscGoesBrrr, VRCFury Haptics): …/<Name>/(Touch|Pen|Frot)(Self|Others) bzw. VFH/Zone/… – Werte 0…1 = Nähe */
 const OGB_RE = /^(?:OGB|VFH)\/.*?(Touch|Pen|Frot)(Self|Others)$/i;
+/** SPS-Zonen: OGB/<Pen|Orf|Touch>/<Name>/<Wert> (auch VFH/Zone/…) – Pen = Plug, Orf = Socket.
+ *  Werte: PenOthers/PenSelf (fremde/eigene Gegenstücke), TouchOthers/TouchSelf (Hände/Füße/Kopf), FrotOthers (fremde Plugs) */
+const ZONE_RE = /^(?:OGB|VFH(?:\/Zone)?)\/(Pen|Orf|Touch)\/([^/]+)\/(\w+)$/i;
+const ZONE_KIND = { pen: 'plugs', orf: 'sockets', touch: 'touch' };
+const LINK_TYPES = ['plugs', 'sockets', 'touch', 'constant', 'param'];
+/** „berührt von“: Schalter → Wert-Namen */
+const SRC = { pen_others: ['penothers'], touch_others: ['touchothers', 'others'], frot_others: ['frotothers'], pen_self: ['penself'], touch_self: ['touchself', 'self'], frot_self: ['frotself'] };
+const SRC_DEF = { pen_others: true, touch_others: true, frot_others: true, pen_self: false, touch_self: false, frot_self: false };
 
 class Toys {
     constructor(app) {
         this.app = app; this.ws = null; this.id = 1; this.wait = new Map(); this.devices = new Map(); this.state = 'aus'; this.error = '';
         this.level = new Map(); this.sentAt = 0; this.pending = null; this.lastParam = 0;
+        this.zones = { plugs: {}, sockets: {}, touch: {} }; this.pvals = {}; this.linkSent = new Map(); this.linkLevel = new Map();
+        this.linkTimer = setInterval(() => this.compute(), 250); if (this.linkTimer.unref) this.linkTimer.unref();
         if (app.game && app.game.osc) { app.game.osc.taps = app.game.osc.taps || new Set(); app.game.osc.taps.add((a, v) => this.onOsc(a, v)); }
         this.timer = setInterval(() => this.idle(), 1000); if (this.timer.unref) this.timer.unref();
     }
@@ -25,6 +35,19 @@ class Toys {
         if (c.auto !== undefined) n.auto = c.auto === true || c.auto === '1';
         if (c.max !== undefined) n.max = Math.max(5, Math.min(100, int(c.max)));
         if (c.idle_stop !== undefined) n.idle_stop = Math.max(0, Math.min(60, int(c.idle_stop)));
+        if (c.links_on !== undefined) n.links_on = c.links_on === true || c.links_on === '1';
+        if (c.links !== undefined) {
+            let l = c.links; if (typeof l === 'string') { try { l = JSON.parse(l); } catch (e) { l = {}; } }
+            const names = v => arr(v).map(x => cut(str(x), 60)).filter(Boolean).slice(0, 30);
+            n.links = {};
+            for (const [dev, arrL] of Object.entries(l || {}).slice(0, 20)) {
+                const list = arr(arrL).map(x => ({ type: LINK_TYPES.includes(x.type) ? x.type : '', include: names(x.include), exclude: names(x.exclude),
+                    src: Object.fromEntries(Object.keys(SRC).map(k => [k, x.src && x.src[k] !== undefined ? !!x.src[k] : SRC_DEF[k]])),
+                    value: Math.max(0, Math.min(100, int(x.value === undefined ? 100 : x.value))), param: cut(str(x.param).replace(/^\/avatar\/parameters\//, ''), 80),
+                    mut: arr(x.mut).map(m => ({ t: ['scale', 'dead', 'motion'].includes(m.t) ? m.t : '', v: Math.max(0, Math.min(10, Number(m.v) || 0)) })).filter(m => m.t).slice(0, 6) })).filter(x => x.type).slice(0, 10);
+                if (list.length) n.links[cut(str(dev), 80)] = list;
+            }
+        }
         if (c.ogb !== undefined) n.ogb = c.ogb === true || c.ogb === '1';
         if (c.ogb_self !== undefined) n.ogb_self = c.ogb_self === true || c.ogb_self === '1';
         if (c.ogb_device !== undefined) n.ogb_device = str(c.ogb_device || 'all');
@@ -40,6 +63,7 @@ class Toys {
     status() {
         return { state: this.state, error: this.error, connected: !!(this.ws && this.ws.readyState === 1), cfg: this.cfg(),
             ogb_params: [...(this.ogbSeen || [])].slice(0, 30),
+            zones: Object.fromEntries(Object.entries(this.zones).map(([k, m]) => [k, Object.keys(m).sort()])), link_levels: Object.fromEntries(this.linkLevel || []),
             devices: [...this.devices.values()].map(d => ({ index: d.index, name: d.name, motors: d.motors.length, level: Math.round((this.level.get(d.index) || 0) * 100) })) };
     }
 
@@ -117,13 +141,15 @@ class Toys {
         return this.status();
     }
     async stopAll() {
-        this.level.clear(); this.rule = {};
+        this.level.clear(); this.rule = {}; this.linkSent.clear();
+        if (this.cfg().links_on) this.saveCfg({ links_on: false });   // Not-Aus: Verknüpfungen erst wieder von Hand einschalten
         if (this.ws && this.ws.readyState === 1) await this.req({ StopAllDevices: {} }).catch(() => {});
         return this.status();
     }
     /** Avatar-Parameter → Stärke (Regeln) */
     onOsc(address, args) {
         const c = this.cfg();
+        if (c.links_on && address.startsWith('/avatar/parameters/')) this.track(address.slice(19), args[0]);
         if (!(c.auto && c.rules.length) && !c.ogb) return;
         if (!this.devices.size || !address.startsWith('/avatar/parameters/')) return;
         if (this.app.nsfw && !this.app.nsfw.access().features.includes('toys')) return;
@@ -149,6 +175,66 @@ class Toys {
             this.lastParam = Date.now();
         }
         this.flush();
+    }
+    /** SPS-Zonen und Parameter für die Geräte-Verknüpfungen merken (inkl. Bewegung = Änderung pro Sekunde) */
+    track(name, v) {
+        const val = typeof v === 'boolean' ? (v ? 1 : 0) : Number(v);
+        if (!Number.isFinite(val)) return;
+        const x = Math.max(0, Math.min(1, val)), t = Date.now();
+        const z = ZONE_RE.exec(name);
+        if (z) {
+            const kind = ZONE_KIND[z[1].toLowerCase()], zone = this.zones[kind][z[2]] = this.zones[kind][z[2]] || {};
+            const key = z[3].toLowerCase(), old = zone[key];
+            const speed = old ? Math.abs(x - old.v) / Math.max(0.02, (t - old.at) / 1000) : 0;
+            zone[key] = { v: x, at: t, speed: old ? Math.max(speed, old.speed * 0.6) : 0 };
+        }
+        const o = this.pvals[name];
+        this.pvals[name] = { v: x, at: t, speed: o ? Math.abs(x - o.v) / Math.max(0.02, (t - o.at) / 1000) : 0 };
+    }
+    /** Mutatoren: Totzone → Bewegung → Skalieren */
+    mutate(raw, speed, mut) {
+        let x = raw;
+        for (const m of mut) {
+            if (m.t === 'dead') x = x <= m.v / 10 ? 0 : (x - m.v / 10) / (1 - m.v / 10);
+            if (m.t === 'motion') x = Math.min(1, speed * (m.v || 1) * 0.5);
+            if (m.t === 'scale') x = Math.min(1, x * (m.v || 1));
+        }
+        return Math.max(0, Math.min(1, x));
+    }
+    linkValue(l, fresh) {
+        const motion = l.mut.some(m => m.t === 'motion');
+        if (l.type === 'constant') return this.mutate(l.value / 100, 0, l.mut);
+        if (l.type === 'param') { const p = this.pvals[l.param]; return p && p.at > fresh ? this.mutate(p.v, p.speed, l.mut) : 0; }
+        let best = 0;
+        for (const [name, zone] of Object.entries(this.zones[l.type] || {})) {
+            if ((l.include.length && !l.include.includes(name)) || l.exclude.includes(name)) continue;
+            for (const [s, keys] of Object.entries(SRC)) {
+                if (!l.src[s]) continue;
+                for (const k of keys) {
+                    const e = zone[k];
+                    if (!e || e.at < fresh) continue;
+                    best = Math.max(best, this.mutate(e.v, motion ? e.speed * Math.max(0, 1 - (Date.now() - e.at) / 600) : 0, l.mut));
+                }
+            }
+        }
+        return best;
+    }
+    /** Stärke je Gerät = höchster Wert aller Verknüpfungen */
+    compute() {
+        const c = this.cfg();
+        if (!c.links_on || !this.devices.size || !this.ws) return;
+        if (this.app.nsfw && !this.app.nsfw.access().features.includes('toys')) return;
+        const fresh = Date.now() - Math.max(1, c.idle_stop || 3) * 1000;
+        for (const d of this.devices.values()) {
+            const links = c.links[d.name];
+            if (!links) continue;
+            const lv = links.reduce((m, l) => Math.max(m, this.linkValue(l, fresh)), 0);
+            this.linkLevel.set(d.name, Math.round(lv * 100));
+            const last = this.linkSent.get(d.index);
+            if (last !== undefined && Math.abs(last - lv) < 0.02) continue;
+            this.linkSent.set(d.index, lv);
+            this.set(String(d.index), lv).catch(() => {});
+        }
     }
     flush() {
         if (Date.now() - this.sentAt < 100) { if (!this.pending) this.pending = setTimeout(() => { this.pending = null; this.flush(); }, 110); return; }
@@ -176,7 +262,7 @@ class Toys {
         }
         throw new UserError('Unbekannte Aktion.');
     }
-    stop() { clearInterval(this.timer); this.disconnect(); }
+    stop() { clearInterval(this.timer); clearInterval(this.linkTimer); this.disconnect(); }
 }
 
-module.exports = { Toys };
+module.exports = { Toys, SRC, SRC_DEF };

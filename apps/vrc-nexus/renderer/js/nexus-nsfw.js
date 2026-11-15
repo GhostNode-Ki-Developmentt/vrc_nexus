@@ -15,6 +15,7 @@
             const b = btn();
             if (b) b.hidden = !d.access.unlocked;
             const ad = document.querySelector('#tabs [data-tab="admin"]'); if (ad) ad.hidden = !d.access.owner;
+            if (!d.access.owner) { document.querySelectorAll('#tabs [data-tab="admin"], [data-pane="admin"], [data-tab-go="admin"]').forEach(x => x.remove()); delete window.NexusAdmin; }
             document.body.classList.toggle('is-owner', !!d.access.owner);
             if (box && !box.closest('[hidden]')) render();
             return d;
@@ -25,7 +26,7 @@
 
     function render() {
         if (!box || !st) return;
-        if (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea, input[type=number]')) return;
+        if (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea, input[type=number], select')) return;
         const a = st.access;
         if (!a.unlocked) { box.innerHTML = '<div class="vx-empty">🔒 Nicht freigeschaltet. Den Freischalt-Schlüssel unter Einstellungen → Erweitert eintragen.</div>'; return; }
         const c = st.cfg || {}, t = st.toys, r = st.remote, has = f => a.features.includes(f);
@@ -55,9 +56,11 @@
                 + (t.devices.length ? '<div class="ns-devs"><div class="ns-dev"><b>Alle</b><input type="range" min="0" max="100" value="0" data-dev="all"></div>' + t.devices.map(d => '<div class="ns-dev"><b>' + esc(d.name) + '</b><input type="range" min="0" max="100" value="' + d.level + '" data-dev="' + d.index + '"><span class="small">' + d.level + ' %</span></div>').join('') + '</div>' : t.connected ? '<p class="muted small">Keine Geräte – „Geräte suchen“ und das Spielzeug einschalten.</p>' : '<p class="muted small">Intiface Central starten und dort „Start Server“ drücken.</p>')
                 + '<button type="button" class="btn ns-stop" data-ns="tstop">⏹ Alles stoppen</button>'
                 + '<div class="nc-row"><span class="small">Höchststärke</span><input type="range" min="5" max="100" value="' + tc.max + '" data-nk="max"><span class="small">' + tc.max + ' %</span><span class="small">Aus nach</span><input type="number" min="0" max="60" value="' + tc.idle_stop + '" data-nk="idle_stop" style="width:60px"><span class="small">s ohne Signal</span></div>'
-                + '<h4 style="margin-top:10px">💞 OGB / SPS (automatisch)</h4>' + chk('ogb', tc.ogb, 'OGB-/SPS-Parameter des Avatars steuern das Spielzeug (Nähe = Stärke)') + chk('ogb_self', tc.ogb_self, 'auch eigene Berührungen (Self)')
-                + '<p class="muted small">Erkennt Avatar-Parameter wie <code>OGB/…/PenOthers</code>, <code>…/TouchOthers</code>, <code>…/FrotOthers</code> (OscGoesBrrr/VRCFury-kompatibel). OSC in VRChat muss an sein.'
-                + (t.ogb_params && t.ogb_params.length ? '<br>Gefunden: ' + t.ogb_params.map(p => '<code>' + esc(p) + '</code>').join(' ') : '') + '</p>'
+                + '<h4 style="margin-top:12px">🔗 Geräte verknüpfen</h4>' + chk('links_on', tc.links_on, '<b>Verknüpfungen aktiv</b> (Not-Aus und Panik schalten das wieder aus)')
+                + '<p class="muted small">Pro Gerät eine oder mehrere Quellen: SPS-Plugs, SPS-Sockets, SPS-Touch-Zonen (OSC-Parameter im OGB-/VRCFury-Format), Konstant oder ein beliebiger Avatar-Parameter. Die stärkste Quelle zählt. OSC in VRChat muss an sein.</p>'
+                + '<div class="tl-box">' + (window.NexusToyLinks ? window.NexusToyLinks.html(t) : '') + '</div>'
+                + '<details class="ns-edit"><summary class="small">Einfacher OGB-Modus (alle Geräte gleich)</summary>' + chk('ogb', tc.ogb, 'OGB-/SPS-Parameter steuern alle Geräte (Nähe = Stärke)') + chk('ogb_self', tc.ogb_self, 'auch eigene Berührungen (Self)')
+                + (t.ogb_params && t.ogb_params.length ? '<p class="muted small">Gefunden: ' + t.ogb_params.map(p => '<code>' + esc(p) + '</code>').join(' ') + '</p>' : '') + '</details>'
                 + '<details class="ns-edit"><summary class="small">Eigene Regeln (beliebiger Parameter → Stärke)</summary>' + chk('auto', tc.auto, 'Regeln aktiv')
                 + '<textarea id="nsRules" rows="3" placeholder="Parameter | Gerät (all oder Nummer) | min | max   – z. B. Tail_Wag | all | 0.1 | 0.8">' + esc((tc.rules || []).map(r => r.param + ' | ' + r.device + ' | ' + r.min + ' | ' + r.max).join('\n')) + '</textarea><button type="button" class="btn btn-sm" data-ns="save_rules">💾 Speichern</button></details>', 'ns-toys');
         }
@@ -74,6 +77,7 @@
     const save = data => api('nsfw_cfg', data).then(d => { st = Object.assign(st, d); toast(d.msg); render(); }).catch(x => toast(x.message, true));
     const toysDo = (act, data) => api(act, data).then(d => { if (st) st.toys = d; if (d.msg) toast(d.msg); render(); }).catch(x => toast(x.message, true));
     function onClick(e) {
+        if (window.NexusToyLinks && window.NexusToyLinks.onClick(e, render)) return;
         const g = e.target.closest('[data-tab-go]'); if (g) return UI.tab(g.dataset.tabGo);
         const b = e.target.closest('[data-ns]');
         if (!b) return;
@@ -104,6 +108,7 @@
     }
     const $v = s => { const el = box.querySelector(s); return el ? el.value : ''; };
     function onChange(e) {
+        if (window.NexusToyLinks && window.NexusToyLinks.onChange(e, render)) return;
         const el = e.target.closest('[data-nk]');
         if (!el) return;
         const k = el.dataset.nk, v = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
@@ -113,6 +118,7 @@
     }
     let slideT = null;
     function onInput(e) {
+        if (window.NexusToyLinks && window.NexusToyLinks.onInput(e)) return;
         const r = e.target.closest('input[type=range][data-dev]');
         if (!r) return;
         const s = r.parentNode.querySelector('span'); if (s) s.textContent = r.value + ' %';
@@ -133,6 +139,7 @@
         api('nsfw_admin_issue', { uid: f.uid.value, name: f.name.value, days: f.days.value, note: f.note.value, features: feats.join(',') })
             .then(d => { lastToken = d.token; st.issued = d.items; toast(d.msg); f.reset(); render(); UI.copy(d.token); }).catch(x => toast(x.message, true));
     }
+    if (window.NexusToyLinks) window.NexusToyLinks.bind(d => { if (st) st.toys = d; });
     window.NexusNsfw = { open, refresh: refreshAccess };
     setTimeout(refreshAccess, 1500);
 })();
