@@ -338,6 +338,7 @@ class NexusApp {
             case 'tools_reports': needAcc(); return await t.reports();
             case 'tools_report_delete': needAcc(); return await t.reportDelete(str(input.id));
             case 'tools_user_json': needAcc(); return await t.userJson(str(input.id));
+            case 'tools_raw_json': { needAcc(); const k = str(input.kind) === 'avatar' ? 'avatar' : 'world'; const id = U.valid(str(input.id), k === 'avatar' ? 'avtr' : 'wrld'); return { data: await t.call('GET', '/' + k + 's/' + encodeURIComponent(id)) }; }
             case 'tools_user_tab': needAcc(); return await t.userTab(str(input.id), str(input.tab));
             case 'tools_group_instances': return t.groupInstances(str(input.id));
             case 'tools_discord_names': return { rows: t.discordNames() };
@@ -884,7 +885,12 @@ class NexusApp {
                 return { world: { id: w.id, name: str(w.name), author: str(w.authorName), author_id: str(w.authorId), image: str(w.imageUrl || w.thumbnailImageUrl), desc_html: U.formatText(w.description),
                     capacity: int(w.capacity), recommended: int(w.recommendedCapacity), visits: int(w.visits), favorites: int(w.favorites), popularity: int(w.popularity), heat: int(w.heat),
                     occupants: int(w.occupants), public: int(w.publicOccupants), private: int(w.privateOccupants), tags: arr(w.tags).filter(t => String(t).startsWith('author_tag_')).map(t => t.slice(11)),
-                    created: str(w.created_at), updated: str(w.updated_at), status: str(w.releaseStatus), platforms: platforms(w.unityPackages), instances } };
+                    created: str(w.created_at), updated: str(w.updated_at), status: str(w.releaseStatus), platforms: platforms(w.unityPackages), instances,
+                    version: int(w.version), published: str(w.publicationDate) === 'none' ? '' : str(w.publicationDate), labs: str(w.labsPublicationDate) === 'none' ? '' : str(w.labsPublicationDate),
+                    unity: [...new Set(arr(w.unityPackages).map(p => str(p.unityVersion)).filter(Boolean))].slice(0, 4),
+                    content: arr(w.tags).filter(t => String(t).startsWith('content_')).map(t => t.slice(8)), system_tags: arr(w.tags).filter(t => /^system_/.test(t)).map(t => t.slice(7)),
+                    youtube: /^[\w-]{11}$/.test(str(w.previewYoutubeId)) ? str(w.previewYoutubeId) : '',
+                    image_file: (/(file_[0-9a-f-]{36})/i.exec(str(w.imageUrl)) || [])[1] || '' } };
             }
             case 'world_fav':
                 if (truthy(input.on)) {

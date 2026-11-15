@@ -598,7 +598,22 @@
             + '<span class="vx-u-btns"><button type="button" class="btn btn-sm ' + (favEntry ? '' : 'btn-gold') + '" id="wFav">' + (favEntry ? '★ Favorit entfernen' : '☆ Favorisieren') + '</button><a class="btn btn-sm" href="https://vrchat.com/home/world/' + encodeURIComponent(w.id) + '" target="_blank" rel="noopener noreferrer">↗ vrchat.com</a></span></div>';
         h += '<div class="vx-kpis sm"><div><b>' + num(w.occupants) + '</b><span>gerade drin (' + num(w.public) + ' öffentl.)</span></div><div><b>' + num(w.visits) + '</b><span>Besuche</span></div><div><b>' + num(w.favorites) + '</b><span>Favoriten</span></div>'
             + '<div><b>' + w.capacity + (w.recommended ? ' / ' + w.recommended : '') + '</b><span>Kapazität / empfohlen</span></div><div><b>' + esc(isoDate(w.updated)) + '</b><span>aktualisiert</span></div></div>';
-        h += '<div class="vx-u-cols"><div>' + (w.desc_html ? '<h4>Beschreibung</h4><div class="fmt vx-u-bio">' + w.desc_html + '</div>' : '')
+        const cp = (v, t) => '<code class="vx-id">' + esc(v) + '</code> <button type="button" class="vx-copy" data-copy="' + esc(v) + '" title="' + esc(t || 'Kopieren') + '">⧉</button>';
+        const facts = '<h4>Infos</h4><dl class="vx-u-facts">'
+            + '<dt>Welt-ID</dt><dd>' + cp(w.id, 'Welt-ID kopieren') + '</dd>'
+            + (w.author_id ? '<dt>Autor-ID</dt><dd>' + cp(w.author_id, 'Autor-ID kopieren') + '</dd>' : '')
+            + '<dt>Status</dt><dd>' + esc(w.status === 'public' ? 'öffentlich' : w.status === 'private' ? 'privat' : w.status || '–') + (w.labs && !w.published ? ' · in den Community Labs' : '') + '</dd>'
+            + (w.created ? '<dt>Erstellt</dt><dd>' + esc(isoDate(w.created)) + '</dd>' : '')
+            + (w.labs ? '<dt>Labs seit</dt><dd>' + esc(isoDate(w.labs)) + '</dd>' : '')
+            + (w.published ? '<dt>Veröffentlicht</dt><dd>' + esc(isoDate(w.published)) + '</dd>' : '')
+            + (w.updated ? '<dt>Aktualisiert</dt><dd>' + esc(isoDT(w.updated)) + (w.version ? ' · Version ' + w.version : '') + '</dd>' : '')
+            + '<dt>Beliebtheit</dt><dd>' + num(w.popularity) + ' · Hitze ' + num(w.heat) + '</dd>'
+            + (w.unity && w.unity.length ? '<dt>Unity</dt><dd>' + w.unity.map(esc).join(', ') + '</dd>' : '')
+            + (w.content && w.content.length ? '<dt>Inhaltshinweise</dt><dd>' + w.content.map(t => '<span class="vx-pill" style="--pc:#ff8a65">' + esc(t) + '</span>').join('') + '</dd>' : '')
+            + (w.youtube ? '<dt>Vorschau-Video</dt><dd><a href="https://www.youtube.com/watch?v=' + esc(w.youtube) + '" target="_blank" rel="noopener">▶ YouTube</a></dd>' : '')
+            + (w.image_file ? '<dt>Bild-Datei</dt><dd>' + cp(w.image_file, 'Datei-ID kopieren') + '</dd>' : '')
+            + '</dl>';
+        h += '<div class="vx-u-cols"><div>' + (w.desc_html ? '<h4>Beschreibung</h4><div class="fmt vx-u-bio">' + w.desc_html + '</div>' : '') + facts
             + (friendsHere.length ? '<h4>Freunde hier</h4><div>' + friendsHere.map(f => '<a href="#" class="vx-pill" data-user="' + esc(f.id) + '">' + esc(f.name) + ' · ' + esc(f.loc.access) + '</a>').join('') + '</div>' : '')
             + '<h4>Öffentliche Instanzen</h4>' + (w.instances.length ? '<div class="vx-members">' + w.instances.map(i => '<div class="vx-member"><span>#' + esc(i.loc.name) + '</span><small>' + esc(i.loc.access + ' · ' + i.loc.region) + ' · ' + i.users + ' Personen</small><span class="vx-m-acts">'
                 + '<a class="btn btn-sm btn-gold" href="' + esc(launch(i.loc.location)) + '">▶</a><button type="button" class="btn btn-sm" data-self="' + esc(i.loc.location) + '">📨</button><button type="button" class="btn btn-sm" data-inst="' + esc(i.loc.location) + '">ℹ</button></span></div>').join('') + '</div>' : '<div class="vx-empty">Keine öffentlichen Instanzen offen.</div>')
@@ -611,6 +626,7 @@
             + (groups.length ? '' : '<p class="vx-small">Für Gruppen-Instanzen einmal den Reiter „Gruppen“ öffnen.</p>') + '</form></div></div>';
         $('#userBody').innerHTML = h;
         favPicker('world', w.id, { name: w.name, image: w.image, sub: w.author }, true);
+        if (window.NexusApp && window.NexusApp.entityTabs) window.NexusApp.entityTabs('world', w.id, w.name);
         if (window.NexusColl) window.NexusColl.decorate(w.id);
         const f = $('#newInst');
         f.type.addEventListener('change', () => { $('.vx-ni-group', f).hidden = f.type.value !== 'group'; });
@@ -2118,6 +2134,7 @@
                 + '<dt>Avatar-ID</dt><dd><code class="vx-id">' + esc(a.id) + '</code> <button type="button" class="vx-copy" data-copy="' + esc(a.id) + '">⧉</button></dd></dl>'
                 + (a.status !== 'public' && !a.current ? '<p class="vx-small">Hinweis: Private Avatare anderer Personen kann VRChat nicht anziehen lassen.</p>' : '');
             favPicker('avatar', a.id, { name: a.name, image: a.image, sub: a.author }, true);
+            if (window.NexusApp && window.NexusApp.entityTabs) window.NexusApp.entityTabs('avatar', a.id, a.name);
             if (window.NexusColl) window.NexusColl.decorate(a.id);
             const sel = $('#avSel');
             if (sel) sel.onclick = () => api('avatar_select', { id: a.id }).then(r => { toast(r.msg); load(false); openAvatar(a.id); }).catch(x => toast(x.message, true));

@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.8.6",
+  "title": "Welt-Infos mit IDs, Reiter Info & JSON",
+  "body": "- **Welt-Fenster: neuer Bereich „Infos“** mit Welt-ID und Autor-ID (je mit ⧉ zum Kopieren), Status (öffentlich/privat/Community Labs), Erstellt, Labs seit, Veröffentlicht, Aktualisiert mit Versionsnummer, Beliebtheit/Hitze, Unity-Version, Inhaltshinweise, Vorschau-Video und Bild-Datei-ID.\n- **Reiter „Info“ und „JSON“** im Welt- und im Avatar-Fenster: JSON zeigt die kompletten Rohdaten von VRChat als aufklappbaren Baum – mit Neu laden, Herunterladen, Kopieren und „alles aufklappen“."
+ },
+ {
   "version": "2.8.5",
   "title": "Weltbild auf der Instanz-Taste",
   "body": "- **Stream Deck – „Instanz erstellen + einladen“**: Sobald eine **Welt-ID** (oder der vrchat.com-Link der Welt) eingetragen ist, zeigt die Taste das **Bild der Welt** mit der Instanz-Art (z. B. „Invite+“) unten drauf und einem ＋-Abzeichen. Bei „current“ bleibt das normale Symbol."

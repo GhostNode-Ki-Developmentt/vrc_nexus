@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.6 – Welt-Infos mit IDs, Reiter Info & JSON
+
+- **Welt-Fenster: neuer Bereich „Infos“** mit Welt-ID und Autor-ID (je mit ⧉ zum Kopieren), Status (öffentlich/privat/Community Labs), Erstellt, Labs seit, Veröffentlicht, Aktualisiert mit Versionsnummer, Beliebtheit/Hitze, Unity-Version, Inhaltshinweise, Vorschau-Video und Bild-Datei-ID.
+- **Reiter „Info“ und „JSON“** im Welt- und im Avatar-Fenster: JSON zeigt die kompletten Rohdaten von VRChat als aufklappbaren Baum – mit Neu laden, Herunterladen, Kopieren und „alles aufklappen“.
+
 ### Neu in 2.8.5 – Weltbild auf der Instanz-Taste
 
 - **Stream Deck – „Instanz erstellen + einladen“**: Sobald eine **Welt-ID** (oder der vrchat.com-Link der Welt) eingetragen ist, zeigt die Taste das **Bild der Welt** mit der Instanz-Art (z. B. „Invite+“) unten drauf und einem ＋-Abzeichen. Bei „current“ bleibt das normale Symbol.

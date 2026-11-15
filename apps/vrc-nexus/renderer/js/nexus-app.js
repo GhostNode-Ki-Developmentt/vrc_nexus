@@ -820,6 +820,42 @@
             + '<div class="js-in">' + ents.map(([kk, x]) => jsonTree(x, arrOf ? undefined : kk, depth + 1)).join('') + '</div><span class="js-p">' + (arrOf ? ']' : '}') + '</span></details>';
     }
 
+    // ======================= Welt- & Avatar-Fenster: Reiter „Info“ und „JSON“ =======================
+    function entityTabs(kind, id, name) {
+        const body = $('#userBody'), head = body.querySelector('.vx-w-head');
+        if (!head || body.querySelector('.u-tabs')) return;
+        const info = document.createElement('div');
+        info.className = 'u-pane'; info.dataset.up = 'info';
+        while (head.nextSibling) info.append(head.nextSibling);
+        const json = document.createElement('div');
+        json.className = 'u-pane'; json.dataset.up = 'json'; json.hidden = true;
+        const bar = document.createElement('div');
+        bar.className = 'u-tabs';
+        bar.innerHTML = '<button type="button" data-et="info" class="on">Info</button><button type="button" data-et="json">JSON</button>';
+        body.append(bar, info, json);
+        const load = () => {
+            loading(json);
+            api('tools_raw_json', { kind, id }).then(d => {
+                const raw = JSON.stringify(d.data, null, 2);
+                json.innerHTML = '<div class="nx-row"><button type="button" class="btn btn-sm" data-j="reload" title="Neu laden">⟳</button><button type="button" class="btn btn-sm" data-j="dl" title="Herunterladen">⬇</button>'
+                    + '<button type="button" class="btn btn-sm" data-j="copy">⧉ Kopieren</button><button type="button" class="btn btn-sm" data-j="all">alles aufklappen</button></div><div class="js-view">' + jsonTree({ [kind]: d.data }, undefined, 0) + '</div>';
+                json.onclick = e => {
+                    const b = e.target.closest('[data-j]'); if (!b) return;
+                    if (b.dataset.j === 'reload') load();
+                    if (b.dataset.j === 'copy') UI.copy(raw);
+                    if (b.dataset.j === 'all') $$('details', json).forEach(x => { x.open = true; });
+                    if (b.dataset.j === 'dl') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([raw], { type: 'application/json' })); a.download = (name || kind).replace(/[^\w-]+/g, '_') + '.json'; a.click(); }
+                };
+            }).catch(fail(json));
+        };
+        bar.addEventListener('click', e => {
+            const b = e.target.closest('[data-et]'); if (!b) return;
+            $$('[data-et]', bar).forEach(x => x.classList.toggle('on', x === b));
+            info.hidden = b.dataset.et !== 'info'; json.hidden = b.dataset.et !== 'json';
+            if (b.dataset.et === 'json' && !json.childNodes.length) load();
+        });
+    }
+
     // ======================= Profil: Reiter + Menü =======================
     const U_TABS = [['info', 'Info'], ['mutuals', 'Gemeinsame Freunde'], ['groups', 'Gruppen'], ['worlds', 'Welten'], ['favworlds', 'Lieblingswelten'], ['avatars', 'Avatare'], ['activity', 'Aktivität'], ['instances', 'Frühere Instanzen'], ['json', 'JSON']];
     function userExtra(u) {
@@ -1062,7 +1098,7 @@
     setTimeout(() => api('update_status').then(updBanner).catch(() => {}), 1500);
     setInterval(() => api('update_status').then(updBanner).catch(() => {}), 10 * 60 * 1000);
 
-    window.NexusApp = { THEMES, open, applyUi, userExtra, groupExtra, menu };
+    window.NexusApp = { THEMES, open, applyUi, userExtra, entityTabs, groupExtra, menu };
     // Seite war vor dem Laden dieses Skripts schon offen?
     const vis = $$('.vx-tab').find(p => !p.hidden);
     if (vis) open(vis.dataset.pane, UI.store.get('tabSub', ''));
