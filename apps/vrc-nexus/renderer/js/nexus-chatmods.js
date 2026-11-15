@@ -10,7 +10,7 @@
         system: ['cpu', 'gpu', 'gpu_temp', 'gpu_watt', 'ram', 'ram_pct', 'vram', 'gpu_name'], network: ['netz_down', 'netz_up', 'netz_spitze_down', 'netz_spitze_up', 'netz_summe_down', 'netz_summe_up'],
         twitch: ['twitch_zuschauer', 'twitch_spiel', 'twitch_dauer', 'twitch_kanal'], heart: ['puls'],
         countdown: ['countdown_name', 'countdown_rest', 'countdown_tage'], friends: ['freunde_im_spiel', 'freunde_online_web', 'freunde_gesamt'], marquee: ['laufschrift'], anim: ['animation'],
-        battery: ['akku', 'akku_symbol', 'akku_status'], ping: ['ping'],
+        battery: ['akku', 'akku_symbol', 'akku_status'], ping: ['ping'], fps: ['fps', 'fps_min'],
     };
     const WHERE = [['both', 'Desktop + VR'], ['desktop', 'nur Desktop'], ['vr', 'nur VR']];
     let box = null, d = null, openMod = '', timer = null;
@@ -33,7 +33,7 @@
     function row(k, i) {
         const m = d.modules[k], s = d.cfg.mods[k], open = openMod === k;
         const note = { weather: d.cfg.place ? '📍 ' + d.cfg.place : 'Ort fehlt', twitch: d.cfg.twitch || d.twitch_default ? '📺 ' + (d.cfg.twitch || d.twitch_default) : 'Kanal fehlt', heart: d.has_hr ? (d.hr_error ? '⚠ ' + d.hr_error : 'verbunden') : 'kein Token', system: d.gpu ? (d.gpu_win ? 'GPU über Windows-Leistungsdaten' : '') : 'keine GPU-Werte gefunden', window: d.windows ? '' : 'nur unter Windows',
-            battery: d.battery ? '' : 'kein Akku gefunden', countdown: d.cfg.cd_at ? '📅 ' + new Date(d.cfg.cd_at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Termin fehlt', marquee: d.cfg.mq_text ? '' : 'Text fehlt' }[k] || '';
+            battery: d.battery ? '' : 'kein Akku gefunden', fps: d.values && d.values.fps ? '' : 'nur in VR mit SteamVR-Overlay', countdown: d.cfg.cd_at ? '📅 ' + new Date(d.cfg.cd_at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Termin fehlt', marquee: d.cfg.mq_text ? '' : 'Text fehlt' }[k] || '';
         return '<section class="cm-row' + (s.on ? ' on' : '') + '" data-k="' + k + '"><span class="cm-ic">' + m[0] + '</span>'
             + '<div class="cm-txt"><b>' + esc(m[1]) + '</b>' + (note ? ' <small class="cm-note">' + esc(note) + '</small>' : '') + '<p>' + esc(m[2]) + '</p>'
             + (d.preview.per[k] ? '<code class="cm-val">' + esc(d.preview.per[k]).replace(/\n/g, ' ⏎ ') + '</code>' : '') + '</div>'

@@ -139,6 +139,8 @@ function render(ctx) {
             break;
         }
         case 'overlay': setState(ctx, st.overlay && st.overlay.visible ? 1 : 0); break;
+        case 'avatar': if (s.id && !s.nopic) avatarIcon(ctx, s.id.trim()); else if (c.img) { c.img = ''; send('setImage', ctx, { image: null, target: 0 }); } break;
+        case 'instance': if (!s.title) setTitle(ctx, ({ 'friends+': 'Friends+', friends: 'Friends', 'invite+': 'Invite+', invite: 'Invite', public: 'Public', group: 'Gruppe' }[s.type || 'friends+'] || '') + '\n' + (s.world === 'current' || !s.world ? 'hier' : 'Welt')); break;
         case 'media': {
             const m = st.media;
             setState(ctx, m && m.status === 'playing' ? 1 : 0);
@@ -182,6 +184,26 @@ function render(ctx) {
             break;
         }
     }
+}
+// ---------- Avatar-Vorschaubild als Tastensymbol ----------
+const avPics = new Map();
+async function avatarIcon(ctx, id) {
+    const c = contexts.get(ctx);
+    if (!c || !/^avtr_/.test(id)) return;
+    let p = avPics.get(id);
+    if (!p || (p.fail && Date.now() - p.at > 120000)) {
+        avPics.set(id, { loading: true, at: Date.now() });
+        try { const r = await nexus('GET', 'avatar_image?id=' + encodeURIComponent(id)); p = { b64: r.b64, mime: r.mime, at: Date.now() }; }
+        catch (e) { p = { fail: true, at: Date.now() }; }
+        avPics.set(id, p);
+    }
+    if (!p || !p.b64 || c.img === id + '|' + p.at) return;
+    c.img = id + '|' + p.at;
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="144" height="144" viewBox="0 0 144 144">'
+        + '<defs><clipPath id="c"><rect x="6" y="6" width="132" height="132" rx="20"/></clipPath><linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.75"/></linearGradient></defs>'
+        + '<rect width="144" height="144" fill="#0b0f15"/><image x="6" y="6" width="132" height="132" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)" xlink:href="data:' + p.mime + ';base64,' + p.b64 + '"/>'
+        + '<rect x="6" y="6" width="132" height="132" rx="20" fill="url(#d)"/><rect x="4" y="4" width="136" height="136" rx="22" fill="none" stroke="#38d5e6" stroke-width="4"/></svg>';
+    send('setImage', ctx, { image: 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64'), target: 0 });
 }
 // ---------- Profilbild als Tastensymbol (mit Statusring) ----------
 const pics = new Map();                       // Freund-ID → { b64, mime, at } bzw. { fail, at }
@@ -280,6 +302,7 @@ async function keyDown(ctx, action, s) {
             return r;
         }
         case 'avatar': return act('avatar', { id: (s.id || '').trim() });
+        case 'instance': return act('instance_create', { world: (s.world || 'current').trim(), type: s.type || 'friends+', region: s.region || 'eu', invite_me: s.invite === false ? '' : '1', group: (s.group || '').trim(), access: s.access || 'members' });
         case 'friend': return null;      // kurz/halten wird in keyDown/keyUp unten unterschieden
         case 'overlay': return act('overlay', {});
         case 'speech': return act('speech', { op: s.mode === 'hold' ? 'start' : 'toggle' });
@@ -347,7 +370,7 @@ function onMessage(raw) {
         case 'dialDown': case 'touchTap': dialPress(context, settings).then(() => setTimeout(poll, 300)).catch(() => send('showAlert', context)); break;
         case 'sendToPlugin':
             if (payload && payload.cmd === 'test') {
-                nexus('GET', 'state').then(st => send('sendToPropertyInspector', context, { cmd: 'test', ok: true, state: st }))
+                nexus('GET', 'state').then(async st => { if (/\.avatar$/.test(action)) { try { st.avatar_list = (await nexus('GET', 'avatars')).items; } catch (e) { st.avatar_list = []; } } send('sendToPropertyInspector', context, { cmd: 'test', ok: true, state: st }); })
                     .catch(e => send('sendToPropertyInspector', context, { cmd: 'test', ok: false, error: e.message }));
             }
             break;

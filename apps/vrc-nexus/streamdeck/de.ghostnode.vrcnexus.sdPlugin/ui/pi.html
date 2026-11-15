@@ -71,8 +71,19 @@
     <div class="hint">Makros legst du in VRC Nexus → Spiel &amp; OSC → Makros an. Schritte: chatbox, param, toggle, wait, input, cam, status, avatar, rotator, typing.</div>
 </div>
 <div id="sec-avatar" hidden>
-    <div class="row"><label>Avatar-ID</label><input type="text" data-s="id" placeholder="avtr_…"></div>
-    <div class="hint">ID aus VRC Nexus → Meine Avatare (⋯ → ID kopieren).</div>
+    <div class="row"><label>Avatar</label><select id="avatarSel"><option value="">(erst Verbindung testen)</option></select></div>
+    <div class="row"><label>Avatar-ID</label><input type="text" data-s="id" id="avatarId" placeholder="avtr_…"></div>
+    <div class="row"><label>Bild</label><label class="chk"><input type="checkbox" data-s="nopic"> kein Avatarbild auf der Taste</label></div>
+    <div class="hint">Liste: deine Avatare + Favoriten. Oder eine ID aus VRC Nexus → Avatar → ⧉ einfügen. Die Taste zeigt das Vorschaubild des Avatars.</div>
+</div>
+<div id="sec-instance" hidden>
+    <div class="row"><label>Welt</label><input type="text" data-s="world" placeholder="current = aktuelle Welt, sonst wrld_…" value="current"></div>
+    <div class="row"><label>Art</label><select data-s="type"><option value="friends+">Friends+</option><option value="friends">Friends</option><option value="invite+">Invite+</option><option value="invite">Invite</option><option value="public">Öffentlich</option><option value="group">Gruppe</option></select></div>
+    <div class="row"><label>Region</label><select data-s="region"><option value="eu">Europa</option><option value="us">USA West</option><option value="use">USA Ost</option><option value="jp">Japan</option></select></div>
+    <div class="row"><label>Gruppe</label><input type="text" data-s="group" placeholder="grp_… (nur bei Art Gruppe)"></div>
+    <div class="row"><label>Gruppen-Zugang</label><select data-s="access"><option value="members">nur Mitglieder</option><option value="plus">Gruppe+</option><option value="public">öffentlich</option></select></div>
+    <div class="row"><label>Einladung</label><label class="chk"><input type="checkbox" data-s="invite" checked> mir sofort eine Einladung schicken</label></div>
+    <div class="hint">Erstellt per Tastendruck eine neue Instanz und schickt dir die Einladung ins Spiel. „current“ = die Welt, in der du gerade bist.</div>
 </div>
 <div id="sec-friend" hidden>
     <div class="row"><label>Freund</label><select data-s="id" id="friendSel"><option value="">(erst Verbindung testen)</option></select></div>
@@ -200,6 +211,7 @@ window.connectElgatoStreamDeckSocket = function (port, inUuid, registerEvent, in
                 r.textContent = '✔ verbunden' + (st.me ? ' als ' + st.me.name : '');
                 const opt = (l, cur) => l.map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + String(x.name).replace(/[<>&]/g, '') + '</option>').join('');
                 if ($('#macroSel')) $('#macroSel').innerHTML = '<option value="">(Skript unten benutzen)</option>' + opt(st.macros || [], settings.id);
+                if ($('#avatarSel')) { const l = st.avatar_list || []; $('#avatarSel').innerHTML = '<option value=>' + (l.length ? '– Avatar wählen –' : '(keine Avatare gefunden)') + '</option>' + opt(l, settings.id); }
                 if ($('#friendSel')) $('#friendSel').innerHTML = opt((st.friend_list || []).slice().sort((a, b) => a.name.localeCompare(b.name)), settings.id);
                 const fillSel = (id, list, empty) => { const el = $(id); if (el) el.innerHTML = list && list.length ? opt(list, settings.id) : '<option value="">' + empty + '</option>'; };
                 fillSel('#quickSel', st.quick && st.quick.list, '(keine Schnelltexte in VRC Nexus)');
@@ -216,6 +228,7 @@ window.connectElgatoStreamDeckSocket = function (port, inUuid, registerEvent, in
         }
     };
 };
+document.addEventListener('change', e => { if (e.target.id === 'avatarSel' && e.target.value) { const f = document.getElementById('avatarId'); f.value = e.target.value; f.dispatchEvent(new Event('input', { bubbles: true })); f.dispatchEvent(new Event('change', { bubbles: true })); } });
 </script>
 </body>
 </html>

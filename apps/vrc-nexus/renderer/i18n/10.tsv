@@ -368,3 +368,9 @@ Eigene Sprache und der Übersetzer „VRChat → Text“ (Spiel & OSC → Übers
 Freunde online	friends online	amis en ligne	フレンドがオンライン
 Notiz für den Print (optional)	Note for the print (optional)	Note pour le print (facultatif)	プリントのメモ（任意）
 Print hochgeladen.	Print uploaded.	Print envoyé.	プリントをアップロードしました。
+FPS	FPS	FPS	FPS
+Bildrate von VRChat in VR – über SteamVR (das SteamVR-Overlay unter Einstellungen → VR muss an sein). Platzhalter: {fps} {fps_min}.	VRChat frame rate in VR – via SteamVR (the SteamVR overlay under Settings → VR must be on). Placeholders: {fps} {fps_min}.	Fréquence d'images de VRChat en VR – via SteamVR (l'overlay SteamVR dans Paramètres → VR doit être activé). Variables : {fps} {fps_min}.	VRでのVRChatのフレームレート – SteamVR経由（設定 → VR のSteamVRオーバーレイをオンにする必要があります）。プレースホルダー：{fps} {fps_min}。
+nur in VR mit SteamVR-Overlay	VR only with SteamVR overlay	uniquement en VR avec l'overlay SteamVR	SteamVRオーバーレイ使用時のVRのみ
+zeigt das Avatarbild auf der Taste	shows the avatar image on the key	affiche l'image de l'avatar sur la touche	キーにアバター画像を表示
+Instanz erstellen + einladen	Create instance + invite	Créer une instance + inviter	インスタンス作成＋招待
+neue Instanz (aktuelle oder feste Welt) und Einladung an dich	new instance (current or fixed world) and an invite to you	nouvelle instance (monde actuel ou fixe) et invitation pour toi	新しいインスタンス（現在または指定のワールド）と自分への招待

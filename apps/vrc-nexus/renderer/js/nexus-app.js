@@ -576,7 +576,7 @@
                     ['🎵', 'Medien', '⏯ ⏭ ⏮ für das, was Windows abspielt – zeigt den Titel'], ['🔊', 'Vorlesen', 'Text über die Sprachausgabe sprechen'], ['🎙', 'Spracheingabe', 'drücken bzw. halten → Chatbox'],
                     ['ℹ️', 'Info-Anzeige', 'beliebige Platzhalter auf der Taste, z. B. {zeit}, {ping}, {akku}, {countdown_rest}'],
                     ['👥', 'Freunde online / Spieler in der Instanz', 'Live-Anzeige'], ['🧑', 'Freund', 'Profilbild mit Statusring – kurz: beitreten, halten: einladen'],
-                    ['🔔', 'Benachrichtigungen', 'Zähler'], ['📷', 'Kamera', 'Foto, Timer, Serie, Vorlage, Zoom'], ['⚡', 'Makro', 'OSC-Makro ausführen'], ['🎭', 'Avatar wechseln', ''],
+                    ['🔔', 'Benachrichtigungen', 'Zähler'], ['📷', 'Kamera', 'Foto, Timer, Serie, Vorlage, Zoom'], ['⚡', 'Makro', 'OSC-Makro ausführen'], ['🎭', 'Avatar wechseln', 'zeigt das Avatarbild auf der Taste'], ['➕', 'Instanz erstellen + einladen', 'neue Instanz (aktuelle oder feste Welt) und Einladung an dich'],
                     ['🥽', 'SteamVR-Overlay', 'ein/aus'], ['▶', 'VRChat starten / Instanz neu betreten', ''], ['🧭', 'VRC Nexus öffnen', 'beliebige Seite'], ['🎛', 'Drehregler (Stream Deck +)', 'Parameter, Kamera-Zoom/Belichtung']]
                     .map(([i, n, d]) => '<li>' + i + ' <b>' + n + '</b>' + (d ? ' – ' + d : '') + '</li>').join('') + '</ul>';
             const save = () => run('tools_settings_save', { data: JSON.stringify({ 'int.api': $('#sdOn').checked, 'int.api_port': $('#sdPort').value }) }, () => setTimeout(toolStreamDeck, 400)).catch(() => {});

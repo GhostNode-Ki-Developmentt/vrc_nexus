@@ -1223,6 +1223,41 @@ test('2.8.0: Sprache automatisch erkennen (whisper-Ausgabe), Sprachbefehle → O
     app.tools.stop();
 });
 
+test('2.8.4: Kopieren über die App, Avatarbild für Stream Deck, Instanz-Taste, FPS-Modul', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-284-'));
+    let copied = '';
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: tmp, copy: t => { copied = t; } } });
+    app.game.osc.stopListen();
+    await app.post({ act: 'clipboard_write', text: 'avtr_123' }, {});
+    assert.strictEqual(copied, 'avtr_123');
+    const t = app.tools;
+    const A = 'avtr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', F = 'file_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444';
+    let calls = 0;
+    t.call = async (m, p) => { calls++; return { thumbnailImageUrl: 'https://api.vrchat.cloud/api/1/file/' + F + '/2/file' }; };
+    app.image = async (id, v, size) => ({ status: 200, headers: { 'Content-Type': 'image/png' }, body: Buffer.from(id + '/' + v + '/' + size) });
+    const im = await t.avatarImage(A);
+    assert.strictEqual(Buffer.from(im.b64, 'base64').toString(), F + '/2/256'); await t.avatarImage(A);
+    assert.strictEqual(calls, 1, 'Bildadresse wird gemerkt');
+    await assert.rejects(t.avatarImage('avtr_x'), /Ungültige/);
+    // Instanz-Taste: „current“ ohne Welt → verständlicher Fehler; mit Welt → instance_create mit Einladung
+    await assert.rejects(t.apiAction('instance_create', { world: 'current' }), /keine Welt|in keiner Instanz/i);
+    const W = 'wrld_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    app.game.state.worldId = W;
+    let got = null; const orig = app.post.bind(app);
+    app.post = async (input, files) => { if (input.act === 'instance_create') { got = input; return { msg: 'Instanz erstellt – Einladung an dich ist unterwegs.', location: W + ':1~hidden(usr_x)' }; } return orig(input, files); };
+    const r = await t.apiAction('instance_create', { world: 'current', type: 'friends+', region: 'eu', invite_me: '1' });
+    assert.ok(r.ok && got.world === W && got.invite_me === '1' && got.type === 'friends+');
+    // FPS-Modul
+    process.env.NEXUS_FAKE_FPS = '72.4';
+    app.chatmods.readFps();
+    assert.strictEqual(app.chatmods.vars().fps, '72');
+    delete process.env.NEXUS_FAKE_FPS; app.chatmods.readFps();
+    assert.strictEqual(app.chatmods.vars().fps, undefined, 'ohne SteamVR kein Wert → Modul fällt weg');
+    t.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

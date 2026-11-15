@@ -29,6 +29,7 @@ const MODULES = {
     marquee: ['📜', 'Laufschrift', 'Ein längerer Text läuft Stück für Stück durch – jede Nachricht zeigt den nächsten Ausschnitt.', '📜 {laufschrift}', 'both'],
     anim: ['✨', 'Animation', 'Jede Nachricht zeigt das nächste „Bild“ – Emojis, Mini-Animationen oder Sprüche (eine Zeile = ein Bild).', '{animation}', 'both'],
     battery: ['🔋', 'Akku', 'Akkustand deines Laptops mit Ladeanzeige (Windows).', '{akku_symbol} {akku}%', 'both'],
+    fps: ['🎮', 'FPS', 'Bildrate von VRChat in VR – über SteamVR (das SteamVR-Overlay unter Einstellungen → VR muss an sein). Platzhalter: {fps} {fps_min}.', '🎮 {fps} FPS', 'both'],
     ping: ['📡', 'Ping', 'Antwortzeit zu den VRChat-Servern – zeigt, ob deine Verbindung gerade hakt.', '📡 {ping} ms', 'desktop'],
 };
 const ORDER = Object.keys(MODULES);
@@ -143,6 +144,7 @@ class ChatMods {
         if (on('twitch') && (c.twitch || this.twitchChannel()) && t - this.last.twitch >= 60000) { this.last.twitch = t; jobs.push(this.readTwitch(c)); }
         if (on('heart') && t - this.last.heart >= 3000 && this.hrToken()) { this.last.heart = t; jobs.push(this.readHeart(c)); }
         if (on('battery') && t - this.last.bat >= 60000) { this.last.bat = t; jobs.push(this.readBattery()); }
+        if (on('fps')) this.readFps();
         if (on('ping') && t - this.last.ping >= 30000) { this.last.ping = t; jobs.push(this.readPing()); }
         if (t - this.last.vr >= 15000) { this.last.vr = t; jobs.push(this.readVr()); }
         if (on('window') && process.platform === 'win32' && !this.win) this.startWin();
@@ -187,6 +189,13 @@ class ChatMods {
         }
         if (pct === null) { delete this.v.akku; delete this.v.akku_symbol; return; }
         Object.assign(this.v, { akku: String(Math.max(0, Math.min(100, pct))), akku_symbol: charging ? '🔌' : pct <= 20 ? '🪫' : '🔋', akku_status: charging ? 'lädt' : '' });
+    }
+    /** FPS aus SteamVR (NexusOverlay.exe meldet sie jede Sekunde) – Desktop ohne SteamVR hat keine Quelle */
+    readFps() {
+        const env = process.env.NEXUS_FAKE_FPS;
+        const h = this.app.tools && this.app.tools.host;
+        const f = env ? { app: Number(env), min: Number(env) - 3 } : h && h.vrFps ? h.vrFps() : null;
+        if (f && f.app > 0) { this.v.fps = String(Math.round(f.app)); this.v.fps_min = String(Math.round(f.min || f.app)); } else { delete this.v.fps; delete this.v.fps_min; }
     }
     async readPing() {
         const [host, port] = (process.env.NEXUS_PING_HOST || 'api.vrchat.cloud:443').split(':');
@@ -356,7 +365,7 @@ class ChatMods {
             }, []).join('').trim();
             // Modul weglassen, wenn sein Hauptwert fehlt (z. B. keine Musik, Twitch offline)
             const key = { media: 'musik', weather: 'temp', twitch: 'twitch_live', heart: 'puls', window: 'fenster', network: 'netz_down', system: 'cpu',
-                countdown: 'countdown_rest', friends: 'freunde_im_spiel', marquee: 'laufschrift', anim: 'animation', battery: 'akku', ping: 'ping' }[k];
+                countdown: 'countdown_rest', friends: 'freunde_im_spiel', marquee: 'laufschrift', anim: 'animation', battery: 'akku', ping: 'ping', fps: 'fps' }[k];
             const vars = Object.assign({}, g.vars ? g.vars() : {});
             if (key && k !== 'window' && (!vars[key] || vars[key] === '–')) continue;
             if (k === 'window' && !this.vr && !vars.fenster) continue;

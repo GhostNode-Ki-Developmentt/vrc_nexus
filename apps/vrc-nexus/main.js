@@ -4,7 +4,7 @@
  * Die Oberfläche läuft unter app://nexus/, alle Anfragen an „nexus.php“ beantwortet das eingebaute Backend (backend/app.js).
  * Läuft im Infobereich weiter (Verlauf, Statistik, Spiel-Log & OSC zeichnen dann weiter auf).
  */
-const { app, BrowserWindow, Menu, Tray, Notification, protocol, shell, safeStorage, nativeImage, dialog, globalShortcut, session, desktopCapturer } = require('electron');
+const { app, BrowserWindow, Menu, Tray, Notification, protocol, shell, safeStorage, nativeImage, dialog, globalShortcut, session, desktopCapturer, clipboard } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -47,6 +47,8 @@ const host = {
     pluginFile: app.isPackaged ? path.join(process.resourcesPath, 'VRC-Nexus.streamDeckPlugin') : path.join(__dirname, 'streamdeck', 'VRC-Nexus.streamDeckPlugin'),
     openPath: p => shell.openPath(p),
     openExternal: url => shell.openExternal(url),
+    copy: text => clipboard.writeText(String(text || '')),
+    vrFps: () => (vr && vr.fps && Date.now() - vr.fps.at < 5000 ? vr.fps : null),
     setLoginItem: on => { if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: on, args: ['--minimized'] }); },
     spawn: (exe, args) => spawn(exe, args, { detached: true, stdio: 'ignore', cwd: path.dirname(exe) }).unref(),
     speak: text => { if (win) win.webContents.executeJavaScript('window.speechSynthesis && speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(' + JSON.stringify(String(text).slice(0, 300)) + '), { lang: "de-DE" }))').catch(() => {}); },

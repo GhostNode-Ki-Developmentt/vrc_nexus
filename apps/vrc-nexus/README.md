@@ -20,6 +20,13 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.4 – Kopieren, Avatarbild & Instanz-Taste fürs Stream Deck, FPS-Modul
+
+- **Kopieren repariert**: Die ⧉-Knöpfe (z. B. Avatar-ID im Avatar-Fenster, Benutzer-ID, Instanz-ID) kopieren jetzt zuverlässig – über die Zwischenablage der App statt der des Browsers, mit Bestätigung „📋 Kopiert: …“.
+- **Stream Deck – Avatar wechseln** zeigt das **Vorschaubild des Avatars** auf der Taste statt des Platzhalters. Im Plugin gibt es eine **Auswahlliste** deiner Avatare und Favoriten (nach „Verbindung testen“); Bild abschaltbar.
+- **Stream Deck – neue Taste „Instanz erstellen + einladen“**: erstellt per Tastendruck eine neue Instanz (aktuelle Welt oder feste Welt-ID; Friends+, Friends, Invite+, Invite, Öffentlich oder Gruppe; Region) und schickt dir die Einladung ins Spiel.
+- **Chatbox-Modul „FPS“**: zeigt die Bildrate von VRChat in VR ({fps}, {fps_min}) – gemessen über SteamVR, braucht das eingeschaltete SteamVR-Overlay. Am Desktop ohne SteamVR gibt es keine Quelle, dann fällt das Modul weg.
+
 ### Neu in 2.8.3 – Prints hochladen
 
 - **Prints hochladen**: In Galerie & Inventar → Prints gibt es jetzt den Hochladen-Knopf mit optionaler **Notiz** (max. 32 Zeichen). Bist du gerade in einer Welt, wird sie mitgeschickt. Wie in VRChat selbst braucht das **VRC+**.

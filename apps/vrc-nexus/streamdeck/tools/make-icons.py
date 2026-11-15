@@ -78,6 +78,10 @@ def draw(name, d, n, on=False):
         d.ellipse(P((32, 12), (68, 48)), outline=col, width=w)
         d.pieslice(P((16, 52), (84, 120)), 180, 360, outline=col, width=w)
         d.polygon(P((62, 60), (90, 74), (62, 88)), fill=GOLD)
+    elif name == 'instance':
+        d.ellipse(P((16, 16), (84, 84)), outline=col, width=w)
+        d.line(P((50, 30), (50, 70)), fill=GOLD, width=w + 2)
+        d.line(P((30, 50), (70, 50)), fill=GOLD, width=w + 2)
     elif name == 'friend':
         d.ellipse(P((32, 14), (68, 50)), fill=GREEN if on else None, outline=col, width=w)
         d.arc(P((14, 56), (86, 120)), 180, 360, fill=col, width=w)
@@ -140,7 +144,7 @@ def save(name, size, key, on=False, suffix=''):
 
 os.makedirs(OUT, exist_ok=True)
 for name in ('status', 'chatbox', 'param', 'input', 'rotator', 'friends', 'players', 'launch', 'rejoin', 'open', 'camera', 'macro', 'avatar', 'friend', 'notifs', 'overlay', 'speech', 'dial',
-             'media', 'quicktext', 'scene', 'record', 'chatmods', 'tts', 'info'):
+             'media', 'quicktext', 'scene', 'record', 'chatmods', 'tts', 'info', 'instance'):
     save(name, 20, False, suffix='_icon')
     save(name, 40, False, suffix='_icon@2x')
     save(name, 72, True, suffix='_key')

@@ -164,6 +164,7 @@ class NexusApp {
             if (act === 'media_ctl') { if (!this.media) throw new UserError('Nur in der Windows-App.'); return this.media.control(str(input.cmd), str(input.id)); }
             if (act.startsWith('auto_')) return await this.auto.action(act, input);
             if (act === 'hud_state') return this.hudState();
+            if (act === 'clipboard_write') { const h = this.tools && this.tools.host; if (!h || !h.copy) throw new UserError('Nicht verfügbar.'); h.copy(cut(str(input.text), 5000)); return { ok: true }; }
             if (act.startsWith('subs_')) { if (!this.subs) throw new UserError('Übersetzer gibt es nur in der Windows-App.'); return await this.subs.action(act, input); }
             if (act.startsWith('speech_')) { if (!this.speech) throw new UserError('Spracheingabe gibt es nur in der Windows-App.'); return await this.speech.action(act, input); }
             if (act === 'overlay_act') return await this.tools.apiAction(str(input.action), input);

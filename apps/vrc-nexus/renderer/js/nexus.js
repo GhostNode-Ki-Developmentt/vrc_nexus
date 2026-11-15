@@ -431,6 +431,15 @@
         el.addEventListener('input', () => { if (el.type === 'checkbox' || el.tagName === 'SELECT') store.set('f' + s, el.type === 'checkbox' ? el.checked : el.value); renderFriends(); });
     });
 
+    /** Text kopieren: erst über die App (Electron), dann Browser-Zwischenablage, zuletzt der alte Weg */
+    function copyText(t) {
+        t = String(t || '');
+        const ok = () => toast('📋 Kopiert: ' + (t.length > 40 ? t.slice(0, 40) + '…' : t));
+        const old = () => { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); let r = false; try { r = document.execCommand('copy'); } catch (e) { /* egal */ } a.remove(); return r; };
+        return api('clipboard_write', { text: t }).then(ok)
+            .catch(() => (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(ok))
+            .catch(() => (old() ? ok() : prompt('Kopieren:', t)));
+    }
     // ---------- Dialog (Benutzer / Welt / Instanz / Avatar) ----------
     const modal = $('#userModal');
     function openModal(html) { modal.hidden = false; document.body.style.overflow = 'hidden'; $('#userBody').innerHTML = html; }
@@ -529,7 +538,7 @@
     }
     document.addEventListener('click', e => {
         const c = e.target.closest('[data-copy]');
-        if (c) { navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Kopiert.')); return; }
+        if (c) { e.preventDefault(); copyText(c.dataset.copy); return; }
         const g = e.target.closest('[data-opengroup]');
         if (g) { closeModal(); tab('groups'); openGroup(g.dataset.opengroup); }
     });
@@ -2211,7 +2220,7 @@
     // Start
     load(false).then(() => load(true)).finally(schedule);
     window.addEventListener('nexus-colors', () => { try { renderFriends(); } catch (e) { /* noch nicht geladen */ } });
-    window.NexusUI = { tcol, idColor, subnav: () => syncSubNav(), statusDot, store, pic, popMenu, renderUser, feedRow, tab, api, toast, esc, img, ago, hm, dur, clock, num, launch, openUser, openWorld, openAvatar, openInstance, openModal, closeModal, load, readClipboard,
+    window.NexusUI = { copy: copyText, tcol, idColor, subnav: () => syncSubNav(), statusDot, store, pic, popMenu, renderUser, feedRow, tab, api, toast, esc, img, ago, hm, dur, clock, num, launch, openUser, openWorld, openAvatar, openInstance, openModal, closeModal, load, readClipboard,
         state: () => state, statusDot, isoDT, renderFriends, store };
     { const st = (window.VRCX.ui || {})['ui.start_tab']; if (st && st !== 'last') tab(st); else tab(store.get('tab', 'home'), store.get('tabSub', '')); }
     setInterval(() => { if (state && !$('[data-pane=friends]').hidden) renderFriends(); }, 60000);

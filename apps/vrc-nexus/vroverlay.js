@@ -164,6 +164,7 @@ class VrOverlay {
                 if (wc) wc.invalidate();
                 break;
             case 'error': this.status = '⚠ ' + m.msg; break;
+            case 'fps': this.fps = { app: Number(m.app) || 0, min: Number(m.min) || 0, at: Date.now() }; break;
             case 'visible': this.visible = !!m.v; break;
             case 'toggled': this.visible = !!m.v; break;
             case 'input': this.inputMsg = m.ok ? '' : String(m.msg || ''); break;

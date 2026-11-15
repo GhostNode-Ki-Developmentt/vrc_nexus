@@ -29,7 +29,8 @@ namespace NexusOverlay
         static uint curW = 1024, curH = 640;
         static bool gaze = true, interactive = true;
         static ulong actSet, actToggle;
-        static long lastGaze;
+        static long lastGaze, lastFps;
+        static readonly Compositor_FrameTiming[] timings = new Compositor_FrameTiming[90];
         static volatile bool running = true;
 
         static void Out(string json) { lock (Console.Out) { Console.Out.WriteLine(json); Console.Out.Flush(); } }
@@ -84,6 +85,7 @@ namespace NexusOverlay
                     if (ev.eventType == (uint)EVREventType.VREvent_Quit) { Out("{\"ev\":\"quit\"}"); OpenVR.System.AcknowledgeQuit_Exiting(); running = false; }
                 PollInput();
                 if (hudVisible && gaze && Environment.TickCount - lastGaze > 100) { lastGaze = Environment.TickCount; GazeCheck(); }
+                if (Environment.TickCount - lastFps > 1000) { lastFps = Environment.TickCount; ReportFps(); }
                 Thread.Sleep(11);
             }
             OpenVR.Shutdown();
@@ -181,6 +183,28 @@ namespace NexusOverlay
             finally { handle.Free(); }
         }
 
+        // Bildrate der VR-Anwendung (VRChat): Abstand zwischen den Bildern, die die App beim Compositor abliefert
+        static void ReportFps()
+        {
+            try
+            {
+                if (OpenVR.Compositor == null) return;
+                uint size = (uint)Marshal.SizeOf(typeof(Compositor_FrameTiming));
+                for (int i = 0; i < timings.Length; i++) timings[i].m_nSize = size;
+                uint n = OpenVR.Compositor.GetFrameTimings(timings);
+                double sum = 0, worst = 0; int cnt = 0;
+                for (int i = 0; i < n && i < timings.Length; i++)
+                {
+                    float ms = timings[i].m_flClientFrameIntervalMs;
+                    if (ms > 0.5f && ms < 1000f) { sum += ms; cnt++; if (ms > worst) worst = ms; }
+                }
+                if (cnt < 5) return;
+                double fps = 1000.0 / (sum / cnt), min = 1000.0 / worst;
+                var ci = System.Globalization.CultureInfo.InvariantCulture;
+                Out("{\"ev\":\"fps\",\"app\":" + fps.ToString("0.0", ci) + ",\"min\":" + min.ToString("0.0", ci) + "}");
+            }
+            catch (Exception) { }
+        }
         static void UploadInfo(byte[] bgra, uint w, uint h)
         {
             for (int i = 0; i + 3 < bgra.Length; i += 4) { byte b = bgra[i]; bgra[i] = bgra[i + 2]; bgra[i + 2] = b; }

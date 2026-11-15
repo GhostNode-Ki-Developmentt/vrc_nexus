@@ -1089,6 +1089,36 @@ class Tools {
             vars: (() => { try { const v = this.app.game.values(); return Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === 'string' || typeof x === 'number').slice(0, 150).map(([k, x]) => [k, String(x).slice(0, 80)])); } catch (e) { return {}; } })() };
     }
     /** Profilbild eines Freundes (für Stream-Deck-Tasten) → { mime, b64 } */
+    /** Vorschaubild eines Avatars (für die Stream-Deck-Taste) */
+    async avatarImage(id) {
+        if (!/^avtr_[0-9a-f-]{36}$/i.test(str(id))) throw new UserError('Ungültige Avatar-ID.');
+        this.avThumbs = this.avThumbs || new Map();
+        let url = this.avThumbs.get(id);
+        if (!url) { const a = await this.call('GET', '/avatars/' + encodeURIComponent(id)); url = str(a && (a.thumbnailImageUrl || a.imageUrl)); if (url) this.avThumbs.set(id, url); }
+        return this.thumbOf(url);
+    }
+    /** Avatare für die Auswahl im Stream-Deck-Plugin */
+    async avatarList() {
+        const r = await this.app.post({ act: 'avatars', kind: 'mine' }, {});
+        let fav = [];
+        try { fav = (await this.app.post({ act: 'avatars', kind: 'favorites' }, {})).avatars || []; } catch (e) { /* ohne Favoriten */ }
+        const seen = new Set();
+        return { items: [].concat(r.avatars || [], fav).filter(a => a && !seen.has(a.id) && seen.add(a.id)).map(a => ({ id: a.id, name: a.name, current: !!a.current })) };
+    }
+    async thumbOf(url) {
+        url = str(url);
+        if (!url) throw new UserError('Kein Bild.');
+        const m = /\/(?:file|image)\/(file_[0-9a-f-]{36})\/(\d+)/i.exec(url);
+        let r;
+        if (m) r = await this.app.image(m[1], int(m[2]) || 1, 256);
+        else if (/^https:\/\//.test(url)) {
+            const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            const type = res.headers.get('content-type') || '';
+            r = res.ok && /^image\//.test(type) ? { status: 200, headers: { 'Content-Type': type }, body: Buffer.from(await res.arrayBuffer()) } : { status: 404 };
+        }
+        if (!r || r.status !== 200) throw new UserError('Bild nicht verfügbar.');
+        return { mime: r.headers['Content-Type'], b64: Buffer.from(r.body).toString('base64') };
+    }
     async friendImage(id) {
         const f = (this.app.vrc.friendList() || []).find(x => x.id === str(id));
         if (!f || !f.image) throw new UserError('Kein Bild.');
@@ -1157,6 +1187,14 @@ class Tools {
             }
             case 'macro': return Object.assign({ ok: true }, await this.app.macros.run(str(d.id || d.script)));
             case 'macro_stop': this.app.macros.stop(); return { ok: true };
+            case 'instance_create': {
+                let world = str(d.world).trim();
+                if (!world || world === 'current') world = g.state.worldId;
+                if (!/^wrld_[0-9a-f-]{36}$/i.test(world)) throw new UserError('Keine Welt – du bist in keiner Instanz und auf der Taste ist keine Welt-ID eingetragen.');
+                const r = await this.app.post({ act: 'instance_create', world, type: str(d.type || 'friends+'), region: str(d.region || 'eu'), invite_me: d.invite_me === '' ? '' : '1', group: str(d.group), access: str(d.access) }, {});
+                if (r.error) throw new UserError(r.error);
+                return { ok: true, msg: r.msg, location: r.location };
+            }
             case 'avatar': {
                 const id = str(d.id).trim();
                 if (!/^avtr_[0-9a-f-]{36}$/i.test(id)) throw new UserError('Ungültige Avatar-ID.');
