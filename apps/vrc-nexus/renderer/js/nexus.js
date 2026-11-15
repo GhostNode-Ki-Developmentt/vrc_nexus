@@ -468,7 +468,7 @@
         const l = u.loc || {}, w = l.world_info || {}, s = u.stats || {}, myLoc = state.me.location;
         let h = '<div class="vx-u-head">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
             + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + (u.pronouns ? ' · ' + esc(u.pronouns) : '') + '</div>'
-            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
+            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill" title="Entwicklerin von VRC Nexus">👑 Nexus Admin</span>' : '') + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
             + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';
         if (l.kind === 'world') {
             h += '<div class="vx-u-loc">' + img(w.thumb, 'vx-u-world', '') + '<div><b><a href="#" data-world="' + esc(l.world) + '">' + esc((w.name) || 'Unbekannte Welt') + '</a></b><small>' + esc(l.label) + (w.author ? ' · von ' + esc(w.author) : '') + (w.capacity ? ' · max. ' + w.capacity : '') + '</small><span class="vx-u-btns">'

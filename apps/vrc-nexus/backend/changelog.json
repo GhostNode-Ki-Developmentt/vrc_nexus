@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.9.6",
+  "title": "Abzeichen „Nexus Admin“",
+  "body": "- **Abzeichen „👑 Nexus Admin“** in Pink im Profil-Fenster der Besitzerin – sichtbar für alle, die ihr Profil in VRC Nexus öffnen (erkannt am Hash der VRChat-ID)."
+ },
+ {
   "version": "2.9.5",
   "title": "Intiface auf dem Handy: klare Hinweise",
   "body": "- **Intiface auf dem Handy**: Die Fehlermeldung nennt jetzt genau, was am Handy eingestellt sein muss („Listen on all network interfaces“, Server neu starten, gleiches WLAN, Akku-Optimierung für Intiface aus). In der Spielzeug-Karte steht ein Hinweis dazu."

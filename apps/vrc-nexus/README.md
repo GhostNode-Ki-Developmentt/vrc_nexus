@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.6 – Abzeichen „Nexus Admin“
+
+- **Abzeichen „👑 Nexus Admin“** in Pink im Profil-Fenster der Besitzerin – sichtbar für alle, die ihr Profil in VRC Nexus öffnen (erkannt am Hash der VRChat-ID).
+
 ### Neu in 2.9.5 – Intiface auf dem Handy: klare Hinweise
 
 - **Intiface auf dem Handy**: Die Fehlermeldung nennt jetzt genau, was am Handy eingestellt sein muss („Listen on all network interfaces“, Server neu starten, gleiches WLAN, Akku-Optimierung für Intiface aus). In der Spielzeug-Karte steht ein Hinweis dazu.
