@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.9.7",
+  "title": "Intiface-Adresse 0.0.0.0 erklärt",
+  "body": "- **Intiface-Adresse**: `0.0.0.0` wird mit einer Erklärung abgelehnt (das ist nur die „hört im ganzen Netz“-Anzeige von Intiface – verbunden wird mit der echten Handy-IP). Eine alte Fehlermeldung verschwindet, sobald man die Adresse ändert."
+ },
+ {
   "version": "2.9.6",
   "title": "Abzeichen „Nexus Admin“",
   "body": "- **Abzeichen „👑 Nexus Admin“** in Pink im Profil-Fenster der Besitzerin – sichtbar für alle, die ihr Profil in VRC Nexus öffnen (erkannt am Hash der VRChat-ID)."
