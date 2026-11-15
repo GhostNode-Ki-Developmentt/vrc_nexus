@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.9.8",
+  "title": "Intiface-Adresse aus Intiface übernehmen",
+  "body": "- **Intiface-Adresse `0.0.0.0`** (so zeigt Intiface sie an) wird jetzt automatisch zu `127.0.0.1` – einfach die Adresse aus Intiface übernehmen und verbinden."
+ },
+ {
   "version": "2.9.7",
   "title": "Intiface-Adresse 0.0.0.0 erklärt",
   "body": "- **Intiface-Adresse**: `0.0.0.0` wird mit einer Erklärung abgelehnt (das ist nur die „hört im ganzen Netz“-Anzeige von Intiface – verbunden wird mit der echten Handy-IP). Eine alte Fehlermeldung verschwindet, sobald man die Adresse ändert."

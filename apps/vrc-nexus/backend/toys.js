@@ -32,7 +32,7 @@ class Toys {
     saveCfg(c) {
         const cur = this.cfg(), n = Object.assign({}, cur);
         if (c.url !== undefined) { const u = str(c.url).trim(); if (!/^wss?:\/\/[\w.\-]+(:\d+)?\/?$/.test(u)) throw new UserError('Adresse ungültig (z. B. ws://127.0.0.1:12345).');
-            if (/^wss?:\/\/0\.0\.0\.0/.test(u)) throw new UserError('0.0.0.0 heißt nur „Intiface hört im ganzen Netz“ – verbinden musst du dich mit der echten IP des Handys (Android: Einstellungen → WLAN → dein Netz → IP-Adresse), z. B. ws://192.168.2.50:12345.');
+            if (/^wss?:\/\/0\.0\.0\.0/.test(u)) u = u.replace('0.0.0.0', '127.0.0.1');   // 0.0.0.0 = Intiface hört überall → auf diesem PC über 127.0.0.1
             if (u !== cur.url) { this.error = ''; this.state = 'aus'; }
             n.url = u; }
         if (c.auto !== undefined) n.auto = c.auto === true || c.auto === '1';
