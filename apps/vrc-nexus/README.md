@@ -1,24 +1,26 @@
-# VRC Nexus – eigenständige Windows-App
+# VRC Nexus – Windows app
 
-Der komplette **VRC Nexus** aus dem Dashboard als eigenes Programm für Windows – **ohne Server, ohne Webspace**.
-Alle Daten liegen nur auf deinem PC.
+The complete **VRC Nexus** as a standalone program for Windows – **no server, no web space**.
+All data stays on your PC. Screenshots and downloads: see the [main README](../../README.md).
 
-## Was drin ist
+## What’s inside
 
-Alles aus dem Nexus des Dashboards:
+- 👥 **Friends** with status, location, notes, lists, watching (Windows notification when someone comes online)
+- ⭐ **Favourites** (VRChat groups + your own local lists + history)
+- 📜 **History** (online/offline, location changes, status, avatar, name, bio, trust) and 📈 **statistics** (playtime, timeline, encounters, heatmaps)
+- 🌐 **Worlds & instances** (create, invite, join), 🎭 **avatars** incl. 🔎 **avatar search**
+- 🛡️ **Groups** with moderation, posts, roles, 📅 **group calendar** (export as .ics)
+- 🖼️ **Gallery** (photos, icons, emojis, stickers, prints, inventory – incl. upload)
+- 🔔 **Notifications**, 🛒 **shop**, 🌍 **VRChat worldwide** (player count chart)
+- 🚫 Moderation, 📰 info push, 🔍 search, edit profile & status
+- 🎮 **Game & OSC** built in:
+  - reads the VRChat logs (worlds, who joined/left, avatars, videos, screenshots, invites) → game log, “met”, visits
+  - OSC remote: chatbox, typing indicator, avatar parameters, inputs, quick buttons, **chatbox modules & rotator**
+  - 🗣 **Voice:** speech input (whisper.cpp), text-to-speech, voice commands, live subtitles & translator
+- 🥽 SteamVR overlay, 🎛 Stream Deck plugin, 📺 stream bot
+- Keeps running in the **tray** (closing the window minimises), optional **start with Windows**
 
-- 👥 **Freunde** mit Status, Ort, Notizen, Listen, Beobachten (Windows-Benachrichtigung, wenn jemand online kommt)
-- ⭐ **Favoriten** wie in VRCX (VRChat-Gruppen + eigene lokale Listen + Verlauf)
-- 📜 **Verlauf** (online/offline, Ortswechsel, Status, Avatar, Name, Bio, Vertrauen) und 📈 **Statistik** (Spielzeit, Zeitleiste, Begegnungen, Heatmaps)
-- 🌐 **Welten & Instanzen** (erstellen, einladen, beitreten), 🎭 **Avatare** inkl. 🔎 **Avatar-Suche** (avtrDB, PAW)
-- 🛡️ **Gruppen** mit Moderation, Beiträgen, Rollen, 📅 **Gruppen-Kalender** (Export als .ics)
-- 🖼️ **Galerie** (Fotos, Icons, Emojis, Sticker, Prints, Inventar – inkl. Hochladen)
-- 🔔 **Benachrichtigungen** (alt + V2, mit Verlauf und Aktionen), 🛒 **Shop**, 🌍 **VRChat weltweit** (Spielerzahl-Kurve)
-- 🚫 Moderation, 📰 Info-Push, 🔍 Suche, Profil & Status bearbeiten
-- 🎮 **Spiel & OSC** – direkt eingebaut (vorher separater Client):
-  - liest die VRChat-Logs mit (Welten, wer kam/ging, Avatare, Videos, Screenshots, Einladungen) → Spiel-Log, „Getroffen“, Besuche
-  - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
-- Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
+## Changelog
 
 ### New in 2.15.1 – Voice sub-menu
 
