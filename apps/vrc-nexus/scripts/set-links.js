@@ -4,6 +4,8 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 const file = path.join(__dirname, '..', 'backend', 'links.json');
+const pu = String(process.env.PATREON_URL || '').trim();
+if (pu) { if (/^https:\/\/(www\.)?patreon\.com\/[\w./?=-]{2,80}$/.test(pu)) { const d0 = JSON.parse(fs.readFileSync(file, 'utf8')); d0.patreon = pu; fs.writeFileSync(file, JSON.stringify(d0) + '\n'); console.log('Patreon-Link gesetzt: ' + pu); } else console.log('::warning::PATREON_URL ist kein Patreon-Link – ignoriert.'); }
 const v = String(process.env.DISCORD_INVITE || '').trim();
 const ok = /^https:\/\/(discord\.gg|(www\.)?discord\.com\/invite)\/[\w-]{2,40}$/.test(v);
 if (!v) { console.log('Discord-Link: Standard (' + JSON.parse(fs.readFileSync(file, 'utf8')).discord + ')'); process.exit(0); }

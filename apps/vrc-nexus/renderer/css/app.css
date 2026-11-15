@@ -728,3 +728,8 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .ab-discord { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
 .ab-dc { background: #5865f2; border-color: #5865f2; color: #fff; text-decoration: none; } .ab-dc:hover { background: #4752c4; color: #fff; }
 .ab-discord-card { flex-direction: column; align-items: flex-start; gap: 6px; margin: 4px 0 14px; padding: 10px 12px; border: 1px solid rgba(88, 101, 242, 0.5); background: rgba(88, 101, 242, 0.08); }
+.ab-patreon { margin-top: 18px; border: 1px solid rgba(255, 66, 77, 0.45); background: rgba(255, 66, 77, 0.06); } .ab-patreon img { display: block; width: 100%; height: auto; }
+.ab-pt-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
+.ab-pt { background: #ff424d; border-color: #ff424d; color: #fff; text-decoration: none; } .ab-pt:hover { background: #e0353f; color: #fff; }
+.ab-sup { padding: 4px 12px 12px; } .ab-sup h4 { margin: 4px 0 8px; } .ab-tier { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: #ff8a92; margin: 8px 0 4px; }
+.ab-names { display: flex; flex-wrap: wrap; gap: 6px; } .ab-names span { padding: 2px 10px; border: 1px solid rgba(255, 66, 77, 0.4); background: rgba(255, 66, 77, 0.08); font-size: 0.85rem; }

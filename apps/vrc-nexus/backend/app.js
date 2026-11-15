@@ -1000,7 +1000,7 @@ class NexusApp {
         return { version: VERSION, platform: this.mobile ? 'Android' : process.platform === 'win32' ? 'Windows' : process.platform,
             runtime: { electron: pv.electron || '', chrome: pv.chrome || '', node: pv.node || '' }, data: this.tools && this.tools.userData ? this.tools.userData : '',
             update: up ? { available: !!up.available, version: up.version || '', checked: up.checked || 0, page: up.page || '' } : null,
-            changelog: log.slice(0, n), total: log.length, repo: 'https://github.com/xxloonaxx/vrc_nexus/releases', discord: discordInvite() };
+            changelog: log.slice(0, n), total: log.length, repo: 'https://github.com/xxloonaxx/vrc_nexus/releases', discord: discordInvite(), patreon: patreonUrl(), supporters: (() => { try { return require('./supporters.json').slice(0, 300); } catch (e) { return []; } })() };
     }
 }
 
@@ -1009,6 +1009,13 @@ function discordInvite() {
     let v = '';
     try { v = String(require('./links.json').discord || ''); } catch (e) { v = ''; }
     return /^https:\/\/(discord\.gg|(www\.)?discord\.com\/invite)\/[\w-]{2,40}$/.test(v) ? v : '';
+}
+
+/** Patreon-Seite (backend/links.json – beim Build aus PATREON_URL gesetzt) */
+function patreonUrl() {
+    let v = '';
+    try { v = String(require('./links.json').patreon || ''); } catch (e) { v = ''; }
+    return /^https:\/\/(www\.)?patreon\.com\/[\w./?=-]{2,80}$/.test(v) ? v : '';
 }
 
 /** Formular (application/x-www-form-urlencoded oder multipart) → Objekt; „name[]“ wird zu Arrays */

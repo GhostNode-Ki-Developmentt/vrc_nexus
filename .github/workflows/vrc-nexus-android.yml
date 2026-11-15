@@ -31,7 +31,11 @@ jobs:
         working-directory: apps/vrc-nexus
         env:
           DISCORD_INVITE: ${{ secrets.DISCORD_INVITE || vars.DISCORD_INVITE }}
-        run: node scripts/set-links.js
+          PATREON_URL: ${{ secrets.PATREON_URL || vars.PATREON_URL }}
+          PATREON_TOKEN: ${{ secrets.PATREON_TOKEN }}
+        run: |
+          node scripts/set-links.js
+          node scripts/patreon-supporters.js
       - name: Oberfläche + Backend bündeln
         working-directory: apps/vrc-nexus-android
         run: node build.mjs
