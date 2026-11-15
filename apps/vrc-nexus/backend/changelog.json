@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.10.0",
+  "title": "🐞 Avatar-Debugger",
+  "body": "- **🐞 Avatar-Debugger** (Spiel & OSC): alle Avatar-Parameter live in zwei Spalten – `true` grün, `false` rot, Zahlen mit Wert; gerade geänderte Werte leuchten kurz auf, SPS-/OGB-Parameter sind rosa markiert.\n  - Suche, Filter „nur SPS / OGB“ und „zuletzt geändert“, Anhalten, alles als JSON kopieren.\n  - Oben steht, ob OSC von VRChat ankommt und ob der OSC-Port belegt ist (z. B. durch ein anderes OSC-Programm).\n  - In ❤️ NSFW / ERP → Spielzeug gibt es einen Knopf direkt dorthin – so siehst du, wie deine SPS-Zonen heißen."
+ },
+ {
   "version": "2.9.9",
   "title": "Fehler bei 0.0.0.0 behoben",
   "body": "- Fehler aus 2.9.8 behoben: die Adresse `ws://0.0.0.0:12345` aus Intiface wird jetzt wirklich zu `127.0.0.1` umgestellt (2.9.8 brach beim Speichern ab)."

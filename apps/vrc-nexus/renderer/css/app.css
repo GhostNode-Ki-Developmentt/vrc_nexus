@@ -699,3 +699,10 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 
 /* Profil-Abzeichen „Nexus Admin“ */
 .vx-pill.nx-admin-pill { --pc: #ff4fb4; color: #ff4fb4; border-color: #ff4fb4; background: rgba(255, 79, 180, 0.12); font-weight: 700; text-shadow: 0 0 6px rgba(255, 79, 180, 0.6); }
+
+/* ---------- 🐞 Avatar-Debugger ---------- */
+.od-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; } .od-head .od-q { flex: 1 1 220px; }
+.od-list { columns: 2 340px; column-gap: 28px; font-family: Consolas, 'Cascadia Mono', monospace; font-size: 0.82rem; background: rgba(5, 8, 12, 0.85); border: 1px solid var(--border-color); padding: 10px 12px; max-height: 70vh; overflow-y: auto; }
+.od-p { break-inside: avoid; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #cbd5e1; border-radius: 3px; transition: background 0.4s; }
+.od-p.sps { color: #ff9ccf; } .od-p.hot { background: rgba(245, 194, 66, 0.25); }
+.od-t { color: #4ade80; font-weight: 600; } .od-f { color: #ef4444; font-weight: 600; } .od-n { color: var(--text-main); font-weight: 600; }

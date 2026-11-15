@@ -280,7 +280,9 @@ class Osc {
                 if (address === '/avatar/change' && args.length) { this.avatarId = str(args[0]); this.params = {}; }
                 else if (address.startsWith('/avatar/parameters/') && args.length) {
                     const v = args[0];
-                    this.params[address.slice(19)] = typeof v === 'number' && !Number.isInteger(v) ? Math.round(v * 1000) / 1000 : v;
+                    const pn = address.slice(19), nv = typeof v === 'number' && !Number.isInteger(v) ? Math.round(v * 1000) / 1000 : v;
+                    if (this.params[pn] !== nv) (this.changedAt = this.changedAt || {})[pn] = Date.now();
+                    this.params[pn] = nv;
                 }
                 else if (address.startsWith('/usercamera/') && args.length) this.cam[address.slice(12)] = args.length === 1 ? args[0] : args;
                 if (this.onMessage) { try { this.onMessage(address, args); } catch (e) { /* egal */ } }

@@ -46,6 +46,7 @@
             <nav class="nc-sub" id="ncSub">
                 <button type="button" class="chip" data-sub="live">📡 Live &amp; OSC</button>
                 <button type="button" class="chip" data-sub="params">🎚 Parameter</button>
+                <button type="button" class="chip" data-sub="debug">🐞 Avatar-Debugger</button>
                 <button type="button" class="chip" data-sub="osclog">📜 OSC-Log</button>
                 <button type="button" class="chip" data-sub="osctools">🧰 OSC-Werkzeuge</button>
                 <button type="button" class="chip" data-sub="mods">🧩 Chatbox-Module</button>
@@ -128,6 +129,7 @@
                 </section></div>
             <div class="nc-pane" data-p="osctools" hidden><div id="otBox"></div></div>
             <div class="nc-pane" data-p="tts" hidden><div id="ttsBox"></div></div>
+            <div class="nc-pane" data-p="debug" hidden><div id="odBox"></div></div>
             <div class="nc-pane" data-p="subs" hidden><div id="subsBox"></div></div>
             <div class="nc-pane" data-p="osclog" hidden>
                 <div class="nc-row nc-filter">
@@ -346,6 +348,7 @@
         if (name === 'osctools' && window.NexusOscTools) window.NexusOscTools.open();
         if (name === 'mods' && window.NexusChatMods) window.NexusChatMods.open(document.getElementById('cmBox'));
         if (name === 'tts' && window.NexusTts) window.NexusTts.open(document.getElementById('ttsBox'));
+        if (name === 'debug' && window.NexusOscDebug) window.NexusOscDebug.open(document.getElementById('odBox'));
         if (name === 'subs' && window.NexusSubs) window.NexusSubs.open(document.getElementById('subsBox'));
         if (name === 'macros') loadMacros();
         if (name === 'auto') loadAuto();

@@ -230,6 +230,7 @@ class NexusApp {
             case 'client_rot_preview': return { text: g.rotatorText(str(input.text)) };
             case 'client_log_clear': return { deleted: g.clear() };
             case 'client_params': return this.params.list(str(input.avatar));
+            case 'client_debug': { const o = g.osc; return { active: !!o.active, error: str(o.listenError), avatar: str(o.avatarId), params: o.params || {}, changed: o.changedAt || {} }; }
             case 'client_macros': return { macros: this.macros.list() };
             case 'client_macro_save': return { macros: this.macros.save(input.name, input.script, input.id), msg: 'Makro gespeichert.' };
             case 'client_macro_delete': return { macros: this.macros.remove(input.id) };

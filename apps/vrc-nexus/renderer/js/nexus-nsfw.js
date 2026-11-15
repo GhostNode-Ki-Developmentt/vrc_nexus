@@ -58,6 +58,7 @@
                 + '<div class="nc-row"><span class="small">Höchststärke</span><input type="range" min="5" max="100" value="' + tc.max + '" data-nk="max"><span class="small">' + tc.max + ' %</span><span class="small">Aus nach</span><input type="number" min="0" max="60" value="' + tc.idle_stop + '" data-nk="idle_stop" style="width:60px"><span class="small">s ohne Signal</span></div>'
                 + '<h4 style="margin-top:12px">🔗 Geräte verknüpfen</h4>' + chk('links_on', tc.links_on, '<b>Verknüpfungen aktiv</b> (Not-Aus und Panik schalten das wieder aus)')
                 + '<p class="muted small">Pro Gerät eine oder mehrere Quellen: SPS-Plugs, SPS-Sockets, SPS-Touch-Zonen (OSC-Parameter im OGB-/VRCFury-Format), Konstant oder ein beliebiger Avatar-Parameter. Die stärkste Quelle zählt. OSC in VRChat muss an sein.</p>'
+                + '<p class="small"><button type="button" class="btn btn-sm" data-od="1">🐞 Avatar-Debugger öffnen</button> – zeigt, ob SPS-Werte ankommen und wie die Zonen heißen.</p>'
                 + '<div class="tl-box">' + (window.NexusToyLinks ? window.NexusToyLinks.html(t) : '') + '</div>'
                 + '<details class="ns-edit"><summary class="small">Einfacher OGB-Modus (alle Geräte gleich)</summary>' + chk('ogb', tc.ogb, 'OGB-/SPS-Parameter steuern alle Geräte (Nähe = Stärke)') + chk('ogb_self', tc.ogb_self, 'auch eigene Berührungen (Self)')
                 + (t.ogb_params && t.ogb_params.length ? '<p class="muted small">Gefunden: ' + t.ogb_params.map(p => '<code>' + esc(p) + '</code>').join(' ') + '</p>' : '') + '</details>'
@@ -79,6 +80,7 @@
     function onClick(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onClick(e, render)) return;
         const g = e.target.closest('[data-tab-go]'); if (g) return UI.tab(g.dataset.tabGo);
+        if (e.target.closest('[data-od]')) { UI.tab('client'); setTimeout(() => { const c = document.querySelector('#ncSub [data-sub="debug"]'); if (c) c.click(); }, 400); return; }
         const b = e.target.closest('[data-ns]');
         if (!b) return;
         const a = b.dataset.ns;
