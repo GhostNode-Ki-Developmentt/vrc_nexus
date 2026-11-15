@@ -163,6 +163,11 @@ jobs:
             RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --discord > discord.json
             curl -sS -f -H "Content-Type: application/json" -d @discord.json "$DISCORD_WEBHOOK" > /dev/null && echo "Discord: gepostet" || echo "::warning::Discord-Webhook fehlgeschlagen"
           else echo "Discord: übersprungen (kein Secret oder schon gepostet)"; fi
+          # 📝 Patreon-Beiträge zum Kopieren (Zusammenfassung dieses Laufs)
+          RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --patreon > patreon.txt
+          RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --patreon-nsfw > patreon-nsfw.txt
+          { echo "## 📝 Patreon post – copy & paste"; echo '```'; cat patreon.txt; echo; echo '```';
+            if [ -s patreon-nsfw.txt ]; then echo "## 🔞 Patreon post (NSFW tier)"; echo '```'; cat patreon-nsfw.txt; echo; echo '```'; fi; } >> "$GITHUB_STEP_SUMMARY"
           # 🔞 extra Webhook: nur der NSFW-Teil, nur wenn die Version einen hat
           if [ -n "$DISCORD_WEBHOOK_NSFW" ] && [ "$FIRST" = "1" ]; then
             RELEASE_URL="https://github.com/$REPO/releases/tag/$TAG" node app/scripts/release-notes.js "$VER" --discord-nsfw > discord-nsfw.json

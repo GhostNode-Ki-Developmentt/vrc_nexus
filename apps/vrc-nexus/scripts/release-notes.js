@@ -33,10 +33,24 @@ function discordNsfw(ver, url) {
             fields: [{ name: '🔓 Unlock', value: 'Only visible and usable with an unlock key (NSFW section in the app).' }, { name: '⬇️ Download', value: url ? '[Windows · Android](' + url + ')' : 'GitHub Releases' }],
             footer: { text: 'VRC Nexus After Dark · 18+' }, timestamp: new Date().toISOString() }] };
 }
+/** 📝 Patreon-Beitrag zum Kopieren (Patreon kann nicht automatisch posten) */
+function patreon(ver, url, nsfw) {
+    const s = nsfw ? sectionNsfw(ver) : section(ver);
+    if (!s) return '';
+    const inv = invite();
+    return [(nsfw ? '🔞 VRC Nexus After Dark ' : '🚀 VRC Nexus ') + ver + (s.title ? ' – ' + s.title : ''), '',
+        nsfw ? 'For supporters with NSFW access – unlock key required in the app.' : 'A new update is out!', '',
+        s.body.replace(/\*\*/g, '').replace(/`/g, ''), '',
+        '⬇️ Download: ' + (url || 'GitHub releases') + (nsfw ? '' : ' (Windows · Android · Stream Deck)'),
+        '🔄 In the app: Settings → About → Check for updates',
+        inv ? '💬 Discord: ' + inv : '', '', 'Thank you for supporting VRC Nexus! ❤'].filter((x, i, a) => !(x === '' && a[i - 1] === '')).join('\n').trim();
+}
 if (require.main === module) {
     const ver = process.argv[2], s = section(ver);
-    if (process.argv.includes('--discord-nsfw')) { const d = discordNsfw(ver, process.env.RELEASE_URL || ''); process.stdout.write(d ? JSON.stringify(d) : ''); }
+    if (process.argv.includes('--patreon-nsfw')) process.stdout.write(patreon(ver, process.env.RELEASE_URL || '', true));
+    else if (process.argv.includes('--patreon')) process.stdout.write(patreon(ver, process.env.RELEASE_URL || '', false));
+    else if (process.argv.includes('--discord-nsfw')) { const d = discordNsfw(ver, process.env.RELEASE_URL || ''); process.stdout.write(d ? JSON.stringify(d) : ''); }
     else if (process.argv.includes('--discord')) process.stdout.write(JSON.stringify(discord(ver, process.env.RELEASE_URL || '')));
     else process.stdout.write(s ? '### New in ' + ver + (s.title ? ' – ' + s.title : '') + '\n\n' + s.body + '\n' : '');
 }
-module.exports = { section, sectionNsfw, discord, discordNsfw };
+module.exports = { section, sectionNsfw, discord, discordNsfw, patreon };
