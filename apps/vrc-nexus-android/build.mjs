@@ -11,7 +11,7 @@ const shim = f => path.join(here, 'src', 'shims', f);
 
 fs.rmSync(W, { recursive: true, force: true });
 fs.mkdirSync(W, { recursive: true });
-for (const d of ['css', 'js']) fs.cpSync(path.join(R, d), path.join(W, d), { recursive: true });
+for (const d of ['css', 'js', 'img']) fs.cpSync(path.join(R, d), path.join(W, d), { recursive: true });
 fs.copyFileSync(path.join(R, 'icon.png'), path.join(W, 'icon.png'));
 fs.copyFileSync(path.join(here, 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'), path.join(W, 'sql-wasm.wasm'));
 fs.appendFileSync(path.join(W, 'css', 'app.css'), '\n' + fs.readFileSync(path.join(here, 'src', 'mobile.css'), 'utf8'));

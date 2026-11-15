@@ -218,7 +218,7 @@ class Settings {
                 case 'textarea': v = cut(str(raw).replace(/\r/g, '').trim(), 4000); break;
                 default: v = cut(str(raw).trim(), 400);
             }
-            if (k === 'ui.bg_image' && v && !/^(https:\/\/\S+|nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+|local:\d+)$/i.test(v)) throw new UserError('Bildadresse ungültig (nur https, Galerie oder eigene Datei).');
+            if (k === 'ui.bg_image' && v && !/^(https:\/\/\S+|nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+|local:\d+|builtin:[a-z-]{2,30})$/i.test(v)) throw new UserError('Bildadresse ungültig (nur https, Galerie oder eigene Datei).');
             if (k === 'adv.api_base' && v && !/^https?:\/\/[\w.-]+(:\d+)?(\/[\w./-]*)?$/.test(v)) throw new UserError('API-Adresse ungültig.');
             if (k === 'int.webhook' && v && !/^https:\/\/(discord(app)?\.com|ptb\.discord\.com|canary\.discord\.com)\/api\/webhooks\/\d+\/[\w-]+$/.test(v)) throw new UserError('Das ist keine Discord-Webhook-URL.');
             if (k === 'int.rpc_client' && v && !/^\d{15,22}$/.test(v)) throw new UserError('Die Discord Client-ID besteht nur aus Ziffern.');

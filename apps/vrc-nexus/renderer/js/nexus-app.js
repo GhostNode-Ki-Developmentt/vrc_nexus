@@ -62,7 +62,8 @@
         applyBg(s);
     }
     /** Hintergrundbild hinter allem (Deckkraft, Weichzeichnen, Anpassen) */
-    function bgUrl(v) { v = String(v || ''); return /^local:(\d+)$/.test(v) ? 'nexus.php?bgimg=' + v.slice(6) : /^(https:\/\/\S+|nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+)$/i.test(v) ? v : ''; }
+    const BUILTIN_BG = [['synthwave', 'Synthwave'], ['polarlicht', 'Polarlicht'], ['sakura', 'Sakura-Nacht'], ['nexus-raster', 'Nexus-Raster'], ['galaxie', 'Galaxie']];
+    function bgUrl(v) { v = String(v || ''); if (/^builtin:[a-z-]+$/.test(v)) return 'img/bg/' + v.slice(8) + '.svg'; return /^local:(\d+)$/.test(v) ? 'nexus.php?bgimg=' + v.slice(6) : /^(https:\/\/\S+|nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+)$/i.test(v) ? v : ''; }
     function applyBg(s) {
         let el = document.getElementById('vxBgImg');
         const u = bgUrl(s['ui.bg_image']);
@@ -599,7 +600,7 @@
             case 'color': return '<input type="color" data-k="' + k + '" value="' + esc(v) + '">';
             case 'range': return '<span class="set-range"><input type="range" data-k="' + k + '" value="' + esc(v) + '" min="' + f.opts[0] + '" max="' + f.opts[1] + '"><output>' + esc(v) + '</output></span>';
             case 'bgimg': { const u = bgUrl(v); return '<div class="set-bg">' + (u ? '<span class="set-bgprev" style="background-image:url(&quot;' + esc(u) + '&quot;)"></span>' : '<span class="set-bgprev none">–</span>')
-                + '<div class="set-bgbtns"><button type="button" class="btn btn-sm" data-act="bg:gal">🖼 Aus Galerie</button><label class="btn btn-sm">📁 Datei …<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" id="bgFile" hidden></label>'
+                + '<div class="set-bgbtns"><button type="button" class="btn btn-sm" data-act="bg:gal">🖼 Eigene &amp; Galerie</button><label class="btn btn-sm">📁 Datei …<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" id="bgFile" hidden></label>'
                 + '<button type="button" class="btn btn-sm" data-act="bg:url">🔗 Adresse</button>' + (u ? '<button type="button" class="btn btn-sm btn-danger" data-act="bg:off">✕ Entfernen</button>' : '') + '</div></div>'; }
             case 'time': return '<input type="time" data-k="' + k + '" value="' + esc(v) + '">';
             case 'textarea': return '<textarea data-k="' + k + '" rows="5" style="width:100%">' + esc(v) + '</textarea>';
@@ -730,7 +731,9 @@
     function bgPicker() {
         const box = document.createElement('div');
         box.className = 'nx-bgpick';
-        box.innerHTML = '<div class="nx-bgpick-in"><div class="nx-row" style="justify-content:space-between;margin:0 0 10px"><b>🖼 Hintergrund aus der Galerie</b><button type="button" class="nc-x" data-bgx>✕</button></div><div class="nx-bgpick-list"><div class="vx-loading">Lade Galerie …</div></div></div>';
+        box.innerHTML = '<div class="nx-bgpick-in"><div class="nx-row" style="justify-content:space-between;margin:0 0 10px"><b>🖼 Hintergrund wählen</b><button type="button" class="nc-x" data-bgx>✕</button></div>'
+            + '<h4 class="bgp-h">✨ Eigene</h4><div class="vx-gal">' + BUILTIN_BG.map(([k, n]) => '<figure class="vx-gitem" data-bgpick="builtin:' + k + '" title="Als Hintergrund verwenden"><img src="img/bg/' + k + '.svg" alt=""><figcaption><small>' + esc(n) + '</small></figcaption></figure>').join('') + '</div>'
+            + '<h4 class="bgp-h">📸 Aus deiner VRChat-Galerie</h4><div class="nx-bgpick-list"><div class="vx-loading">Lade Galerie …</div></div></div>';
         document.body.appendChild(box);
         const close = () => box.remove();
         box.addEventListener('click', e => {
@@ -739,13 +742,13 @@
             if (p) { close(); saveSet({ 'ui.bg_image': p.dataset.bgpick }); }
         });
         api('gallery').then(d => {
-            const g = d.gallery || {}, list = [];
+            const g = (d && d.gallery) || {}, list = [];
             for (const f of Array.isArray(g.photos) ? g.photos : []) list.push({ img: f.img, t: 'Foto' });
             for (const f of Array.isArray(g.prints) ? g.prints : []) if (/^nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+$|^https:\/\//i.test(f.img || '')) list.push({ img: f.img, t: f.note || 'Print' });
             const el = box.querySelector('.nx-bgpick-list');
             el.innerHTML = list.length ? '<div class="vx-gal">' + list.map(f => '<figure class="vx-gitem" data-bgpick="' + esc(f.img) + '" title="Als Hintergrund verwenden"><img src="' + esc(f.img) + '" alt="" loading="lazy"><figcaption><small>' + esc(f.t) + '</small></figcaption></figure>').join('') + '</div>'
                 : '<div class="vx-empty">In deiner Galerie sind keine Fotos. Lade eins unter Galerie hoch oder wähle eine Datei vom PC.</div>';
-        }).catch(x => { box.querySelector('.nx-bgpick-list').innerHTML = '<div class="vx-error">⚠ ' + esc(x.message) + '</div>'; });
+        }).catch(x => { box.querySelector('.nx-bgpick-list').innerHTML = '<div class="muted small">Galerie nicht verfügbar (' + esc(x.message) + ') – die eigenen Hintergründe oben gehen trotzdem.</div>'; });
     }
     window.NexusBg = { pick: bgPicker, set: v => saveSet({ 'ui.bg_image': v }, true).then(() => toast('Als Hintergrund gesetzt.')) };
     // Regler live anzeigen (gespeichert wird beim Loslassen)

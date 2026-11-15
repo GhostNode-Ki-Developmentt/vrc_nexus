@@ -706,3 +706,6 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .od-p { break-inside: avoid; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #cbd5e1; border-radius: 3px; transition: background 0.4s; }
 .od-p.sps { color: #ff9ccf; } .od-p.hot { background: rgba(245, 194, 66, 0.25); }
 .od-t { color: #4ade80; font-weight: 600; } .od-f { color: #ef4444; font-weight: 600; } .od-n { color: var(--text-main); font-weight: 600; }
+
+.bgp-h { margin: 10px 0 6px; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-cyan); }
+.nx-bgpick .vx-gitem img { aspect-ratio: 16 / 9; object-fit: cover; }

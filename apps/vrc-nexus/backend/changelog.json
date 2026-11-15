@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.10.1",
+  "title": "Eigene Hintergründe",
+  "body": "- ✨ **Eigene Hintergründe:** 5 mitgelieferte Hintergründe (Synthwave, Polarlicht, Sakura-Nacht, Nexus-Raster, Galaxie) im Hintergrund-Auswahlfenster – oben unter „✨ Eigene“, darunter wie gehabt die VRChat-Galerie.\n- Funktionieren auch ohne VRChat-Login (Galerie nicht nötig) und in der Android-App."
+ },
+ {
   "version": "2.10.0",
   "title": "🐞 Avatar-Debugger",
   "body": "- **🐞 Avatar-Debugger** (Spiel & OSC): alle Avatar-Parameter live in zwei Spalten – `true` grün, `false` rot, Zahlen mit Wert; gerade geänderte Werte leuchten kurz auf, SPS-/OGB-Parameter sind rosa markiert.\n  - Suche, Filter „nur SPS / OGB“ und „zuletzt geändert“, Anhalten, alles als JSON kopieren.\n  - Oben steht, ob OSC von VRChat ankommt und ob der OSC-Port belegt ist (z. B. durch ein anderes OSC-Programm).\n  - In ❤️ NSFW / ERP → Spielzeug gibt es einen Knopf direkt dorthin – so siehst du, wie deine SPS-Zonen heißen."

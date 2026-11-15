@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.10.1 – Eigene Hintergründe
+
+- ✨ **Eigene Hintergründe:** 5 mitgelieferte Hintergründe (Synthwave, Polarlicht, Sakura-Nacht, Nexus-Raster, Galaxie) im Hintergrund-Auswahlfenster – oben unter „✨ Eigene“, darunter wie gehabt die VRChat-Galerie.
+- Funktionieren auch ohne VRChat-Login (Galerie nicht nötig) und in der Android-App.
+
 ### Neu in 2.10.0 – 🐞 Avatar-Debugger
 
 - **🐞 Avatar-Debugger** (Spiel & OSC): alle Avatar-Parameter live in zwei Spalten – `true` grün, `false` rot, Zahlen mit Wert; gerade geänderte Werte leuchten kurz auf, SPS-/OGB-Parameter sind rosa markiert.
