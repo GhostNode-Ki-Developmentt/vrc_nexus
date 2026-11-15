@@ -1,0 +1,63 @@
+name: Discord-News senden
+
+# Von Hand: Changelog einer Version in die Discord-Kanäle posten (SFW über DISCORD_WEBHOOK, 🔞 über DISCORD_WEBHOOK_NSFW).
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version für die SFW-News (leer = aktuelle)'
+        required: false
+        default: ''
+      nsfw_version:
+        description: 'Version für die 🔞-News (leer = neueste mit NSFW-Teil)'
+        required: false
+        default: ''
+      send_sfw:
+        description: 'SFW-News senden'
+        type: boolean
+        default: true
+      send_nsfw:
+        description: '🔞-News senden'
+        type: boolean
+        default: true
+      banner:
+        description: 'After-Dark-Banner in der 🔞-News zeigen'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Senden
+        working-directory: apps/vrc-nexus
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK_NSFW: ${{ secrets.DISCORD_WEBHOOK_NSFW }}
+          IN_VER: ${{ inputs.version }}
+          IN_NVER: ${{ inputs.nsfw_version }}
+          SEND_SFW: ${{ inputs.send_sfw }}
+          SEND_NSFW: ${{ inputs.send_nsfw }}
+          NSFW_BANNER: ${{ inputs.banner && '1' || '0' }}
+          BRAND_REF: ${{ github.ref_name }}
+        run: |
+          VER=${IN_VER:-$(node -p "require('./package.json').version")}
+          NVER=${IN_NVER:-$(node -p "(require('./scripts/changelog-build').buildNsfw()[0]||{}).version||''")}
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/vrc-nexus-v"
+          if [ "$SEND_SFW" = "true" ]; then
+            if [ -z "$DISCORD_WEBHOOK" ]; then echo "::warning::Secret DISCORD_WEBHOOK fehlt"; else
+              RELEASE_URL="$URL$VER" node scripts/release-notes.js "$VER" --discord > sfw.json
+              curl -sS -f -H "Content-Type: application/json" -d @sfw.json "$DISCORD_WEBHOOK" > /dev/null && echo "SFW $VER: gepostet"; fi
+          fi
+          if [ "$SEND_NSFW" = "true" ]; then
+            if [ -z "$DISCORD_WEBHOOK_NSFW" ]; then echo "::warning::Secret DISCORD_WEBHOOK_NSFW fehlt"; else
+              RELEASE_URL="$URL$NVER" node scripts/release-notes.js "$NVER" --discord-nsfw > nsfw.json
+              if [ -s nsfw.json ]; then curl -sS -f -H "Content-Type: application/json" -d @nsfw.json "$DISCORD_WEBHOOK_NSFW" > /dev/null && echo "NSFW $NVER: gepostet"; else echo "::warning::$NVER hat keinen NSFW-Teil"; fi; fi
+          fi
