@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.3 – Freischalt-Schlüssel gelten jetzt überall
+
+- **Öffentlicher Schlüssel des Besitzers eingebaut**: Freischalt-Schlüssel aus dem Admin-Bereich funktionieren jetzt in jeder VRC-Nexus-App (ab dieser Version) – weiterhin nur für das VRChat-Konto, für das sie ausgestellt wurden.
+
 ### Neu in 2.9.2 – Spielzeug-Verknüpfungen (SPS) & Admin nur für den Besitzer
 
 - **🔗 Spielzeug-Verknüpfungen** (❤️ NSFW / ERP → Spielzeug): pro Gerät beliebig viele Quellen, die stärkste zählt:

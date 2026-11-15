@@ -13,7 +13,9 @@ const { str, int, cut, arr, now, UserError } = require('./util');
 /** SHA-256 der VRChat-User-ID des Besitzers (die ID selbst steht nicht im Code) */
 const OWNER_HASH = '23e799d90cf62600203499e3f4d2712bb1a016e71dac64718b2c7d8267b2789e';
 /** öffentliche Schlüssel (Ed25519, SPKI/DER base64), mit denen Freischalt-Schlüssel unterschrieben sein dürfen */
-const TRUSTED = [];
+const TRUSTED = [
+    'MCowBQYDK2VwAyEAg3Ejm0ec/StudDQryGwNGNr55UKQT3EQYvdPhL3dvo4=',   // Besitzer, erzeugt am 15.11.2026
+];
 const FEATURES = { nsfw: 'NSFW-Werkzeuge', toys: 'Spielzeug-Steuerung (Intiface)', remote: 'Handy-Fernbedienung' };
 const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
