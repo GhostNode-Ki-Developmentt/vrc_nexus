@@ -1,3 +1,67 @@
 # 🔞 NSFW-Changelog
 
 Wird in der App unter „Über“ nur angezeigt, wenn NSFW freigeschaltet ist. In README, GitHub-Release und Discord steht dafür „🔞 ***“.
+
+### Neu in 2.12.1 – Selbsttest der Fernsteuerung
+
+- 🧪 **Selbsttest der Fernsteuerung:** Unter „🎮 Partner steuern“ die eigene ID eintragen (oder auf „🧪 Ich“ klicken) – dann steuert die App dein eigenes Spielzeug direkt auf diesem PC, ohne Freigabeliste. „Fernsteuerung empfangen“ muss dafür an sein; die Höchststärke von außen gilt auch hier.
+
+### Neu in 2.12.0 – Spielzeug-Fernsteuerung über User-ID
+
+- 🌐 **Spielzeug-Fernsteuerung über die User-ID** (NSFW → 🌐 Fernsteuerung): Nexus steuert Nexus – nur die User-ID des Partners eintragen, sonst nichts.
+  - Im selben WLAN **direkt** (findet den PC des Partners automatisch), sonst **automatisch über die GhostNode-Seite** (privat.sylvanclub.eu, `toyrelay.php`).
+  - **📥 Mich steuern lassen:** Freigabeliste (`usr_… | Name`), Höchststärke von außen, wer gerade steuert, Verlauf, 🚫 Beenden.
+  - **🎮 Partner steuern:** 📡 Verbinden (mit Rückmeldung), Stärke-Regler, alle Muster, 🎁 Überraschung, ⏹ Stopp.
+  - **Sicherheit:** nur IDs auf deiner Liste **und** mit gültigem Freischalt-Schlüssel (Spielzeug) für genau diese ID; Befehle 60 s gültig und nur einmal; ohne Signal nach 15 s aus; Muster max. 5 min; 🚨 Panik schaltet den Empfang aus.
+
+### Neu in 2.11.0 – NSFW: Untertabs, Muster & Spielereien
+
+- ❤️ **NSFW mit Untertabs:** 🏠 Übersicht · 🎮 Spielzeug (Intiface / Buttplug.io, eigener Untertab) · 🎲 Spielereien · 📱 Handy.
+- 🌊 **Muster** für das Spielzeug: Welle, Puls, Herzschlag, Treppe, Zufall, Gewitter, Necken, Achterbahn – mit Tempo, Stärke, Dauer (endlos bis 20 min) und Gerätewahl. Läuft im Hintergrund weiter, Panik und ⏹ stoppen sofort; Verknüpfungen laufen parallel (die stärkere Quelle zählt).
+- 🎁 **Überraschung:** zufälliges Muster, Tempo und Stärke für 20–60 s – auch über die Handy-Fernbedienung.
+- 📊 **Sitzung:** aktive Zeit, Spitze, Anzahl Muster (nur im Speicher, wird nicht gespeichert).
+- 💬 **Stimmung** (ein Klick → Chatbox), 🤝 **Consent-Check** („Alles okay? 🟢🟡🔴“, auch am Handy), 🎯 **Wahrheit oder Pflicht**, 🎲 **Flirt-Würfel**, ⏳ **Countdown** in der Chatbox. Im Privat-Modus ist die Chatbox gesperrt.
+- 📱 Handy-Fernbedienung: Muster-Knöpfe, „Muster aus“, 🎁 Überraschung und 🤝 Nachfragen.
+
+### Neu in 2.10.0 – 🐞 Avatar-Debugger
+
+- In ❤️ NSFW / ERP → Spielzeug gibt es einen Knopf direkt dorthin – so siehst du, wie deine SPS-Zonen heißen.
+
+### Neu in 2.9.9 – Fehler bei 0.0.0.0 behoben
+
+- Fehler aus 2.9.8 behoben: die Adresse `ws://0.0.0.0:12345` aus Intiface wird jetzt wirklich zu `127.0.0.1` umgestellt (2.9.8 brach beim Speichern ab).
+
+### Neu in 2.9.8 – Intiface-Adresse aus Intiface übernehmen
+
+- **Intiface-Adresse `0.0.0.0`** (so zeigt Intiface sie an) wird jetzt automatisch zu `127.0.0.1` – einfach die Adresse aus Intiface übernehmen und verbinden.
+
+### Neu in 2.9.7 – Intiface-Adresse 0.0.0.0 erklärt
+
+- **Intiface-Adresse**: `0.0.0.0` wird mit einer Erklärung abgelehnt (das ist nur die „hört im ganzen Netz“-Anzeige von Intiface – verbunden wird mit der echten Handy-IP). Eine alte Fehlermeldung verschwindet, sobald man die Adresse ändert.
+
+### Neu in 2.9.5 – Intiface auf dem Handy: klare Hinweise
+
+- **Intiface auf dem Handy**: Die Fehlermeldung nennt jetzt genau, was am Handy eingestellt sein muss („Listen on all network interfaces“, Server neu starten, gleiches WLAN, Akku-Optimierung für Intiface aus). In der Spielzeug-Karte steht ein Hinweis dazu.
+
+### Neu in 2.9.4 – Intiface-Verbindung: automatische Adresse & klare Fehler
+
+- **Intiface verbinden – bessere Erkennung**: Antwortet die eingetragene Netzwerk-IP nicht, Intiface aber unter `127.0.0.1`, stellt VRC Nexus die Adresse **automatisch** um (Intiface hört von Haus aus nur auf dem eigenen PC).
+- **Klare Fehlermeldungen** statt „nicht erreichbar“: „auf dem Port läuft nichts → Start Server drücken“, „andere IP → Listen on all network interfaces / Firewall“ oder „Intiface lehnt ab → **schon ein anderes Programm verbunden** (z. B. VRCFury Haptics, OscGoesBrrr) – Intiface erlaubt nur eine Verbindung“.
+
+### Neu in 2.9.2 – Spielzeug-Verknüpfungen (SPS) & Admin nur für den Besitzer
+
+- **🔗 Spielzeug-Verknüpfungen** (❤️ NSFW / ERP → Spielzeug): pro Gerät beliebig viele Quellen, die stärkste zählt:
+  - **SPS-Plugs, SPS-Sockets, SPS-Touch-Zonen** (Avatar-Parameter im OGB-/VRCFury-Format) – mit **Einschließen/Ausschließen** einzelner Zonen nach Namen (gesehene Zonen stehen zur Auswahl) und **„berührt von“**: fremde Sockets/Plugs, fremde Hände/Füße/Kopf, eigene Sockets/Plugs, eigene Hände.
+  - **Konstant** (fester Wert) und **Avatar-Parameter** (beliebiger Parameter).
+  - **Mutatoren** je Verknüpfung: **Skalieren**, **Totzone**, **Bewegung** (Stärke nach Bewegung statt Tiefe).
+  - Geräte bleiben mit ihren Verknüpfungen gespeichert, auch wenn sie gerade nicht verbunden sind; Live-Pegel je Gerät. Hauptschalter „Verknüpfungen aktiv“ – Not-Aus und Panik schalten ihn aus.
+
+### Neu in 2.9.0 – ❤️ NSFW / ERP mit Freischalt-Schlüsseln, Intiface + OGB, Handy-Fernbedienung
+
+- **❤️ NSFW / ERP**: neuer Menüpunkt, der **nur mit gültigem Freischalt-Schlüssel** (bzw. für den Besitzer) erscheint. Schlüssel eintragen unter Einstellungen → Erweitert → 🔑 Freischalt-Schlüssel.
+  - **🚨 Panik-Knopf**: sicherer Avatar, Chatbox leeren & Module aus, Privat-Modus, Spielzeug stopp – einzeln wählbar.
+  - **🕶 Privat-Modus**: kein Discord-Status, keine Chatbox-Module, kein Rotator.
+  - **SFW ↔ NSFW-Avatarpaare** per Knopf umschalten, **Grenzen-Karte** (🟢 Ja / 🟡 Vielleicht / 🔴 Nein) in die Chatbox, **18+-Instanz** (Invite oder 18+-Gruppe mit Altersschranke) mit Einladung an dich.
+  - **🎮 Spielzeug über Intiface Central (Buttplug.io)**: verbinden, Geräte suchen, Stärke-Regler je Gerät, Not-Aus, Höchststärke, automatisch aus ohne Signal.
+  - **💞 OGB / SPS**: Avatar-Parameter im OscGoesBrrr-/VRCFury-Format (`…/PenOthers`, `…/TouchOthers`, `…/FrotOthers`) steuern das Spielzeug automatisch – eigene Berührungen optional; dazu eigene Regeln „Parameter → Stärke“.
+  - **📱 Handy-Fernbedienung**: kleine Seite im Heimnetz über die IP des PCs + eigenen Schlüssel (Panik, Privat-Modus, Avatar-Paare, Grenzen-Karte, Spielzeug-Regler). Eigener Port, eigener Schlüssel – die Stream-Deck-Schnittstelle bleibt nur auf diesem PC.
