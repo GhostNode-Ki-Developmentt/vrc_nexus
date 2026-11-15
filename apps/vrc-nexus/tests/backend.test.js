@@ -1241,6 +1241,10 @@ test('2.8.4: Kopieren über die App, Avatarbild für Stream Deck, Instanz-Taste,
     assert.strictEqual(Buffer.from(im.b64, 'base64').toString(), F + '/2/256'); await t.avatarImage(A);
     assert.strictEqual(calls, 1, 'Bildadresse wird gemerkt');
     await assert.rejects(t.avatarImage('avtr_x'), /Ungültige/);
+    t.thumbCache = new Map();
+    t.call = async () => ({ name: 'Japan Shrine', thumbnailImageUrl: 'https://api.vrchat.cloud/api/1/file/' + F + '/5/file' });
+    const wi = await t.worldImage('wrld_' + 'd'.repeat(8) + '-1111-2222-3333-444444444444');
+    assert.strictEqual(Buffer.from(wi.b64, 'base64').toString(), F + '/5/256'); assert.strictEqual(wi.name, 'Japan Shrine');
     // Instanz-Taste: „current“ ohne Welt → verständlicher Fehler; mit Welt → instance_create mit Einladung
     await assert.rejects(t.apiAction('instance_create', { world: 'current' }), /keine Welt|in keiner Instanz/i);
     const W = 'wrld_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
@@ -1249,6 +1253,8 @@ test('2.8.4: Kopieren über die App, Avatarbild für Stream Deck, Instanz-Taste,
     app.post = async (input, files) => { if (input.act === 'instance_create') { got = input; return { msg: 'Instanz erstellt – Einladung an dich ist unterwegs.', location: W + ':1~hidden(usr_x)' }; } return orig(input, files); };
     const r = await t.apiAction('instance_create', { world: 'current', type: 'friends+', region: 'eu', invite_me: '1' });
     assert.ok(r.ok && got.world === W && got.invite_me === '1' && got.type === 'friends+');
+    await t.apiAction('instance_create', { world: 'https://vrchat.com/home/world/' + W + '/info', type: 'invite+' });
+    assert.strictEqual(got.world, W, 'Welt-ID aus vrchat.com-Link');
     // FPS-Modul
     process.env.NEXUS_FAKE_FPS = '72.4';
     app.chatmods.readFps();

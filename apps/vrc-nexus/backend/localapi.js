@@ -49,6 +49,7 @@ class LocalApi {
         if (!want.length || got.length !== want.length || !crypto.timingSafeEqual(got, want)) return this.send(res, 401, { error: 'Falscher Zugangsschlüssel.' });
         if (url.pathname.startsWith('/api/') && !this.tools.settings.get('int.api')) return this.send(res, 403, { error: 'Die Stream-Deck-Schnittstelle ist aus (Einstellungen → Integrationen).' });
         if (req.method === 'GET' && url.pathname === '/api/state') return this.send(res, 200, this.tools.apiState());
+        if (req.method === 'GET' && url.pathname === '/api/world_image') return this.send(res, 200, await this.tools.worldImage(url.searchParams.get('id')));
         if (req.method === 'GET' && url.pathname === '/api/avatar_image') return this.send(res, 200, await this.tools.avatarImage(url.searchParams.get('id')));
         if (req.method === 'GET' && url.pathname === '/api/avatars') return this.send(res, 200, await this.tools.avatarList());
         if (req.method === 'GET' && url.pathname === '/api/friend_image') return this.send(res, 200, await this.tools.friendImage(url.searchParams.get('id')));

@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.8.5",
+  "title": "Weltbild auf der Instanz-Taste",
+  "body": "- **Stream Deck – „Instanz erstellen + einladen“**: Sobald eine **Welt-ID** (oder der vrchat.com-Link der Welt) eingetragen ist, zeigt die Taste das **Bild der Welt** mit der Instanz-Art (z. B. „Invite+“) unten drauf und einem ＋-Abzeichen. Bei „current“ bleibt das normale Symbol."
+ },
+ {
   "version": "2.8.4",
   "title": "Kopieren, Avatarbild & Instanz-Taste fürs Stream Deck, FPS-Modul",
   "body": "- **Kopieren repariert**: Die ⧉-Knöpfe (z. B. Avatar-ID im Avatar-Fenster, Benutzer-ID, Instanz-ID) kopieren jetzt zuverlässig – über die Zwischenablage der App statt der des Browsers, mit Bestätigung „📋 Kopiert: …“.\n- **Stream Deck – Avatar wechseln** zeigt das **Vorschaubild des Avatars** auf der Taste statt des Platzhalters. Im Plugin gibt es eine **Auswahlliste** deiner Avatare und Favoriten (nach „Verbindung testen“); Bild abschaltbar.\n- **Stream Deck – neue Taste „Instanz erstellen + einladen“**: erstellt per Tastendruck eine neue Instanz (aktuelle Welt oder feste Welt-ID; Friends+, Friends, Invite+, Invite, Öffentlich oder Gruppe; Region) und schickt dir die Einladung ins Spiel.\n- **Chatbox-Modul „FPS“**: zeigt die Bildrate von VRChat in VR ({fps}, {fps_min}) – gemessen über SteamVR, braucht das eingeschaltete SteamVR-Overlay. Am Desktop ohne SteamVR gibt es keine Quelle, dann fällt das Modul weg."

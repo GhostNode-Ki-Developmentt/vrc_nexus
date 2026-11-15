@@ -421,7 +421,7 @@ class Tools {
         this.thumbCache = this.thumbCache || new Map();
         if (this.thumbCache.has(id)) return this.thumbCache.get(id);
         let t = '';
-        try { const w = await this.call('GET', '/worlds/' + encodeURIComponent(id)); t = str(w && (w.thumbnailImageUrl || w.imageUrl)); } catch (e) { /* ohne Bild */ }
+        try { const w = await this.call('GET', '/worlds/' + encodeURIComponent(id)); t = str(w && (w.thumbnailImageUrl || w.imageUrl)); (this.worldNames = this.worldNames || new Map()).set(id, str(w && w.name)); } catch (e) { /* ohne Bild */ }
         if (!/^https:\/\//.test(t)) t = '';
         this.thumbCache.set(id, t);
         return t;
@@ -1097,6 +1097,12 @@ class Tools {
         if (!url) { const a = await this.call('GET', '/avatars/' + encodeURIComponent(id)); url = str(a && (a.thumbnailImageUrl || a.imageUrl)); if (url) this.avThumbs.set(id, url); }
         return this.thumbOf(url);
     }
+    /** Vorschaubild einer Welt (Stream-Deck-Taste „Instanz erstellen“) */
+    async worldImage(id) {
+        if (!/^wrld_[0-9a-f-]{36}$/i.test(str(id))) throw new UserError('Ungültige Welt-ID.');
+        const url = await this.worldThumb(id);
+        return Object.assign(await this.thumbOf(url), { name: (this.worldNames && this.worldNames.get(id)) || '' });
+    }
     /** Avatare für die Auswahl im Stream-Deck-Plugin */
     async avatarList() {
         const r = await this.app.post({ act: 'avatars', kind: 'mine' }, {});
@@ -1189,6 +1195,7 @@ class Tools {
             case 'macro_stop': this.app.macros.stop(); return { ok: true };
             case 'instance_create': {
                 let world = str(d.world).trim();
+                const wm = /wrld_[0-9a-f-]{36}/i.exec(world); if (wm) world = wm[0];
                 if (!world || world === 'current') world = g.state.worldId;
                 if (!/^wrld_[0-9a-f-]{36}$/i.test(world)) throw new UserError('Keine Welt – du bist in keiner Instanz und auf der Taste ist keine Welt-ID eingetragen.');
                 const r = await this.app.post({ act: 'instance_create', world, type: str(d.type || 'friends+'), region: str(d.region || 'eu'), invite_me: d.invite_me === '' ? '' : '1', group: str(d.group), access: str(d.access) }, {});

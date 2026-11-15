@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.5 – Weltbild auf der Instanz-Taste
+
+- **Stream Deck – „Instanz erstellen + einladen“**: Sobald eine **Welt-ID** (oder der vrchat.com-Link der Welt) eingetragen ist, zeigt die Taste das **Bild der Welt** mit der Instanz-Art (z. B. „Invite+“) unten drauf und einem ＋-Abzeichen. Bei „current“ bleibt das normale Symbol.
+
 ### Neu in 2.8.4 – Kopieren, Avatarbild & Instanz-Taste fürs Stream Deck, FPS-Modul
 
 - **Kopieren repariert**: Die ⧉-Knöpfe (z. B. Avatar-ID im Avatar-Fenster, Benutzer-ID, Instanz-ID) kopieren jetzt zuverlässig – über die Zwischenablage der App statt der des Browsers, mit Bestätigung „📋 Kopiert: …“.

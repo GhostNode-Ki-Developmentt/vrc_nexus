@@ -140,7 +140,13 @@ function render(ctx) {
         }
         case 'overlay': setState(ctx, st.overlay && st.overlay.visible ? 1 : 0); break;
         case 'avatar': if (s.id && !s.nopic) avatarIcon(ctx, s.id.trim()); else if (c.img) { c.img = ''; send('setImage', ctx, { image: null, target: 0 }); } break;
-        case 'instance': if (!s.title) setTitle(ctx, ({ 'friends+': 'Friends+', friends: 'Friends', 'invite+': 'Invite+', invite: 'Invite', public: 'Public', group: 'Gruppe' }[s.type || 'friends+'] || '') + '\n' + (s.world === 'current' || !s.world ? 'hier' : 'Welt')); break;
+        case 'instance': {
+            const typ = { 'friends+': 'Friends+', friends: 'Friends', 'invite+': 'Invite+', invite: 'Invite', public: 'Public', group: 'Gruppe' }[s.type || 'friends+'] || '';
+            const wid = worldId(s.world);
+            if (wid) { if (!s.title) setTitle(ctx, ''); worldIcon(ctx, wid, typ); }      // Weltbild mit Art unten drauf
+            else { if (c.img) { c.img = ''; send('setImage', ctx, { image: null, target: 0 }); } if (!s.title) setTitle(ctx, typ + '\nhier'); }
+            break;
+        }
         case 'media': {
             const m = st.media;
             setState(ctx, m && m.status === 'playing' ? 1 : 0);
@@ -203,6 +209,33 @@ async function avatarIcon(ctx, id) {
         + '<defs><clipPath id="c"><rect x="6" y="6" width="132" height="132" rx="20"/></clipPath><linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.75"/></linearGradient></defs>'
         + '<rect width="144" height="144" fill="#0b0f15"/><image x="6" y="6" width="132" height="132" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)" xlink:href="data:' + p.mime + ';base64,' + p.b64 + '"/>'
         + '<rect x="6" y="6" width="132" height="132" rx="20" fill="url(#d)"/><rect x="4" y="4" width="136" height="136" rx="22" fill="none" stroke="#38d5e6" stroke-width="4"/></svg>';
+    send('setImage', ctx, { image: 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64'), target: 0 });
+}
+// ---------- Weltbild für „Instanz erstellen“ (sobald eine Welt-ID eingetragen ist) ----------
+const wPics = new Map();
+const worldId = v => { const m = /wrld_[0-9a-f-]{36}/i.exec(String(v || '')); return m ? m[0] : ''; };
+async function worldIcon(ctx, id, label) {
+    const c = contexts.get(ctx);
+    if (!c) return;
+    let p = wPics.get(id);
+    if (!p || (p.fail && Date.now() - p.at > 120000)) {
+        wPics.set(id, { loading: true, at: Date.now() });
+        try { const r = await nexus('GET', 'world_image?id=' + encodeURIComponent(id)); p = { b64: r.b64, mime: r.mime, name: r.name || '', at: Date.now() }; }
+        catch (e) { p = { fail: true, at: Date.now() }; }
+        wPics.set(id, p);
+    }
+    if (!p || !p.b64) return;
+    const key = id + '|' + label + '|' + p.at;
+    if (c.img === key) return;
+    c.img = key;
+    const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="144" height="144" viewBox="0 0 144 144">'
+        + '<defs><clipPath id="c"><rect x="6" y="6" width="132" height="132" rx="20"/></clipPath><linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.85"/></linearGradient></defs>'
+        + '<rect width="144" height="144" fill="#0b0f15"/><image x="6" y="6" width="132" height="132" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)" xlink:href="data:' + p.mime + ';base64,' + p.b64 + '"/>'
+        + '<rect x="6" y="6" width="132" height="132" rx="20" fill="url(#d)"/><rect x="4" y="4" width="136" height="136" rx="22" fill="none" stroke="#f5c242" stroke-width="4"/>'
+        + '<circle cx="118" cy="26" r="17" fill="#f5c242"/><path d="M118 17v18M109 26h18" stroke="#0b0f15" stroke-width="5" stroke-linecap="round"/>'
+        + (label ? '<text x="72" y="128" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff">' + esc(label) + '</text>' : '')
+        + '</svg>';
     send('setImage', ctx, { image: 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64'), target: 0 });
 }
 // ---------- Profilbild als Tastensymbol (mit Statusring) ----------
@@ -302,7 +335,7 @@ async function keyDown(ctx, action, s) {
             return r;
         }
         case 'avatar': return act('avatar', { id: (s.id || '').trim() });
-        case 'instance': return act('instance_create', { world: (s.world || 'current').trim(), type: s.type || 'friends+', region: s.region || 'eu', invite_me: s.invite === false ? '' : '1', group: (s.group || '').trim(), access: s.access || 'members' });
+        case 'instance': return act('instance_create', { world: worldId(s.world) || 'current', type: s.type || 'friends+', region: s.region || 'eu', invite_me: s.invite === false ? '' : '1', group: (s.group || '').trim(), access: s.access || 'members' });
         case 'friend': return null;      // kurz/halten wird in keyDown/keyUp unten unterschieden
         case 'overlay': return act('overlay', {});
         case 'speech': return act('speech', { op: s.mode === 'hold' ? 'start' : 'toggle' });
