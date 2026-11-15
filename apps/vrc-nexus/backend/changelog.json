@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.13.2",
+  "title": "Discord-Knopf in „Über die App“",
+  "body": "- 💬 Der Discord-Knopf sitzt jetzt in der Karte „ℹ️ Über die App“ statt oben neben der Version."
+ },
+ {
   "version": "2.13.1",
   "title": "Discord unter Über",
   "body": "- 💬 **Discord unter „Über“:** Knopf „Discord beitreten“ (discord.gg/YaktdxVr2C). Der Link lässt sich vor jedem Build über das GitHub-Secret oder die Variable `DISCORD_INVITE` ändern – ohne Code-Änderung.\n- 📣 Die Discord-News enthalten jetzt auch den Einladungslink."

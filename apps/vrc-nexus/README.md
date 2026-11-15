@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.13.2 – Discord-Knopf in „Über die App“
+
+- 💬 Der Discord-Knopf sitzt jetzt in der Karte „ℹ️ Über die App“ statt oben neben der Version.
+
 ### Neu in 2.13.1 – Discord unter Über
 
 - 💬 **Discord unter „Über“:** Knopf „Discord beitreten“ (discord.gg/YaktdxVr2C). Der Link lässt sich vor jedem Build über das GitHub-Secret oder die Variable `DISCORD_INVITE` ändern – ohne Code-Änderung.

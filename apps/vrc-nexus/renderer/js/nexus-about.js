@@ -26,13 +26,13 @@
         box.innerHTML = '<div class="ab-head"><img src="icon.png" alt="" class="ab-logo"><div><h2>VRC Nexus</h2>'
             + '<p class="ab-ver">Version <b>' + esc(d.version) + '</b> · ' + esc(d.platform) + (d.runtime.electron ? ' · Electron ' + esc(d.runtime.electron) + ' · Chromium ' + esc(d.runtime.chrome.split('.')[0]) : '') + '</p>'
             + '<p class="small">' + (up ? (up.available ? '⬆ Version <b>' + esc(up.version) + '</b> ist verfügbar' : '✔ Du hast die neueste Version.') + (up.checked ? ' <span class="muted">· zuletzt geprüft ' + esc(UI.ago(up.checked)) + '</span>' : '') : '') + '</p></div>'
-            + (d.discord ? '<div class="ab-discord"><a class="btn ab-dc" href="' + esc(d.discord) + '" target="_blank" rel="noopener">💬 Discord beitreten</a><span class="small muted">News zu jedem Update, Hilfe & Ideen – <code>' + esc(d.discord.replace(/^https:\/\//, '')) + '</code></span></div>' : '')
             + '<div class="ab-upd" id="updBox"></div></div>'
             + '<div class="nc-grid ab-grid">'
             + '<div class="nc-card ab-log"><h4>📝 Was ist neu</h4>' + d.changelog.map((c, i) => '<section class="ab-v"><h3><span class="ab-tag' + (i === 0 ? ' now' : '') + '">' + esc(c.version) + (c.version === d.version ? ' · installiert' : '') + '</span> ' + esc(c.title) + '</h3><div class="ab-body fmt" data-no-i18n>' + md(c.body) + '</div></section>').join('')
             + (d.total > d.changelog.length ? '<button type="button" class="btn btn-sm" data-ab="more">Ältere Versionen anzeigen (' + (d.total - d.changelog.length) + ')</button>' : '')
             + ' <a class="nc-link" href="' + esc(d.repo) + '" target="_blank" rel="noopener">Alle Releases auf GitHub ↗</a></div>'
             + '<div class="nc-card"><h4>ℹ️ Über die App</h4><p class="small">VRC Nexus ist ein Begleit-Programm für VRChat: Freunde & Orte, Spiel-Log, OSC-Steuerung, Chatbox, Spracheingabe & -ausgabe, Stream-Bot, Stream-Deck und mehr – Teil des GHOST-NODE-Dashboards.</p>'
+            + (d.discord ? '<div class="ab-discord ab-discord-card"><a class="btn ab-dc" href="' + esc(d.discord) + '" target="_blank" rel="noopener">💬 Discord beitreten</a><span class="small muted">News zu jedem Update, Hilfe & Ideen – <code>' + esc(d.discord.replace(/^https:\/\//, '')) + '</code></span></div>' : '')
             + '<p class="small muted">Nicht offiziell mit VRChat Inc. verbunden. Die App nutzt die inoffizielle VRChat-API sparsam und speichert dein Passwort nie – nur das Sitzungs-Cookie, verschlüsselt.</p>'
             + (d.data ? '<p class="small">📁 Datenordner: <code>' + esc(d.data) + '</code></p>' : '')
             + '<h4 style="margin-top:12px">🙏 Danke an</h4><ul class="small ab-credits">'
