@@ -1373,6 +1373,35 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
     delete process.env.NEXUS_OWNER_HASH; delete process.env.NEXUS_REMOTE_HOST;
 });
 
+test('2.9.1: Admin (nur Besitzer) – Systeminfo, API-Konsole nur lesen, Ereignis simulieren, Spielereien', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const OWNER = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWNER);
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-291-')) } });
+    app.game.osc.stopListen();
+    let uid = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444';
+    app.vrc.account = () => ({ vrc_id: uid, me: {} });
+    await assert.rejects(app.post({ act: 'admin_sys' }, {}), /Besitzer/);
+    uid = OWNER;
+    const s = await app.post({ act: 'admin_sys' }, {});
+    assert.ok(s.version && s.mem > 0);
+    const calls = []; app.tools.call = async (m, p, q) => { calls.push([m, p, q]); return { ok: 1 }; };
+    const r = await app.post({ act: 'admin_api', path: '/worlds?search=pug&n=5' }, {});
+    assert.deepStrictEqual(calls[0], ['GET', '/worlds', { search: 'pug', n: '5' }]); assert.strictEqual(r.data.ok, 1);
+    await assert.rejects(app.post({ act: 'admin_api', path: 'https://evil' }, {}), /ungültig/);
+    await assert.rejects(app.post({ act: 'admin_api', path: '/a/../b' }, {}), /ungültig/);
+    const seen = []; app.tools.onGameEvent = e => seen.push(e.kind);
+    await app.post({ act: 'admin_sim', kind: 'player_join', name: 'Neko' }, {});
+    assert.ok(seen.includes('player_join') && [...app.game.state.players.values()].some(p => p.name === 'Neko'));
+    const chat = []; app.game.osc.chatbox = async t => { chat.push(t); };
+    const d = await app.post({ act: 'admin_fun', kind: 'dice' }, {});
+    assert.ok(/^🎲 [1-6]$/.test(chat[0]) && d.msg === chat[0]);
+    delete process.env.NEXUS_OWNER_HASH;
+    app.tools.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

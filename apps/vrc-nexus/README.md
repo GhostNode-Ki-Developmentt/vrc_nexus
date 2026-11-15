@@ -20,6 +20,15 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.1 – 👑 Admin als eigener Menüpunkt mit Spielereien
+
+- **👑 Admin als eigener Menüpunkt** in der Seitenleiste (nur für den Besitzer sichtbar und nutzbar):
+  - **🔑 Freischalt-Schlüssel**: Schlüsselpaar, Schlüssel erzeugen (wird gleich kopiert), Liste mit Sperren/Entsperren – vorher in NSFW / ERP.
+  - **🧪 Ereignis simulieren**: „Spieler kommt/geht“ und „Video startet“ – testet Benachrichtigungen, Automatik und Discord-Status, ohne dass jemand wirklich kommt.
+  - **🖥 System**: Version, Laufzeit, Speicher, Datenbank, Spielstatus, Fehler-Log ein/aus, Log ansehen und leeren.
+  - **🔍 API-Konsole**: beliebige VRChat-API-Abfragen (nur lesen, GET) mit Antwort als JSON zum Kopieren.
+  - **✨ Spielereien**: in die Chatbox (👑 Admin da, 💖 Herz-Animation, Countdown, Welle, 🎲 Würfeln, 🪙 Münze) und in der App (🎉 Konfetti, 🪩 Theme-Disco, 🟩 Matrix).
+
 ### Neu in 2.9.0 – ❤️ NSFW / ERP mit Freischalt-Schlüsseln, Intiface + OGB, Handy-Fernbedienung
 
 - **❤️ NSFW / ERP**: neuer Menüpunkt, der **nur mit gültigem Freischalt-Schlüssel** (bzw. für den Besitzer) erscheint. Schlüssel eintragen unter Einstellungen → Erweitert → 🔑 Freischalt-Schlüssel.

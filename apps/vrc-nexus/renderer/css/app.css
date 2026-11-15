@@ -671,3 +671,11 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .ns-issue { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; } .ns-issue input[name=uid] { flex: 1 1 280px; }
 .ns-newtok { padding: 8px; border: 1px dashed var(--accent-gold); margin: 8px 0; }
 .ns-keys tr.ns-rev td { opacity: 0.45; text-decoration: line-through; } .ns-keys tr.ns-rev td:last-child { text-decoration: none; opacity: 1; }
+
+/* ---------- 👑 Admin ---------- */
+#tabs .ad-tab span { filter: drop-shadow(0 0 4px rgba(245, 194, 66, 0.7)); }
+.ad-title { color: var(--accent-gold); }
+.ad-wide { grid-column: 1 / -1; }
+.ad-log { max-height: 260px; overflow: auto; font-size: 0.72rem; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color); padding: 8px; white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; }
+.ad-fun { flex-wrap: wrap; }
+.ad-fx { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }

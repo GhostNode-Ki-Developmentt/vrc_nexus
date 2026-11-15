@@ -185,6 +185,7 @@
         if (name === 'mod' && window.NexusMod) window.NexusMod.open();
         if (name === 'stream' && window.NexusStream) window.NexusStream.open();
         if (name === 'nsfw' && window.NexusNsfw) window.NexusNsfw.open();
+        if (name === 'admin' && window.NexusAdmin) window.NexusAdmin.open();
         if (name === 'coll' && window.NexusColl) window.NexusColl.open();
         if (window.NexusHome) { if (name === 'home') window.NexusHome.open(); else window.NexusHome.close(); }
         syncSubNav(name);

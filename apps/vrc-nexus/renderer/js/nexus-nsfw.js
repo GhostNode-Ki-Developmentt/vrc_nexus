@@ -14,6 +14,7 @@
             st = d;
             const b = btn();
             if (b) b.hidden = !d.access.unlocked;
+            const ad = document.querySelector('#tabs [data-tab="admin"]'); if (ad) ad.hidden = !d.access.owner;
             document.body.classList.toggle('is-owner', !!d.access.owner);
             if (box && !box.closest('[hidden]')) render();
             return d;
@@ -67,26 +68,17 @@
                 + '<div class="nc-row"><span class="small">Port</span><input type="number" id="nsPort" value="' + r.port + '" min="1024" max="65535" style="width:90px"><button type="button" class="btn btn-sm" data-ns="save_port">💾</button><button type="button" class="btn btn-sm" data-ns="new_token">♻ Neuer Schlüssel</button></div>'
                 + '<p class="muted small">Panik, Privat-Modus, Avatar-Paare, Grenzen-Karte und Spielzeug-Regler. Nur mit dem Schlüssel im Link erreichbar – Link nicht teilen. Windows fragt beim ersten Start evtl. nach der Firewall (privates Netz erlauben).</p>');
         }
-        // Admin
-        if (a.owner) {
-            const items = st.issued || [];
-            h += sec('👑 Admin – Freischalt-Schlüssel', (st.owner_key ? '<p class="small">Öffentlicher Schlüssel ' + (st.key_known ? '✔ in der App hinterlegt' : '⚠ noch <b>nicht</b> in der App hinterlegt – andere können deine Schlüssel erst prüfen, wenn er eingebaut ist.') + '</p><div class="nc-row"><code class="ns-url">' + esc(st.owner_key) + '</code><button type="button" class="vx-copy" data-copy="' + esc(st.owner_key) + '">⧉</button></div>'
-                : '<p class="small">Noch kein Schlüsselpaar.</p><button type="button" class="btn btn-sm btn-gold" data-ns="keypair">🔑 Schlüsselpaar erzeugen</button>')
-                + (st.owner_key ? '<form class="ns-issue" id="nsIssue"><input name="uid" placeholder="VRChat-User-ID (usr_…) oder Profil-Link" required><input name="name" placeholder="Name (optional)"><select name="days"><option value="30">30 Tage</option><option value="90">90 Tage</option><option value="365" selected>1 Jahr</option><option value="0">unbegrenzt</option></select>'
-                    + '<label class="check small"><input type="checkbox" name="f_toys" checked> Spielzeug</label><label class="check small"><input type="checkbox" name="f_remote" checked> Handy</label><input name="note" placeholder="Notiz (z. B. Discord-Name)"><button class="btn btn-sm btn-gold">＋ Schlüssel erzeugen</button></form>'
-                    + (lastToken ? '<div class="ns-newtok"><b>Neuer Schlüssel</b> – nur für diese Person, an ihre User-ID gebunden:<div class="nc-row"><code class="ns-url">' + esc(lastToken) + '</code><button type="button" class="vx-copy" data-copy="' + esc(lastToken) + '">⧉</button></div></div>' : '')
-                    + '<table class="nx-list ns-keys"><thead><tr><th>Name</th><th>User-ID</th><th>Rechte</th><th>Bis</th><th></th></tr></thead><tbody>' + (items.length ? items.map(k => '<tr class="' + (k.revoked ? 'ns-rev' : '') + '"><td>' + esc(k.name || '–') + (k.note ? '<br><small class="muted">' + esc(k.note) + '</small>' : '') + '</td><td><code class="small">' + esc(k.uid) + '</code></td><td class="small">' + esc(k.f.join(', ')) + '</td>'
-                        + '<td class="small">' + (k.exp ? esc(new Date(k.exp * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) : '∞') + '</td><td><button type="button" class="btn btn-sm ' + (k.revoked ? '' : 'btn-danger') + '" data-ns="revoke" data-id="' + esc(k.id) + '" data-on="' + (k.revoked ? '0' : '1') + '">' + (k.revoked ? 'entsperren' : 'sperren') + '</button></td></tr>').join('') : '<tr><td colspan="5" class="muted small">Noch keine Schlüssel.</td></tr>') + '</tbody></table>'
-                    + '<p class="muted small">Sperren wirkt in dieser App sofort; bei anderen endet der Schlüssel spätestens mit seinem Ablaufdatum.</p>' : ''), 'ns-admin');
-        }
+        if (a.owner) h += '<div class="nc-card"><h4>👑 Admin</h4><p class="small">Schlüssel-Generator & Besitzer-Werkzeuge haben jetzt einen eigenen Menüpunkt.</p><button type="button" class="btn btn-sm" data-tab-go="admin">👑 Zum Admin</button></div>';
         box.innerHTML = h + '</div>';
     }
     const save = data => api('nsfw_cfg', data).then(d => { st = Object.assign(st, d); toast(d.msg); render(); }).catch(x => toast(x.message, true));
     const toysDo = (act, data) => api(act, data).then(d => { if (st) st.toys = d; if (d.msg) toast(d.msg); render(); }).catch(x => toast(x.message, true));
     function onClick(e) {
+        const g = e.target.closest('[data-tab-go]'); if (g) return UI.tab(g.dataset.tabGo);
         const b = e.target.closest('[data-ns]');
         if (!b) return;
         const a = b.dataset.ns;
+        if (b.dataset.tabGo) return UI.tab(b.dataset.tabGo);
         const simple = { panic: 'nsfw_panic', private: 'nsfw_private', boundaries: 'nsfw_boundaries' };
         if (simple[a]) return api(simple[a]).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));
         if (a === 'avatar') return api('nsfw_avatar', { i: b.dataset.i }).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));

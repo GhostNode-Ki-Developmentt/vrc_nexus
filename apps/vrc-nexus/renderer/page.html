@@ -87,6 +87,7 @@
         <button type="button" class="vx-tabbtn" data-tab="client"><span>🎮</span><em>Spiel &amp; OSC</em></button>
         <button type="button" class="vx-tabbtn" data-tab="stream"><span>📺</span><em>Stream-Bot</em></button>
         <button type="button" class="vx-tabbtn ns-tab" data-tab="nsfw" hidden><span>❤️</span><em>NSFW / ERP</em></button>
+        <button type="button" class="vx-tabbtn ad-tab" data-tab="admin" hidden><span>👑</span><em>Admin</em></button>
         <button type="button" class="vx-tabbtn" data-tab="remote" data-mobile><span>🎮</span><em>PC-Fernbedienung</em></button>
         <div class="vx-mgroup vx-mright"><button type="button" class="vx-mtop" aria-haspopup="true"><span>⚙</span><em>Mehr</em><i>▾</i></button>
             <div class="vx-mdrop" role="menu">
@@ -112,6 +113,7 @@
     <div class="vx-error" id="globalErr" hidden></div>
 
     <section class="vx-tab" data-pane="stream" hidden><div id="streamBox"></div></section>
+    <section class="vx-tab" data-pane="admin" hidden><div class="panel"><h2 class="ad-title">👑 Admin</h2><div id="adminBox"><div class="vx-loading">Lade …</div></div></div></section>
     <section class="vx-tab" data-pane="nsfw" hidden><div class="panel"><h2 class="ns-title">❤️ NSFW / ERP</h2><div id="nsfwBox"><div class="vx-loading">Lade …</div></div></div></section>
     <section class="vx-tab" data-pane="mod" hidden><div id="modBox"></div></section>
     <section class="vx-tab" data-pane="coll" hidden><div id="collBox"></div></section>
@@ -386,6 +388,7 @@
 <script src="js/nexus-side.js"></script>
 <script src="js/nexus-subs.js"></script>
 <script src="js/nexus-nsfw.js"></script>
+<script src="js/nexus-admin.js"></script>
 <script src="js/nexus-tts.js"></script>
 <script src="js/nexus-about.js"></script>
 <script src="js/nexus-translate.js"></script>
