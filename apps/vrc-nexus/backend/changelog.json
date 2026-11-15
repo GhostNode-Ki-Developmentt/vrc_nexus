@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.15.0",
+  "title": "Audio source for live subtitles",
+  "body": "- 🔊 **Audio source for live subtitles:** choose between “System sound” (everything you hear) and any recording device – e.g. a virtual cable (VB-Cable, VoiceMeeter) carrying only VRChat, or a microphone. 🔄 reloads the device list; switching the source while listening restarts automatically.\n- 🎨 **Translator settings redesigned:** two clear cards – “🔊 Audio & recognition” and “🌍 Translation & display” – with labels above the fields."
+ },
+ {
   "version": "2.14.3",
   "title": "Speech history moved up",
   "body": "- 🎙 **Speech page:** the “📜 History” card now fills the free space at the top instead of sitting alone below the voice commands."

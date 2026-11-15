@@ -11,7 +11,7 @@ const { str, int, cut, UserError } = require('./util');
 
 const FLAGS = { de: '🇩🇪', en: '🇬🇧', fr: '🇫🇷', es: '🇪🇸', ja: '🇯🇵', nl: '🇳🇱', pl: '🇵🇱', it: '🇮🇹', ru: '🇷🇺', tr: '🇹🇷', ko: '🇰🇷', zh: '🇨🇳', pt: '🇵🇹', uk: '🇺🇦', sv: '🇸🇪',
     da: '🇩🇰', no: '🇳🇴', fi: '🇫🇮', cs: '🇨🇿', hu: '🇭🇺', ro: '🇷🇴', el: '🇬🇷', id: '🇮🇩', ar: '🇸🇦', th: '🇹🇭', vi: '🇻🇳', hi: '🇮🇳', he: '🇮🇱', bg: '🇧🇬', sk: '🇸🇰', hr: '🇭🇷', lt: '🇱🇹', lv: '🇱🇻', et: '🇪🇪', sl: '🇸🇮' };
-const DEF = { enabled: false, src: 'auto', target: '', model: 'base', min_prob: 50, show_orig: true, ignore: '', keep: 12, max_sec: 8, threshold: 1.5, translate: true, mine: true };
+const DEF = { enabled: false, src: 'auto', target: '', model: 'base', min_prob: 50, show_orig: true, ignore: '', keep: 12, max_sec: 8, threshold: 1.5, translate: true, mine: true, source: 'system', source_label: '' };
 
 class Subtitles {
     constructor(app) { this.app = app; this.lines = []; this.busy = false; this.dropped = 0; this.seq = 0; }
@@ -31,6 +31,9 @@ class Subtitles {
             keep: c.keep === undefined ? cur.keep : Math.max(3, Math.min(50, int(c.keep))),
             max_sec: c.max_sec === undefined ? cur.max_sec : Math.max(3, Math.min(20, int(c.max_sec))),
             threshold: c.threshold === undefined ? cur.threshold : Math.max(0.2, Math.min(20, Number(c.threshold) || cur.threshold)),
+            // 🔊 Audioquelle: „system“ = alles, was du hörst (Loopback) – oder ein Aufnahmegerät (z. B. VB-Cable, VoiceMeeter, Mikro)
+            source: c.source === undefined ? cur.source : (str(c.source) === 'system' || /^[\w+/=.-]{1,200}$/.test(str(c.source)) ? str(c.source) : 'system'),
+            source_label: c.source_label === undefined ? cur.source_label : cut(str(c.source_label), 120),
         };
         this.app.db.setSetting('subs_cfg', JSON.stringify(n));
         return n;

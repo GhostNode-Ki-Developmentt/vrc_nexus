@@ -30,10 +30,16 @@
     async function start() {
         if (cap) return;
         let stream;
-        try { stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }); }
-        catch (e) { toast('⚠ Systemton nicht verfügbar: ' + e.message, true); return; }
-        stream.getVideoTracks().forEach(t => t.stop());
-        if (!stream.getAudioTracks().length) { toast('⚠ Kein Systemton – das geht nur in der Windows-App.', true); return; }
+        const srcId = (st && st.cfg && st.cfg.source) || 'system';
+        if (srcId !== 'system') {
+            try { stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: srcId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
+            catch (e) { toast('⚠ Audioquelle „' + ((st.cfg.source_label) || srcId) + '“ nicht verfügbar (' + e.name + ') – wähle eine andere oder „Systemton“.', true); return; }
+        } else {
+            try { stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }); }
+            catch (e) { toast('⚠ Systemton nicht verfügbar: ' + e.message, true); return; }
+            stream.getVideoTracks().forEach(t => t.stop());
+            if (!stream.getAudioTracks().length) { toast('⚠ Kein Systemton – das geht nur in der Windows-App.', true); return; }
+        }
         let ctx;
         try { ctx = new AudioContext({ sampleRate: 16000 }); } catch (e) { ctx = new AudioContext(); }
         const src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1), mute = ctx.createGain();
@@ -100,6 +106,22 @@
         if (atEnd) el.scrollTop = el.scrollHeight;
         const e = document.getElementById('subErr'); if (e) e.textContent = st && st.error ? '⚠ ' + st.error : '';
     }
+    let devs = null;
+    /** Aufnahmegeräte (Namen gibt der Browser erst nach einer Mikro-Freigabe heraus) */
+    async function loadDevs(ask) {
+        try {
+            if (ask) { const s = await navigator.mediaDevices.getUserMedia({ audio: true }); s.getTracks().forEach(t => t.stop()); }
+            devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput' && d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications');
+        } catch (e) { devs = devs || []; if (ask) toast('⚠ Geräteliste: ' + e.message, true); }
+        render();
+    }
+    function srcOptions(c) {
+        const cur = c.source || 'system', list = devs || [];
+        let h = '<option value="system"' + (cur === 'system' ? ' selected' : '') + '>🔊 Systemton – alles, was du hörst</option>';
+        h += list.map((d, i) => '<option value="' + esc(d.deviceId) + '"' + (d.deviceId === cur ? ' selected' : '') + '>' + (/cable|voicemeeter|virtual|vb-audio/i.test(d.label) ? '🔀 ' : '🎤 ') + esc(d.label || 'Aufnahmegerät ' + (i + 1)) + '</option>').join('');
+        if (cur !== 'system' && !list.some(d => d.deviceId === cur)) h += '<option value="' + esc(cur) + '" selected>🎤 ' + esc(c.source_label || 'gespeichertes Gerät') + '</option>';
+        return h;
+    }
     function render() {
         if (!box || !st) return;
         if (box.contains(document.activeElement) && document.activeElement.matches('input, select')) return renderLines();
@@ -114,18 +136,26 @@
             + (!st.tr_ready && c.translate ? '<p class="small">ℹ Für Übersetzungen einen DeepL- oder Google-Schlüssel unter Einstellungen → Übersetzen eintragen – erkannt wird trotzdem.</p>' : '')
             + '<div class="sb-lines" id="subLines"></div><p class="small bad" id="subErr"></p>'
             + '<p class="muted small">Erscheint auch im SteamVR-HUD (Einstellungen → VR). Der Ton bleibt auf deinem PC; zum Übersetzen geht nur der erkannte Text an DeepL/Google.</p></div>'
-            + '<form class="nc-card" id="subCfg"><h4>⚙ Einstellungen</h4>'
-            + '<label class="check"><input type="checkbox" name="enabled"' + (c.enabled ? ' checked' : '') + '> Übersetzer an</label>'
-            + '<div class="nc-row"><span class="small">Gesprochene Sprache</span><select name="src">' + opt(langs, c.src) + '</select></div>'
+            + '<form class="sb-cfg" id="subCfg">'
+            + '<div class="nc-card"><h4>🔊 Ton & Erkennung</h4>'
+            + '<label class="check"><input type="checkbox" name="enabled"' + (c.enabled ? ' checked' : '') + '> <b>Übersetzer an</b></label>'
+            + '<label class="sb-f"><span>Audioquelle</span><div class="nc-row"><select name="source" style="flex:1">' + srcOptions(c) + '</select><button type="button" class="btn btn-sm" id="subDevs" title="Geräte neu einlesen">🔄</button></div></label>'
+            + '<p class="muted small">„Systemton“ hört alles mit, was aus deinen Lautsprechern/Kopfhörern kommt. Für nur VRChat: VRChat-Ausgabe auf ein virtuelles Kabel (z. B. VB-Cable) legen und hier das Kabel wählen.</p>'
+            + '<label class="sb-f"><span>Gesprochene Sprache</span><select name="src">' + opt(langs, c.src) + '</select></label>'
             + '<p class="muted small">„automatisch“ erkennt die Sprache bei jedem Satz neu – auch wenn mehrere Leute verschiedene Sprachen sprechen.</p>'
-            + '<div class="nc-row"><label class="check small"><input type="checkbox" name="translate"' + (c.translate ? ' checked' : '') + '> übersetzen nach</label><select name="target"><option value="">wie App-Sprache (' + esc(st.target) + ')</option>' + opt(st.targets, c.target) + '</select></div>'
-            + '<div class="nc-row"><span class="small">Mindest-Sicherheit</span><input type="number" name="min_prob" value="' + c.min_prob + '" min="0" max="100" style="width:70px"><span class="small">% – darunter mit „?“ markiert, nicht übersetzt</span></div>'
-            + '<div class="nc-row"><span class="small">Diese Sprachen ignorieren</span><input type="text" name="ignore" value="' + esc(c.ignore) + '" placeholder="z. B. ru, zh" style="flex:1"></div>'
-            + '<div class="nc-row"><label class="check small"><input type="checkbox" name="show_orig"' + (c.show_orig ? ' checked' : '') + '> Originaltext klein darunter</label><label class="check small"><input type="checkbox" name="mine"' + (c.mine ? ' checked' : '') + '> eigene Sprache (Mikro) auch anzeigen</label></div>'
-            + '<div class="nc-row"><span class="small">Whisper-Modell</span><select name="model">' + opt(models, c.model) + '</select></div>'
+            + '<label class="sb-f"><span>Whisper-Modell</span><select name="model">' + opt(models, c.model) + '</select></label>'
             + '<p class="muted small">Läuft dauerhaft neben VRChat & SteamVR – „Base“ oder „Small“ sind ein guter Kompromiss, größere Modelle brauchen deutlich mehr CPU/GPU.</p>'
-            + '<div class="nc-row"><span class="small">Empfindlichkeit</span><input type="number" name="threshold" value="' + c.threshold + '" min="0.2" max="20" step="0.1" style="width:70px"><span class="small">Satz höchstens</span><input type="number" name="max_sec" value="' + c.max_sec + '" min="3" max="20" style="width:60px"><span class="small">s</span></div>'
-            + '<button class="btn btn-sm btn-gold">💾 Speichern</button></form></div>';
+            + '<div class="sb-2"><label class="sb-f"><span>Empfindlichkeit</span><input type="number" name="threshold" value="' + c.threshold + '" min="0.2" max="20" step="0.1"></label>'
+            + '<label class="sb-f"><span>Satz höchstens (s)</span><input type="number" name="max_sec" value="' + c.max_sec + '" min="3" max="20"></label></div></div>'
+            + '<div class="nc-card"><h4>🌍 Übersetzung & Anzeige</h4>'
+            + '<label class="check"><input type="checkbox" name="translate"' + (c.translate ? ' checked' : '') + '> übersetzen</label>'
+            + '<label class="sb-f"><span>Zielsprache</span><select name="target"><option value="">wie App-Sprache (' + esc(st.target) + ')</option>' + opt(st.targets, c.target) + '</select></label>'
+            + '<label class="sb-f"><span>Mindest-Sicherheit (%)</span><input type="number" name="min_prob" value="' + c.min_prob + '" min="0" max="100"></label>'
+            + '<p class="muted small">Darunter wird der Satz mit „?“ markiert und nicht übersetzt.</p>'
+            + '<label class="sb-f"><span>Diese Sprachen ignorieren</span><input type="text" name="ignore" value="' + esc(c.ignore) + '" placeholder="z. B. ru, zh"></label>'
+            + '<label class="check small"><input type="checkbox" name="show_orig"' + (c.show_orig ? ' checked' : '') + '> Originaltext klein darunter</label>'
+            + '<label class="check small"><input type="checkbox" name="mine"' + (c.mine ? ' checked' : '') + '> eigene Sprache (Mikro) auch anzeigen</label></div>'
+            + '<div class="sb-save"><button class="btn btn-gold">💾 Speichern</button></div></form></div>';
         renderLines();
     }
     function poll() {
@@ -138,13 +168,16 @@
         if (!box || !box.contains(e.target)) return;
         if (e.target.closest('#subGo')) return cap ? stop() : start();
         if (e.target.closest('#subClr')) { lines = []; api('subs_clear').catch(() => {}); renderLines(); }
+        if (e.target.closest('#subDevs')) return loadDevs(true);
     });
     document.addEventListener('submit', e => {
         if (e.target.id !== 'subCfg') return;
         e.preventDefault();
         const data = {};
         for (const el of e.target.elements) if (el.name) data[el.name] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+        const so = e.target.elements.source; if (so) data.source_label = (so.selectedOptions[0] ? so.selectedOptions[0].textContent : '').replace(/^\S+\s/, '');
+        if (cap && st && data.source !== st.cfg.source) { stop(); setTimeout(start, 400); }   // Quelle gewechselt → neu starten
         api('subs_cfg', data).then(d => { st = d; toast(d.msg); document.activeElement.blur(); if (!d.cfg.enabled) stop(); render(); }).catch(x => toast('⚠ ' + x.message, true));
     });
-    window.NexusSubs = { open(el) { box = el; api('subs_state', { since: 0 }).then(d => { st = d; lines = []; lastId = 0; add(d.lines); render(); poll(); }).catch(x => { el.innerHTML = '<div class="vx-error">⚠ ' + esc(x.message) + '</div>'; }); }, start, stop, get on() { return !!cap; } };
+    window.NexusSubs = { open(el) { box = el; api('subs_state', { since: 0 }).then(d => { st = d; lines = []; lastId = 0; add(d.lines); render(); poll(); if (!devs) loadDevs(false); }).catch(x => { el.innerHTML = '<div class="vx-error">⚠ ' + esc(x.message) + '</div>'; }); }, start, stop, get on() { return !!cap; } };
 })();

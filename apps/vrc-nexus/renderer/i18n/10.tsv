@@ -587,3 +587,16 @@ VRC Nexus ist kostenlos. Wenn dir die App gefällt, unterstütze die Entwicklung
 News zu jedem Update, Hilfe & Ideen	News on every update, help & ideas	Nouvelles à chaque mise à jour, aide & idées	アップデート情報、ヘルプ＆アイデア
 💖 Unterstützer	💖 Supporters	💖 Soutiens	💖 サポーター
 Noch keine – sei die erste Person auf der Liste	None yet – be the first one on the list	Personne pour l’instant – sois la première personne sur la liste	まだいません – 最初の一人になろう
+Ton & Erkennung	Audio & recognition	Son & reconnaissance	音声と認識
+Übersetzung & Anzeige	Translation & display	Traduction & affichage	翻訳と表示
+Audioquelle	Audio source	Source audio	音声ソース
+Systemton – alles, was du hörst	System sound – everything you hear	Son système – tout ce que tu entends	システム音 – 聞こえるすべて
+„Systemton“ hört alles mit, was aus deinen Lautsprechern/Kopfhörern kommt. Für nur VRChat: VRChat-Ausgabe auf ein virtuelles Kabel (z. B. VB-Cable) legen und hier das Kabel wählen	“System sound” captures everything from your speakers/headphones. For VRChat only: route VRChat’s output to a virtual cable (e.g. VB-Cable) and pick the cable here	« Son système » capte tout ce qui sort de tes haut-parleurs/casque. Pour VRChat seulement : envoie la sortie de VRChat vers un câble virtuel (ex. VB-Cable) et choisis le câble ici	「システム音」はスピーカー／ヘッドホンの音をすべて拾います。VRChatだけにするには、VRChatの出力を仮想ケーブル（例：VB-Cable）に送り、ここでそのケーブルを選んでください
+Gesprochene Sprache	Spoken language	Langue parlée	話される言語
+Whisper-Modell	Whisper model	Modèle Whisper	Whisperモデル
+Satz höchstens (s)	Max sentence (s)	Phrase max. (s)	1文の最大（秒）
+Zielsprache	Target language	Langue cible	翻訳先の言語
+Mindest-Sicherheit (%)	Minimum confidence (%)	Confiance minimale (%)	最低信頼度（%）
+Darunter wird der Satz mit „?“ markiert und nicht übersetzt	Below that the sentence is marked with “?” and not translated	En dessous, la phrase est marquée d’un « ? » et non traduite	これ未満の文は「?」付きで翻訳されません
+übersetzen	translate	traduire	翻訳する
+Geräte neu einlesen	Reload devices	Recharger les appareils	デバイスを再読み込み

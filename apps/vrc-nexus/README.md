@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### New in 2.15.0 – Audio source for live subtitles
+
+- 🔊 **Audio source for live subtitles:** choose between “System sound” (everything you hear) and any recording device – e.g. a virtual cable (VB-Cable, VoiceMeeter) carrying only VRChat, or a microphone. 🔄 reloads the device list; switching the source while listening restarts automatically.
+- 🎨 **Translator settings redesigned:** two clear cards – “🔊 Audio & recognition” and “🌍 Translation & display” – with labels above the fields.
+
 ### New in 2.14.3 – Speech history moved up
 
 - 🎙 **Speech page:** the “📜 History” card now fills the free space at the top instead of sitting alone below the voice commands.
