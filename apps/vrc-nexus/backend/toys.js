@@ -31,7 +31,7 @@ class Toys {
     cfg() { try { return Object.assign({}, DEF, JSON.parse(this.app.db.setting('toys_cfg', '{}'))); } catch (e) { return Object.assign({}, DEF); } }
     saveCfg(c) {
         const cur = this.cfg(), n = Object.assign({}, cur);
-        if (c.url !== undefined) { const u = str(c.url).trim(); if (!/^wss?:\/\/[\w.\-]+(:\d+)?\/?$/.test(u)) throw new UserError('Adresse ungültig (z. B. ws://127.0.0.1:12345).');
+        if (c.url !== undefined) { let u = str(c.url).trim(); if (!/^wss?:\/\/[\w.\-]+(:\d+)?\/?$/.test(u)) throw new UserError('Adresse ungültig (z. B. ws://127.0.0.1:12345).');
             if (/^wss?:\/\/0\.0\.0\.0/.test(u)) u = u.replace('0.0.0.0', '127.0.0.1');   // 0.0.0.0 = Intiface hört überall → auf diesem PC über 127.0.0.1
             if (u !== cur.url) { this.error = ''; this.state = 'aus'; }
             n.url = u; }

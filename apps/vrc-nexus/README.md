@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.9 – Fehler bei 0.0.0.0 behoben
+
+- Fehler aus 2.9.8 behoben: die Adresse `ws://0.0.0.0:12345` aus Intiface wird jetzt wirklich zu `127.0.0.1` umgestellt (2.9.8 brach beim Speichern ab).
+
 ### Neu in 2.9.8 – Intiface-Adresse aus Intiface übernehmen
 
 - **Intiface-Adresse `0.0.0.0`** (so zeigt Intiface sie an) wird jetzt automatisch zu `127.0.0.1` – einfach die Adresse aus Intiface übernehmen und verbinden.

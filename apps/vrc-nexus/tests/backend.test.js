@@ -1342,6 +1342,8 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
     st = await fr.post({ act: 'toys_connect' }, {});
     assert.ok(st.connected && st.devices[0].name === 'Testgerät');
     assert.strictEqual(fr.toys.cfg().url, 'ws://127.0.0.1:12345', 'LAN-IP ohne Antwort → automatisch 127.0.0.1');
+    await fr.post({ act: 'toys_cfg', url: 'ws://0.0.0.0:12345' }, {});
+    assert.strictEqual(fr.toys.cfg().url, 'ws://127.0.0.1:12345', '0.0.0.0 aus Intiface → 127.0.0.1');
     assert.ok(/umgestellt/.test(st.msg));
     // anderer Client schon verbunden: TCP offen, WebSocket wird sofort geschlossen
     const fr2 = await mk(FRIEND); fr2.nsfw.trusted.push(kp.pub); await fr2.post({ act: 'nsfw_unlock', token: iss.token }, {});
