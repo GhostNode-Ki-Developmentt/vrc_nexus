@@ -52,6 +52,11 @@ jobs:
       - name: Abhängigkeiten
         working-directory: app
         run: npm ci
+      - name: Discord-Link setzen (Secret oder Variable DISCORD_INVITE)
+        working-directory: app
+        env:
+          DISCORD_INVITE: ${{ secrets.DISCORD_INVITE || vars.DISCORD_INVITE }}
+        run: node scripts/set-links.js
       - name: Tests (Windows)
         working-directory: app
         run: npm test
@@ -127,6 +132,7 @@ jobs:
           HEAD_MSG: ${{ github.event.head_commit.message }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           DISCORD_WEBHOOK_NSFW: ${{ secrets.DISCORD_WEBHOOK_NSFW }}
+          DISCORD_INVITE: ${{ secrets.DISCORD_INVITE || vars.DISCORD_INVITE }}
         run: |
           VER=$(node -p "require('./app/package.json').version")
           CL=$(node app/scripts/release-notes.js "$VER")

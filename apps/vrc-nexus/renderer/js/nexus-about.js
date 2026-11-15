@@ -26,6 +26,7 @@
         box.innerHTML = '<div class="ab-head"><img src="icon.png" alt="" class="ab-logo"><div><h2>VRC Nexus</h2>'
             + '<p class="ab-ver">Version <b>' + esc(d.version) + '</b> · ' + esc(d.platform) + (d.runtime.electron ? ' · Electron ' + esc(d.runtime.electron) + ' · Chromium ' + esc(d.runtime.chrome.split('.')[0]) : '') + '</p>'
             + '<p class="small">' + (up ? (up.available ? '⬆ Version <b>' + esc(up.version) + '</b> ist verfügbar' : '✔ Du hast die neueste Version.') + (up.checked ? ' <span class="muted">· zuletzt geprüft ' + esc(UI.ago(up.checked)) + '</span>' : '') : '') + '</p></div>'
+            + (d.discord ? '<div class="ab-discord"><a class="btn ab-dc" href="' + esc(d.discord) + '" target="_blank" rel="noopener">💬 Discord beitreten</a><span class="small muted">News zu jedem Update, Hilfe & Ideen – <code>' + esc(d.discord.replace(/^https:\/\//, '')) + '</code></span></div>' : '')
             + '<div class="ab-upd" id="updBox"></div></div>'
             + '<div class="nc-grid ab-grid">'
             + '<div class="nc-card ab-log"><h4>📝 Was ist neu</h4>' + d.changelog.map((c, i) => '<section class="ab-v"><h3><span class="ab-tag' + (i === 0 ? ' now' : '') + '">' + esc(c.version) + (c.version === d.version ? ' · installiert' : '') + '</span> ' + esc(c.title) + '</h3><div class="ab-body fmt" data-no-i18n>' + md(c.body) + '</div></section>').join('')

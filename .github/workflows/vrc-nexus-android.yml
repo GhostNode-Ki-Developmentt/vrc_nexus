@@ -27,6 +27,11 @@ jobs:
       - name: Abhängigkeiten
         working-directory: apps/vrc-nexus-android
         run: npm ci
+      - name: Discord-Link setzen (Secret oder Variable DISCORD_INVITE)
+        working-directory: apps/vrc-nexus
+        env:
+          DISCORD_INVITE: ${{ secrets.DISCORD_INVITE || vars.DISCORD_INVITE }}
+        run: node scripts/set-links.js
       - name: Oberfläche + Backend bündeln
         working-directory: apps/vrc-nexus-android
         run: node build.mjs

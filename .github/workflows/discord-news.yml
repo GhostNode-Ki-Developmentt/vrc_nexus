@@ -41,6 +41,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           DISCORD_WEBHOOK_NSFW: ${{ secrets.DISCORD_WEBHOOK_NSFW }}
+          DISCORD_INVITE: ${{ secrets.DISCORD_INVITE || vars.DISCORD_INVITE }}
           IN_VER: ${{ inputs.version }}
           IN_NVER: ${{ inputs.nsfw_version }}
           SEND_SFW: ${{ inputs.send_sfw }}

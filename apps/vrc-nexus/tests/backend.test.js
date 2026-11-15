@@ -1619,6 +1619,10 @@ test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App
     assert.ok(d.embeds[0].title.includes(VERSION) && d.embeds[0].description.length <= 4096 && d.allowed_mentions.parse.length === 0);
     const { discordNsfw } = require('../scripts/release-notes');
     assert.strictEqual(discordNsfw('0.0.1'), null, 'ohne NSFW-Teil kein Post im NSFW-Kanal');
+    // 💬 Discord-Einladung unter „Über“ und in der News
+    assert.strictEqual(app.about().discord, require('../backend/links.json').discord);
+    assert.ok(/^https:\/\/discord\.gg\//.test(app.about().discord));
+    assert.ok(d.embeds[0].fields.some(f => f.name === '💬 Discord'), 'Discord-Link in der News');
     delete process.env.NEXUS_OWNER_HASH;
     app.tools.stop(); if (app.toys) app.toys.stop(); if (app.toyremote) app.toyremote.stop();
 });

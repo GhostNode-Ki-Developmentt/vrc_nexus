@@ -724,3 +724,6 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 
 .ns-log { margin: 6px 0; padding-left: 16px; font-size: 0.8rem; max-height: 180px; overflow-y: auto; } .ns-log li { margin: 2px 0; }
 #nsfwBox .ok { color: #4ade80; } #nsfwBox .nc-row .small.ok, #nsfwBox .nc-row .small.bad { margin-right: 12px; }
+
+.ab-discord { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
+.ab-dc { background: #5865f2; border-color: #5865f2; color: #fff; text-decoration: none; } .ab-dc:hover { background: #4752c4; color: #fff; }

@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.13.1",
+  "title": "Discord unter Über",
+  "body": "- 💬 **Discord unter „Über“:** Knopf „Discord beitreten“ (discord.gg/YaktdxVr2C). Der Link lässt sich vor jedem Build über das GitHub-Secret oder die Variable `DISCORD_INVITE` ändern – ohne Code-Änderung.\n- 📣 Die Discord-News enthalten jetzt auch den Einladungslink."
+ },
+ {
   "version": "2.13.0",
   "title": "Discord-News & getrennter Changelog",
   "body": "- 📣 **News in Discord:** Jedes Update postet automatisch eine Nachricht mit Changelog und Download-Links in den Discord-Kanal (Webhook als GitHub-Secret `DISCORD_WEBHOOK`). Ein **extra Webhook** (`DISCORD_WEBHOOK_NSFW`) bekommt den 🔞-Teil in einen eigenen Kanal – nur bei Versionen, die einen haben.\n- 📝 **Changelog in den GitHub-Releases** (und damit auch im Update-Hinweis der App).\n- 🔞 **Getrennter NSFW-Changelog:** öffentlich (README, GitHub, Discord-News) steht dafür nur „🔞 ***“; in der App unter „Über“ erscheint der NSFW-Teil nur, wenn NSFW freigeschaltet ist."

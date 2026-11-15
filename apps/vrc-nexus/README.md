@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.13.1 – Discord unter Über
+
+- 💬 **Discord unter „Über“:** Knopf „Discord beitreten“ (discord.gg/YaktdxVr2C). Der Link lässt sich vor jedem Build über das GitHub-Secret oder die Variable `DISCORD_INVITE` ändern – ohne Code-Änderung.
+- 📣 Die Discord-News enthalten jetzt auch den Einladungslink.
+
 ### Neu in 2.13.0 – Discord-News & getrennter Changelog
 
 - 📣 **News in Discord:** Jedes Update postet automatisch eine Nachricht mit Changelog und Download-Links in den Discord-Kanal (Webhook als GitHub-Secret `DISCORD_WEBHOOK`). Ein **extra Webhook** (`DISCORD_WEBHOOK_NSFW`) bekommt den 🔞-Teil in einen eigenen Kanal – nur bei Versionen, die einen haben.
