@@ -1066,12 +1066,14 @@ class Tools {
     groupInstances(id) { U.valid(id, 'grp'); return { instances: this.prevInstances("kind = 'world_join' AND instance LIKE ?", ['%group(' + id + ')%']) }; }
 
     // ======================= Stream Deck / lokale Schnittstelle =======================
+    /** Version des Stream-Deck-Plugins, das in dieser App mitkommt */
+    pluginVersion() { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'streamdeck-version.json'), 'utf8')).version || ''; } catch (e) { return ''; } }
     apiState() {
         const st = this.app.game.state, acc = this.acc();
         let fr = [];
         try { fr = this.app.vrc.friendList(); } catch (e) { fr = []; }
         const c = this.app.game.cfg();
-        return { ok: true, version: VERSION, connected: !!acc, me: acc ? { name: acc.display_name, status: str(acc.me && acc.me.status), status_desc: str(acc.me && acc.me.statusDescription) } : null,
+        return { ok: true, version: VERSION, plugin: { version: this.pluginVersion(), file: !!(this.host.pluginFile && fs.existsSync(this.host.pluginFile)) }, connected: !!acc, me: acc ? { name: acc.display_name, status: str(acc.me && acc.me.status), status_desc: str(acc.me && acc.me.statusDescription) } : null,
             friends: { in_game: fr.filter(f => f.state === 'online').length, online: fr.filter(f => f.state === 'active').length, total: fr.length },
             game: { running: st.running, world: st.worldName, world_id: st.worldId, instance: st.instance, players: st.players.size, since: st.since },
             osc: { active: this.app.game.osc.active, avatar: this.app.game.osc.avatarId, params: Object.fromEntries(Object.entries(this.app.game.osc.params).slice(0, 64)) },
@@ -1193,6 +1195,13 @@ class Tools {
             }
             case 'macro': return Object.assign({ ok: true }, await this.app.macros.run(str(d.id || d.script)));
             case 'macro_stop': this.app.macros.stop(); return { ok: true };
+            case 'plugin_update': {
+                const f = this.host.pluginFile;
+                if (!f || !fs.existsSync(f)) throw new UserError('Plugin-Datei nicht gefunden – erst VRC Nexus aktualisieren (Einstellungen → Über).');
+                if (!this.host.openPath) throw new UserError('Nur in der Windows-App.');
+                await this.host.openPath(f);
+                return { ok: true, msg: 'Stream-Deck-App installiert die neue Version (' + this.pluginVersion() + ') – kurz bestätigen.' };
+            }
             case 'instance_create': {
                 let world = str(d.world).trim();
                 const wm = /wrld_[0-9a-f-]{36}/i.exec(world); if (wm) world = wm[0];

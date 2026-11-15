@@ -8,6 +8,9 @@ const http = require('http');
 const crypto = require('crypto');
 
 const PREFIX = 'de.ghostnode.vrcnexus.';
+const MY_VERSION = (() => { try { return JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'manifest.json'), 'utf8')).Version; } catch (e) { return '0'; } })();
+const vNum = v => String(v || '0').split('.').map(n => parseInt(n, 10) || 0);
+const newer = (a, b) => { const x = vNum(a), y = vNum(b); for (let i = 0; i < 4; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
 const CAM_TITLE = { Capture: 'Foto', CaptureDelayed: 'Timer', Close: 'Kamera\nzu', burst: 'Serie', preset: 'Vorlage', Mode: 'Modus' };
 const STATUS = { 'join me': 'Join Me', active: 'Online', 'ask me': 'Ask Me', busy: 'Beschäftigt' };
 const MOD_NAME = { status: 'Status', window: 'Fenster', media: 'Musik', vrchat: 'Radar', time: 'Uhrzeit', weather: 'Wetter', system: 'Rechner', network: 'Netzwerk', twitch: 'Twitch', heart: 'Puls',
@@ -402,8 +405,12 @@ function onMessage(raw) {
         case 'dialRotate': dialRotate(context, settings, (payload && payload.ticks) || 0).then(() => setTimeout(poll, 250)).catch(e => { send('showAlert', context); send('logMessage', undefined, { message: 'VRC Nexus: ' + e.message }); }); break;
         case 'dialDown': case 'touchTap': dialPress(context, settings).then(() => setTimeout(poll, 300)).catch(() => send('showAlert', context)); break;
         case 'sendToPlugin':
+            if (payload && payload.cmd === 'update') {
+                nexus('POST', 'action', { action: 'plugin_update' }).then(r => send('sendToPropertyInspector', context, { cmd: 'update', ok: true, msg: r.msg }))
+                    .catch(e => send('sendToPropertyInspector', context, { cmd: 'update', ok: false, error: e.message }));
+            }
             if (payload && payload.cmd === 'test') {
-                nexus('GET', 'state').then(async st => { if (/\.avatar$/.test(action)) { try { st.avatar_list = (await nexus('GET', 'avatars')).items; } catch (e) { st.avatar_list = []; } } send('sendToPropertyInspector', context, { cmd: 'test', ok: true, state: st }); })
+                nexus('GET', 'state').then(async st => { if (/\.avatar$/.test(action)) { try { st.avatar_list = (await nexus('GET', 'avatars')).items; } catch (e) { st.avatar_list = []; } } st.plugin_mine = MY_VERSION; st.plugin_update = !!(st.plugin && st.plugin.version && newer(st.plugin.version, MY_VERSION)); send('sendToPropertyInspector', context, { cmd: 'test', ok: true, state: st }); })
                     .catch(e => send('sendToPropertyInspector', context, { cmd: 'test', ok: false, error: e.message }));
             }
             break;

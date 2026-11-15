@@ -43,4 +43,7 @@ const cd = Buffer.concat(central);
 const end = Buffer.alloc(22);
 end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10); end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(offset, 16);
 fs.writeFileSync(OUT, Buffer.concat([...parts, cd, end]));
+// Version des mitgelieferten Plugins für die App (Update-Hinweis im Plugin)
+const ver = JSON.parse(fs.readFileSync(path.join(ROOT, DIR, 'manifest.json'), 'utf8')).Version;
+fs.writeFileSync(path.join(ROOT, '..', 'backend', 'streamdeck-version.json'), JSON.stringify({ version: ver }) + '\n');
 console.log('✔ ' + path.relative(process.cwd(), OUT) + ' (' + entries.length + ' Dateien, ' + Math.round(fs.statSync(OUT).size / 1024) + ' KB)');

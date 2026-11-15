@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.8.7",
+  "title": "Update-Knopf im Stream-Deck-Plugin",
+  "body": "- **Stream-Deck-Plugin aktualisieren per Knopf** (Plugin 1.7): In jeder Taste unter „🔌 Verbindung zu VRC Nexus“ zeigt „Verbindung testen“ jetzt die installierte Plugin-Version und die, die mit VRC Nexus kommt – ist eine neuere da, steht „Update verfügbar!“ dabei.\n- **„⬆ Plugin aktualisieren“** installiert die neue Version direkt: VRC Nexus öffnet die mitgelieferte Plugin-Datei, die Stream-Deck-App fragt einmal nach – bestätigen, fertig. Deine Tasten und Einstellungen bleiben erhalten."
+ },
+ {
   "version": "2.8.6",
   "title": "Welt-Infos mit IDs, Reiter Info & JSON",
   "body": "- **Welt-Fenster: neuer Bereich „Infos“** mit Welt-ID und Autor-ID (je mit ⧉ zum Kopieren), Status (öffentlich/privat/Community Labs), Erstellt, Labs seit, Veröffentlicht, Aktualisiert mit Versionsnummer, Beliebtheit/Hitze, Unity-Version, Inhaltshinweise, Vorschau-Video und Bild-Datei-ID.\n- **Reiter „Info“ und „JSON“** im Welt- und im Avatar-Fenster: JSON zeigt die kompletten Rohdaten von VRChat als aufklappbaren Baum – mit Neu laden, Herunterladen, Kopieren und „alles aufklappen“."

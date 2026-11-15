@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.8.7 – Update-Knopf im Stream-Deck-Plugin
+
+- **Stream-Deck-Plugin aktualisieren per Knopf** (Plugin 1.7): In jeder Taste unter „🔌 Verbindung zu VRC Nexus“ zeigt „Verbindung testen“ jetzt die installierte Plugin-Version und die, die mit VRC Nexus kommt – ist eine neuere da, steht „Update verfügbar!“ dabei.
+- **„⬆ Plugin aktualisieren“** installiert die neue Version direkt: VRC Nexus öffnet die mitgelieferte Plugin-Datei, die Stream-Deck-App fragt einmal nach – bestätigen, fertig. Deine Tasten und Einstellungen bleiben erhalten.
+
 ### Neu in 2.8.6 – Welt-Infos mit IDs, Reiter Info & JSON
 
 - **Welt-Fenster: neuer Bereich „Infos“** mit Welt-ID und Autor-ID (je mit ⧉ zum Kopieren), Status (öffentlich/privat/Community Labs), Erstellt, Labs seit, Veröffentlicht, Aktualisiert mit Versionsnummer, Beliebtheit/Hitze, Unity-Version, Inhaltshinweise, Vorschau-Video und Bild-Datei-ID.

@@ -147,6 +147,9 @@
     <div class="row"><label>Schlüssel</label><input type="password" id="gToken" placeholder="aus VRC Nexus → Werkzeuge → Stream Deck"></div>
     <div class="row"><label></label><button type="button" id="test">Verbindung testen</button><span id="testRes"></span></div>
     <div class="hint">In VRC Nexus: Einstellungen → Integrationen → „Lokale Schnittstelle“ einschalten.</div>
+    <div class="row"><label>Plugin</label><span id="plugVer">– (Verbindung testen)</span></div>
+    <div class="row"><label></label><button type="button" id="plugUpd">⬆ Plugin aktualisieren</button><span id="plugRes"></span></div>
+    <div class="hint">Installiert die Plugin-Version, die mit deiner VRC-Nexus-App kommt. Die Stream-Deck-App fragt einmal nach – bestätigen, fertig. Deine Tasten bleiben erhalten.</div>
 </details>
 
 <script>
@@ -203,12 +206,16 @@ window.connectElgatoStreamDeckSocket = function (port, inUuid, registerEvent, in
             $('#gToken').value = globals.token || '';
             if (!globals.token) $('#conn').open = true;
         }
+        if (m.event === 'sendToPropertyInspector' && m.payload.cmd === 'update') { const r = $('#plugRes'); r.className = m.payload.ok ? 'ok' : 'bad'; r.textContent = m.payload.ok ? '✔ ' + m.payload.msg : '✖ ' + m.payload.error; }
         if (m.event === 'sendToPropertyInspector' && m.payload.cmd === 'test') {
             const r = $('#testRes');
             if (m.payload.ok) {
                 const st = m.payload.state;
                 r.className = 'ok';
                 r.textContent = '✔ verbunden' + (st.me ? ' als ' + st.me.name : '');
+                const pv = $('#plugVer');
+                if (pv) { pv.textContent = 'installiert ' + (st.plugin_mine || '?') + (st.plugin && st.plugin.version ? ' · in VRC Nexus ' + st.plugin.version : '') + (st.plugin_update ? ' – Update verfügbar!' : ' – aktuell'); pv.className = st.plugin_update ? 'bad' : 'ok'; }
+                if (st.plugin_update) $('#conn').open = true;
                 const opt = (l, cur) => l.map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + String(x.name).replace(/[<>&]/g, '') + '</option>').join('');
                 if ($('#macroSel')) $('#macroSel').innerHTML = '<option value="">(Skript unten benutzen)</option>' + opt(st.macros || [], settings.id);
                 if ($('#avatarSel')) { const l = st.avatar_list || []; $('#avatarSel').innerHTML = '<option value=>' + (l.length ? '– Avatar wählen –' : '(keine Avatare gefunden)') + '</option>' + opt(l, settings.id); }
@@ -229,6 +236,8 @@ window.connectElgatoStreamDeckSocket = function (port, inUuid, registerEvent, in
     };
 };
 document.addEventListener('change', e => { if (e.target.id === 'avatarSel' && e.target.value) { const f = document.getElementById('avatarId'); f.value = e.target.value; f.dispatchEvent(new Event('input', { bubbles: true })); f.dispatchEvent(new Event('change', { bubbles: true })); } });
+$('#plugUpd').addEventListener('click', () => { saveGlobals(); $('#plugRes').textContent = '…'; setTimeout(() => sock.send(JSON.stringify({ action: actionInfo.action, event: 'sendToPlugin', context: uuid, payload: { cmd: 'update' } })), 300); });
+window.addEventListener('message', () => {});
 </script>
 </body>
 </html>

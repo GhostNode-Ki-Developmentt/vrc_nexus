@@ -1264,6 +1264,25 @@ test('2.8.4: Kopieren über die App, Avatarbild für Stream Deck, Instanz-Taste,
     t.stop();
 });
 
+test('2.8.7: Stream-Deck-Plugin – Version melden und Update starten', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-287-'));
+    const file = path.join(tmp, 'VRC-Nexus.streamDeckPlugin'); fs.writeFileSync(file, 'PK');
+    const opened = [];
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: tmp, pluginFile: file, openPath: async f => opened.push(f) } });
+    app.game.osc.stopListen();
+    const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'streamdeck', 'de.ghostnode.vrcnexus.sdPlugin', 'manifest.json'), 'utf8'));
+    const st = app.tools.apiState();
+    assert.strictEqual(st.plugin.version, manifest.Version, 'Version stimmt mit dem Plugin-Manifest überein (npm run streamdeck schreibt sie)');
+    assert.strictEqual(st.plugin.file, true);
+    const r = await app.tools.apiAction('plugin_update', {});
+    assert.ok(r.ok && opened[0] === file && /installiert/.test(r.msg));
+    fs.rmSync(file);
+    await assert.rejects(app.tools.apiAction('plugin_update', {}), /nicht gefunden/);
+    app.tools.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');
