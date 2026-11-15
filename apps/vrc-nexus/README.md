@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### New in 2.14.3 – Speech history moved up
+
+- 🎙 **Speech page:** the “📜 History” card now fills the free space at the top instead of sitting alone below the voice commands.
+
 ### New in 2.14.2 – Live supporters list
 
 - 💖 **Live supporters list:** a GitHub job fetches the active Patreon supporters every 12 hours; the app loads the current list when you open “About” – no app update needed. Offline it falls back to the list shipped with the app.

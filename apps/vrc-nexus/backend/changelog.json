@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.14.3",
+  "title": "Speech history moved up",
+  "body": "- 🎙 **Speech page:** the “📜 History” card now fills the free space at the top instead of sitting alone below the voice commands."
+ },
+ {
   "version": "2.14.2",
   "title": "Live supporters list",
   "body": "- 💖 **Live supporters list:** a GitHub job fetches the active Patreon supporters every 12 hours; the app loads the current list when you open “About” – no app update needed. Offline it falls back to the list shipped with the app."
