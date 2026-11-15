@@ -709,3 +709,15 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 
 .bgp-h { margin: 10px 0 6px; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-cyan); }
 .nx-bgpick .vx-gitem img { aspect-ratio: 16 / 9; object-fit: cover; }
+
+/* ---------- ❤️ NSFW: Untertabs & Spielereien ---------- */
+.ns-sub { margin: 4px 0 12px; }
+.ns-wide { grid-column: 1 / -1; }
+.ns-pats, .ns-moods { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.ns-patcfg { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 14px; margin: 8px 0; }
+.ns-patcfg label { display: flex; flex-direction: column; gap: 3px; }
+.ns-patrun { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 8px; border: 1px solid #ff6fb5; background: rgba(255, 111, 181, 0.08); }
+.ns-bar { flex: 1 1 120px; height: 8px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.ns-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff6fb5, #f5c242); transition: width 0.3s; }
+.ns-stats { display: flex; gap: 18px; margin: 4px 0 6px; } .ns-stats div { display: flex; flex-direction: column; } .ns-stats b { font-size: 1.4rem; color: var(--accent-gold, #f5c242); }
+.ns-card-big { font-size: 1.05rem; padding: 10px 12px; margin: 8px 0; border-left: 3px solid #ff6fb5; background: rgba(255, 111, 181, 0.07); }

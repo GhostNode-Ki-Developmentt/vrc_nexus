@@ -20,6 +20,15 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.11.0 – NSFW: Untertabs, Muster & Spielereien
+
+- ❤️ **NSFW mit Untertabs:** 🏠 Übersicht · 🎮 Spielzeug (Intiface / Buttplug.io, eigener Untertab) · 🎲 Spielereien · 📱 Handy.
+- 🌊 **Muster** für das Spielzeug: Welle, Puls, Herzschlag, Treppe, Zufall, Gewitter, Necken, Achterbahn – mit Tempo, Stärke, Dauer (endlos bis 20 min) und Gerätewahl. Läuft im Hintergrund weiter, Panik und ⏹ stoppen sofort; Verknüpfungen laufen parallel (die stärkere Quelle zählt).
+- 🎁 **Überraschung:** zufälliges Muster, Tempo und Stärke für 20–60 s – auch über die Handy-Fernbedienung.
+- 📊 **Sitzung:** aktive Zeit, Spitze, Anzahl Muster (nur im Speicher, wird nicht gespeichert).
+- 💬 **Stimmung** (ein Klick → Chatbox), 🤝 **Consent-Check** („Alles okay? 🟢🟡🔴“, auch am Handy), 🎯 **Wahrheit oder Pflicht**, 🎲 **Flirt-Würfel**, ⏳ **Countdown** in der Chatbox. Im Privat-Modus ist die Chatbox gesperrt.
+- 📱 Handy-Fernbedienung: Muster-Knöpfe, „Muster aus“, 🎁 Überraschung und 🤝 Nachfragen.
+
 ### Neu in 2.10.3 – Neues Repository
 
 - 📦 **Neues Zuhause:** Das Repository heißt jetzt **xxloonaxx/vrc_nexus** und enthält nur noch die Apps (Windows, Android, Stream Deck). Die Webseite ist in ein eigenes Repository umgezogen.

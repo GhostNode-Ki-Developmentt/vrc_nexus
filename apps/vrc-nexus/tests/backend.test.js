@@ -1455,6 +1455,63 @@ test('2.9.2: Spielzeug-Verknüpfungen (SPS-Plugs/Sockets/Touch, Ein-/Ausschließ
     app.toys.stop(); app.tools.stop();
 });
 
+test('2.11.0: NSFW-Spielereien – Muster (alle 8), Dauer läuft ab, Überraschung, Statistik, Chatbox (Privat sperrt), Consent, Handy erlaubt', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const { PATTERNS } = require('../backend/toys');
+    const { ALLOWED } = require('../backend/remote');
+    const OWNER = 'usr_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    process.env.NEXUS_OWNER_HASH = hashId(OWNER);
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-211-')) } });
+    app.game.osc.stopListen();
+    app.vrc.account = () => ({ vrc_id: OWNER, me: {}, display_name: 'X' });
+    const t = app.toys, sent = [], chat = [];
+    app.game.osc.chatbox = async (x) => { chat.push(x); };
+    await assert.rejects(app.post({ act: 'toys_pattern', id: 'welle' }, {}), /verbinden/);
+    t.ws = { readyState: 1 }; t.req = async m => { sent.push(m); return {}; };
+    t.devices.set(0, { index: 0, name: 'Testgerät', motors: [{ index: 0, type: 'Vibrate', steps: 100 }] });
+    const last = () => { const l = sent.filter(m => m.ScalarCmd); return l.length ? l[l.length - 1].ScalarCmd.Scalars[0].Scalar : null; };
+    // jedes Muster liefert Werte 0…1
+    for (const [id, p] of Object.entries(PATTERNS)) { const s = {}; for (let x = 0; x < 30; x += 0.37) { const v = p.f(x, s); assert.ok(v >= 0 && v <= 1, id + ' @' + x + ' = ' + v); } }
+    await assert.rejects(app.post({ act: 'toys_pattern', id: 'quatsch' }, {}), /Unbekannt/);
+    let st = await app.post({ act: 'toys_pattern', id: 'puls', speed: '1', strength: '50', seconds: '0' }, {});
+    assert.ok(/Puls/.test(st.msg) && st.pattern.id === 'puls' && st.pattern.left === 0, 'endlos');
+    t.compute(); await U.sleep(10);
+    assert.strictEqual(last(), 0.5, 'Puls-Spitze × 50 %');
+    // Dauer abgelaufen → aus
+    await app.post({ act: 'toys_pattern', id: 'welle', seconds: '1' }, {});
+    t.pat.until = Date.now() - 1; t.compute(); await U.sleep(10);
+    assert.strictEqual(t.pat, null); assert.strictEqual(last(), 0, 'nach Ablauf aus');
+    st = await app.post({ act: 'toys_surprise' }, {});
+    assert.ok(st.pattern && st.pattern.name.includes('Überraschung') && st.pattern.left >= 19 && st.pattern.left <= 60, 'Überraschung 20–60 s, Muster geheim');
+    st = await app.post({ act: 'toys_stop' }, {});
+    assert.strictEqual(st.pattern, null, 'Not-Aus beendet Muster');
+    t.idle();
+    assert.ok(st.stats.peak >= 50 && st.stats.patterns === 3, 'Statistik: Spitze & Anzahl');
+    st = await app.post({ act: 'toys_stats_reset' }, {});
+    assert.strictEqual(st.stats.patterns, 0);
+    // Chatbox-Spielereien
+    await app.post({ act: 'nsfw_chat', text: '  🔥   in Stimmung ' }, {});
+    assert.strictEqual(chat.pop(), '🔥 in Stimmung');
+    await app.post({ act: 'nsfw_consent' }, {});
+    assert.ok(/Alles okay/.test(chat.pop()));
+    await app.post({ act: 'nsfw_private', on: '1' }, {});
+    await assert.rejects(app.post({ act: 'nsfw_chat', text: 'x' }, {}), /Privat/);
+    await app.post({ act: 'nsfw_chat', text: 'x'.repeat(300) }, {}).catch(() => {});
+    await app.post({ act: 'nsfw_private', on: '0' }, {});
+    await app.post({ act: 'nsfw_chat', text: 'y'.repeat(300) }, {});
+    assert.strictEqual(chat.pop().length, 144, 'auf 144 Zeichen gekürzt');
+    for (const a of ['toys_surprise', 'toys_pattern', 'toys_pattern_stop', 'nsfw_consent']) assert.ok(ALLOWED.includes(a), 'Handy darf ' + a);
+    assert.ok(!ALLOWED.includes('nsfw_chat'), 'freier Chatbox-Text nicht übers Handy');
+    // Fremde ohne Schlüssel: gesperrt
+    app.vrc.account = () => ({ vrc_id: 'usr_' + 'd'.repeat(8) + '-1111-2222-3333-444444444444', me: {}, display_name: 'Y' });
+    await assert.rejects(app.post({ act: 'toys_surprise' }, {}), /freigeschaltet/);
+    await assert.rejects(app.post({ act: 'nsfw_chat', text: 'x' }, {}), /freigeschaltet/);
+    delete process.env.NEXUS_OWNER_HASH;
+    app.toys.stop(); app.tools.stop();
+});
+
 test('1.7: Wörterbuch (EN/FR/JA) vollständig und Platzhalter stimmen', () => {
     const fs = require('fs'), path = require('path'), vm = require('vm');
     const file = path.join(__dirname, '..', 'renderer', 'js', 'i18n-dict.js');

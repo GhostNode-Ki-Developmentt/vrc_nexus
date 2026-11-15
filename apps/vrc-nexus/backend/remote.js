@@ -9,7 +9,7 @@ const os = require('os');
 const crypto = require('crypto');
 const { str, int, UserError } = require('./util');
 
-const ALLOWED = ['nsfw_panic', 'nsfw_private', 'nsfw_avatar', 'nsfw_boundaries', 'toys_set', 'toys_stop', 'toys_status'];
+const ALLOWED = ['nsfw_panic', 'nsfw_private', 'nsfw_avatar', 'nsfw_boundaries', 'toys_set', 'toys_stop', 'toys_status', 'toys_surprise', 'toys_pattern', 'toys_pattern_stop', 'nsfw_consent'];
 const DEF = { on: false, port: 17870, token: '' };
 
 class Remote {
@@ -88,12 +88,12 @@ button.on{background:#38d5e6;color:#04121a;font-weight:700}
 #panic{background:#dc2626;color:#fff;font-size:1.3rem;font-weight:800;padding:22px;letter-spacing:2px}
 #stop{background:#7f1d1d;color:#fff;font-weight:700}
 .dev{margin:10px 0}.dev b{display:flex;justify-content:space-between}
-input[type=range]{width:100%;height:40px;accent-color:#f5c242}.err{color:#f87171}
+input[type=range]{width:100%;height:40px;accent-color:#f5c242}.pat{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.pat button{flex:1 1 30%;margin:0;padding:10px 4px;font-size:.95rem}.err{color:#f87171}
 </style></head><body>
 <h1>VRC NEXUS</h1><small id="st">verbinde …</small>
 <button id="panic">🚨 PANIK</button>
-<div class="card"><button id="priv">🕶 Privat-Modus</button><div id="pairs"></div><button id="bnd" hidden>🟢🟡🔴 Grenzen-Karte in die Chatbox</button></div>
-<div class="card"><b>🎮 Spielzeug</b><div id="toys"><small>–</small></div><button id="stop">⏹ Alles stoppen</button></div>
+<div class="card"><button id="priv">🕶 Privat-Modus</button><div id="pairs"></div><button id="bnd" hidden>🟢🟡🔴 Grenzen-Karte in die Chatbox</button><button id="cons">🤝 „Alles okay?“ fragen</button></div>
+<div class="card"><b>🎮 Spielzeug</b><div id="toys"><small>–</small></div><div id="pat" class="pat"></div><button id="surp">🎁 Überraschung</button><button id="stop">⏹ Alles stoppen</button></div>
 <p class="err" id="err"></p>
 <script>
 const T=new URLSearchParams(location.search).get('t')||'';
@@ -106,8 +106,10 @@ $('#pairs').innerHTML=d.pairs.map((p,i)=>'<button data-i="'+i+'" class="'+(p.nsf
 $('#bnd').hidden=!d.boundaries;
 const t=d.toys;if(!drag)$('#toys').innerHTML=!t||!t.connected?'<small>Intiface nicht verbunden – in VRC Nexus verbinden.</small>':!t.devices.length?'<small>Keine Geräte gefunden.</small>':
 '<div class="dev"><b>Alle <span id="lv-all"></span></b><input type="range" min="0" max="100" value="0" data-dev="all"></div>'+t.devices.map(x=>'<div class="dev"><b>'+E(x.name)+' <span>'+x.level+' %</span></b><input type="range" min="0" max="100" value="'+x.level+'" data-dev="'+x.index+'"></div>').join('');
+$('#pat').innerHTML=t&&t.connected&&t.devices.length?(t.patterns||[]).map(p=>'<button data-p="'+p.id+'" class="'+(t.pattern&&t.pattern.id===p.id&&!t.pattern.name.includes('🎁')?'on':'')+'">'+E(p.name)+'</button>').join('')+(t.pattern?'<button data-p="">⏸ Muster aus</button>':''):'';
 $('#st').textContent=d.world?'🌐 '+d.world:'verbunden';$('#err').textContent=''}catch(e){$('#err').textContent='⚠ '+e.message}}
-$('#panic').onclick=()=>act('nsfw_panic');$('#priv').onclick=()=>act('nsfw_private');$('#bnd').onclick=()=>act('nsfw_boundaries');$('#stop').onclick=()=>act('toys_stop');
+$('#panic').onclick=()=>act('nsfw_panic');$('#priv').onclick=()=>act('nsfw_private');$('#bnd').onclick=()=>act('nsfw_boundaries');$('#stop').onclick=()=>act('toys_stop');$('#surp').onclick=()=>act('toys_surprise');$('#cons').onclick=()=>act('nsfw_consent');
+$('#pat').onclick=e=>{const b=e.target.closest('[data-p]');if(b)act(b.dataset.p?'toys_pattern':'toys_pattern_stop',{id:b.dataset.p,speed:1,strength:60})};
 $('#pairs').onclick=e=>{const b=e.target.closest('[data-i]');if(b)act('nsfw_avatar',{i:b.dataset.i})};
 $('#toys').addEventListener('input',e=>{const r=e.target.closest('[data-dev]');if(!r)return;drag=true;const s=r.previousElementSibling.querySelector('span');if(s)s.textContent=r.value+' %';clearTimeout(timer);timer=setTimeout(()=>fetch('act?t='+encodeURIComponent(T),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'toys_set',device:r.dataset.dev,level:r.value/100})}),60)});
 $('#toys').addEventListener('change',()=>{drag=false});

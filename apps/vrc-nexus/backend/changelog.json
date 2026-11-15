@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.11.0",
+  "title": "NSFW: Untertabs, Muster & Spielereien",
+  "body": "- ❤️ **NSFW mit Untertabs:** 🏠 Übersicht · 🎮 Spielzeug (Intiface / Buttplug.io, eigener Untertab) · 🎲 Spielereien · 📱 Handy.\n- 🌊 **Muster** für das Spielzeug: Welle, Puls, Herzschlag, Treppe, Zufall, Gewitter, Necken, Achterbahn – mit Tempo, Stärke, Dauer (endlos bis 20 min) und Gerätewahl. Läuft im Hintergrund weiter, Panik und ⏹ stoppen sofort; Verknüpfungen laufen parallel (die stärkere Quelle zählt).\n- 🎁 **Überraschung:** zufälliges Muster, Tempo und Stärke für 20–60 s – auch über die Handy-Fernbedienung.\n- 📊 **Sitzung:** aktive Zeit, Spitze, Anzahl Muster (nur im Speicher, wird nicht gespeichert).\n- 💬 **Stimmung** (ein Klick → Chatbox), 🤝 **Consent-Check** („Alles okay? 🟢🟡🔴“, auch am Handy), 🎯 **Wahrheit oder Pflicht**, 🎲 **Flirt-Würfel**, ⏳ **Countdown** in der Chatbox. Im Privat-Modus ist die Chatbox gesperrt.\n- 📱 Handy-Fernbedienung: Muster-Knöpfe, „Muster aus“, 🎁 Überraschung und 🤝 Nachfragen."
+ },
+ {
   "version": "2.10.3",
   "title": "Neues Repository",
   "body": "- 📦 **Neues Zuhause:** Das Repository heißt jetzt **xxloonaxx/vrc_nexus** und enthält nur noch die Apps (Windows, Android, Stream Deck). Die Webseite ist in ein eigenes Repository umgezogen.\n- 🔄 Der Updater sucht Updates jetzt direkt unter dem neuen Namen (ältere Versionen finden sie über die GitHub-Weiterleitung weiterhin)."

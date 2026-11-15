@@ -193,6 +193,13 @@ class Nsfw {
             case 'nsfw_panic': return await this.panic();
             case 'nsfw_private': { this.private = input.on === undefined ? !this.private : input.on === '1' || input.on === true; if (this.private && this.app.tools.rpc) this.app.tools.rpc.setActivity(null); return { ok: true, private: this.private, msg: this.private ? '🕶 Privat-Modus an' : 'Privat-Modus aus' }; }
             case 'nsfw_avatar': return await this.toggleAvatar(input.i);
+            case 'nsfw_chat': {
+                const t = cut(str(input.text).replace(/\s+/g, ' ').trim(), 144);
+                if (!t) throw new UserError('Kein Text.');
+                if (this.private) throw new UserError('🕶 Privat-Modus ist an – Chatbox gesperrt.');
+                await this.app.game.osc.chatbox(t, input.sound !== '0'); return { ok: true, msg: '💬 In die Chatbox geschickt.', text: t };
+            }
+            case 'nsfw_consent': { const t = '💬 Alles okay für dich? 🟢 weiter · 🟡 langsamer · 🔴 stopp'; await this.app.game.osc.chatbox(t, true); return { ok: true, msg: '🤝 Nachfrage geschickt.', text: t }; }
             case 'nsfw_boundaries': { const t = this.boundariesText(); await this.app.game.osc.chatbox(t, true); return { ok: true, msg: 'Grenzen-Karte in die Chatbox geschickt.', text: t }; }
             case 'nsfw_instance': {
                 const st = this.app.game.state, world = str(input.world) || st.worldId;

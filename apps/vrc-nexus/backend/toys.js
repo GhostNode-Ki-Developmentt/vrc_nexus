@@ -19,6 +19,18 @@ const LINK_TYPES = ['plugs', 'sockets', 'touch', 'constant', 'param'];
 const SRC = { pen_others: ['penothers'], touch_others: ['touchothers', 'others'], frot_others: ['frotothers'], pen_self: ['penself'], touch_self: ['touchself', 'self'], frot_self: ['frotself'] };
 const SRC_DEF = { pen_others: true, touch_others: true, frot_others: true, pen_self: false, touch_self: false, frot_self: false };
 
+/** 🌊 Muster: t = Sekunden seit Start (schon mit Tempo multipliziert), Ergebnis 0…1 */
+const PATTERNS = {
+    welle: { name: '🌊 Welle', f: t => 0.5 - 0.5 * Math.cos(2 * Math.PI * t / 4) },
+    puls: { name: '💥 Puls', f: t => (t % 1.5) < 0.5 ? 1 : 0.12 },
+    herz: { name: '💓 Herzschlag', f: t => { const p = t % 1.1; return p < 0.12 || (p > 0.25 && p < 0.37) ? 1 : 0.1; } },
+    treppe: { name: '📶 Treppe', f: t => 0.2 + 0.2 * Math.floor((t % 10) / 2) },
+    zufall: { name: '🎲 Zufall', f: (t, s) => { const k = Math.floor(t / 1.5); if (s.k !== k) { s.k = k; s.v = 0.2 + Math.random() * 0.8; } return s.v; } },
+    gewitter: { name: '⛈ Gewitter', f: (t, s) => { if (t > (s.until || 0) && Math.random() < 0.05) s.until = t + 0.3 + Math.random() * 0.6; return t < (s.until || 0) ? 1 : 0.18; } },
+    necken: { name: '😈 Necken', f: t => { const p = t % 25; return p < 20 ? 0.1 + 0.85 * (p / 20) ** 2 : 0; } },
+    achterbahn: { name: '🎢 Achterbahn', f: t => Math.max(0, Math.min(1, 0.55 + 0.3 * Math.sin(t * 1.3) + 0.25 * Math.sin(t * 0.37 + 1))) },
+};
+
 class Toys {
     constructor(app) {
         this.app = app; this.ws = null; this.id = 1; this.wait = new Map(); this.devices = new Map(); this.state = 'aus'; this.error = '';
@@ -27,6 +39,7 @@ class Toys {
         this.linkTimer = setInterval(() => this.compute(), 250); if (this.linkTimer.unref) this.linkTimer.unref();
         if (app.game && app.game.osc) { app.game.osc.taps = app.game.osc.taps || new Set(); app.game.osc.taps.add((a, v) => this.onOsc(a, v)); }
         this.timer = setInterval(() => this.idle(), 1000); if (this.timer.unref) this.timer.unref();
+        this.pat = null; this.stats = { since: Date.now(), active: 0, peak: 0, patterns: 0 };
     }
     cfg() { try { return Object.assign({}, DEF, JSON.parse(this.app.db.setting('toys_cfg', '{}'))); } catch (e) { return Object.assign({}, DEF); } }
     saveCfg(c) {
@@ -67,6 +80,10 @@ class Toys {
         return { state: this.state, error: this.error, connected: !!(this.ws && this.ws.readyState === 1), cfg: this.cfg(),
             ogb_params: [...(this.ogbSeen || [])].slice(0, 30),
             zones: Object.fromEntries(Object.entries(this.zones).map(([k, m]) => [k, Object.keys(m).sort()])), link_levels: Object.fromEntries(this.linkLevel || []),
+            pattern: this.pat ? { id: this.pat.id, name: this.pat.surprise ? '🎁 Überraschung' : PATTERNS[this.pat.id].name, speed: this.pat.speed, strength: Math.round(this.pat.strength * 100), device: this.pat.device,
+                left: this.pat.until ? Math.max(0, Math.round((this.pat.until - Date.now()) / 1000)) : 0, level: Math.round((this.pat.last || 0) * 100) } : null,
+            patterns: Object.entries(PATTERNS).map(([id, p]) => ({ id, name: p.name })),
+            stats: { active: Math.round(this.stats.active), peak: Math.round(this.stats.peak * 100), patterns: this.stats.patterns, since: this.stats.since },
             devices: [...this.devices.values()].map(d => ({ index: d.index, name: d.name, motors: d.motors.length, level: Math.round((this.level.get(d.index) || 0) * 100) })) };
     }
 
@@ -174,13 +191,13 @@ class Toys {
         for (const i of targets) {
             const d = this.devices.get(i);
             if (!d || !d.motors.length) continue;
-            this.level.set(i, lv);
+            this.level.set(i, lv); if (lv > this.stats.peak) this.stats.peak = lv;
             await this.req({ ScalarCmd: { DeviceIndex: i, Scalars: d.motors.map(m => ({ Index: m.index, Scalar: Math.round(lv * m.steps) / m.steps, ActuatorType: m.type })) } }).catch(() => {});
         }
         return this.status();
     }
     async stopAll() {
-        this.level.clear(); this.rule = {}; this.linkSent.clear();
+        this.level.clear(); this.rule = {}; this.linkSent.clear(); this.pat = null;
         if (this.cfg().links_on) this.saveCfg({ links_on: false });   // Not-Aus: Verknüpfungen erst wieder von Hand einschalten
         if (this.ws && this.ws.readyState === 1) await this.req({ StopAllDevices: {} }).catch(() => {});
         return this.status();
@@ -259,16 +276,47 @@ class Toys {
         return best;
     }
     /** Stärke je Gerät = höchster Wert aller Verknüpfungen */
+    /** aktueller Muster-Wert (null = kein Muster); abgelaufen → aus */
+    patternLevel() {
+        const p = this.pat;
+        if (!p) return null;
+        if (p.until && Date.now() > p.until) {
+            this.pat = null;
+            if (!this.cfg().links_on) for (const d of this.devices.values()) if (p.device === 'all' || String(d.index) === String(p.device)) { this.linkSent.delete(d.index); this.set(String(d.index), 0).catch(() => {}); }
+            return null;
+        }
+        const t = (Date.now() - p.start) / 1000 * p.speed;
+        p.last = Math.max(0, Math.min(1, PATTERNS[p.id].f(t, p.s))) * p.strength;
+        return p.last;
+    }
+    startPattern(input) {
+        const id = str(input.id || input.name);
+        if (!PATTERNS[id]) throw new UserError('Unbekanntes Muster.');
+        if (!this.ws || !this.devices.size) throw new UserError('Erst mit Intiface verbinden und ein Gerät finden.');
+        const sec = Math.max(0, Math.min(3600, int(input.seconds !== undefined ? input.seconds : int(input.minutes) * 60)));
+        this.pat = { id, speed: Math.max(0.25, Math.min(3, Number(input.speed) || 1)), strength: Math.max(0.05, Math.min(1, (Number(input.strength) || 60) / 100)),
+            device: str(input.device || 'all') || 'all', start: Date.now(), until: sec ? Date.now() + sec * 1000 : 0, s: {}, surprise: !!input.surprise };
+        this.stats.patterns++;
+        return this.pat;
+    }
+    surprise() {
+        const ids = Object.keys(PATTERNS), sec = 20 + Math.floor(Math.random() * 41);
+        this.startPattern({ id: ids[Math.floor(Math.random() * ids.length)], speed: (0.6 + Math.random()).toFixed(2), strength: 40 + Math.floor(Math.random() * 50), seconds: sec, surprise: true });
+        return sec;
+    }
     compute() {
         const c = this.cfg();
-        if (!c.links_on || !this.devices.size || !this.ws) return;
-        if (this.app.nsfw && !this.app.nsfw.access().features.includes('toys')) return;
+        if (!this.devices.size || !this.ws) return;
+        if (this.app.nsfw && !this.app.nsfw.access().features.includes('toys')) { this.pat = null; return; }
+        const pl = this.patternLevel();
+        if (!c.links_on && pl === null) return;
         const fresh = Date.now() - Math.max(1, c.idle_stop || 3) * 1000;
         for (const d of this.devices.values()) {
-            const links = c.links[d.name];
-            if (!links) continue;
-            const lv = links.reduce((m, l) => Math.max(m, this.linkValue(l, fresh)), 0);
-            this.linkLevel.set(d.name, Math.round(lv * 100));
+            const links = c.links_on ? c.links[d.name] : null, byPat = pl !== null && (this.pat.device === 'all' || this.pat.device === String(d.index));
+            if (!links && !byPat) continue;
+            let lv = links ? links.reduce((m, l) => Math.max(m, this.linkValue(l, fresh)), 0) : 0;
+            if (links) this.linkLevel.set(d.name, Math.round(lv * 100));
+            if (byPat) lv = Math.max(lv, pl);
             const last = this.linkSent.get(d.index);
             if (last !== undefined && Math.abs(last - lv) < 0.02) continue;
             this.linkSent.set(d.index, lv);
@@ -285,6 +333,7 @@ class Toys {
     /** keine Parameter mehr → nach x s aus (falls VRChat hängt) */
     idle() {
         const c = this.cfg();
+        if ([...this.level.values()].some(v => v > 0)) this.stats.active++;
         if ((c.auto || c.ogb) && c.idle_stop && this.lastParam && Date.now() - this.lastParam > c.idle_stop * 1000 && [...this.level.values()].some(v => v > 0)) { this.lastParam = 0; this.stopAll().catch(() => {}); }
     }
 
@@ -297,6 +346,14 @@ class Toys {
             case 'toys_disconnect': this.disconnect(); return this.status();
             case 'toys_scan': return Object.assign(await this.scan(), { msg: 'Suche Geräte (10 s) …' });
             case 'toys_set': return await this.set(str(input.device || 'all'), Number(input.level));
+            case 'toys_pattern': { const p = this.startPattern(input); return Object.assign(this.status(), { msg: PATTERNS[p.id].name + ' läuft' + (p.until ? ' (' + Math.round((p.until - p.start) / 1000) + ' s)' : '') + '.' }); }
+            case 'toys_pattern_stop': {
+                const p = this.pat; this.pat = null;
+                if (p && !this.cfg().links_on) await this.set(p.device, 0);
+                return Object.assign(this.status(), { msg: 'Muster aus.' });
+            }
+            case 'toys_surprise': { const s = this.surprise(); return Object.assign(this.status(), { msg: '🎁 Überraschung! (' + s + ' s)' }); }
+            case 'toys_stats_reset': this.stats = { since: Date.now(), active: 0, peak: 0, patterns: 0 }; return Object.assign(this.status(), { msg: 'Statistik zurückgesetzt.' });
             case 'toys_stop': return Object.assign(await this.stopAll(), { msg: '⏹ Alles gestoppt.' });
         }
         throw new UserError('Unbekannte Aktion.');
@@ -304,4 +361,4 @@ class Toys {
     stop() { clearInterval(this.timer); clearInterval(this.linkTimer); this.disconnect(); }
 }
 
-module.exports = { Toys, SRC, SRC_DEF };
+module.exports = { Toys, SRC, SRC_DEF, PATTERNS };

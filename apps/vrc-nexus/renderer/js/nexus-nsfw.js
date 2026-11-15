@@ -5,7 +5,18 @@
     const UI = window.NexusUI;
     if (!UI) return;
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
-    let st = null, box = null, lastToken = '', tPoll = null;
+    let st = null, box = null, lastToken = '', tPoll = null, busy = false;
+    const ls = (k, d) => { try { const v = localStorage.getItem('nx_nsfw_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+    const lsSet = (k, v) => { try { localStorage.setItem('nx_nsfw_' + k, JSON.stringify(v)); } catch (e) { /* egal */ } };
+    let sub = ls('sub', 'main'), pc = Object.assign({ speed: 1, strength: 60, secs: 0, device: 'all' }, ls('pat', {})), tod = null, dice = null;
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    const MOODS = ['🔥 in Stimmung', '🥰 kuschelig drauf', '😈 frech heute', '💤 nur chillen', '🚫 heute nur SFW', '💌 DMs offen', '🙈 schüchtern – sprich mich an', '⏳ gleich weg'];
+    const TRUTH = ['Was war dein schönster Moment in VR?', 'Welcher Avatar hier gefällt dir am meisten?', 'Wen würdest du gern mal privat treffen?', 'Was ist dein heimlicher Crush-Typ?', 'Was war das Mutigste, was du in VRChat gemacht hast?',
+        'Welches Kompliment hörst du am liebsten?', 'Was macht dich sofort verlegen?', 'Was war dein peinlichster Moment in VR?', 'Welches Detail an Avataren findest du am heißesten?', 'Was würdest du nie öffentlich zugeben?'];
+    const DARE = ['Mach jemandem hier ein ehrliches Kompliment.', 'Flüstere der Person links von dir etwas Nettes.', 'Tanz 20 Sekunden lang.', 'Gib jemandem eine Umarmung (wenn er/sie mag).', 'Wechsle für 5 Minuten in einen Avatar, den jemand anderes aussucht.',
+        'Sag 30 Sekunden lang nur Flirt-Sprüche.', 'Lass jemanden deinen nächsten Chatbox-Text bestimmen.', 'Setz dich jemandem auf den Schoß (mit Erlaubnis).', 'Mach dein bestes Schnurren.', 'Gib jemandem einen Headpat.'];
+    const D_ACT = ['💋 küssen', '🤗 kuscheln', '✋ streicheln', '😬 anknabbern', '🗣 flüstern', '🫂 umarmen', '👃 schnuppern', '🪶 kitzeln'];
+    const D_SPOT = ['Hals', 'Ohr', 'Hand', 'Wange', 'Nacken', 'Rücken', 'Stirn', 'Schulter'];
     const btn = () => document.querySelector('#tabs [data-tab="nsfw"]');
 
     /** Menüpunkt zeigen/verstecken – beim Start und nach dem Freischalten */
@@ -26,14 +37,19 @@
 
     function render() {
         if (!box || !st) return;
-        if (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea, input[type=number], select')) return;
+        if (busy || (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea, input[type=number], select'))) return;
         const a = st.access;
         if (!a.unlocked) { box.innerHTML = '<div class="vx-empty">🔒 Nicht freigeschaltet. Den Freischalt-Schlüssel unter Einstellungen → Erweitert eintragen.</div>'; return; }
         const c = st.cfg || {}, t = st.toys, r = st.remote, has = f => a.features.includes(f);
         let h = '<div class="ns-top"><button type="button" class="btn ns-panic" data-ns="panic">🚨 PANIK</button>'
             + '<button type="button" class="btn ' + (st.private ? 'btn-gold' : '') + '" data-ns="private">🕶 Privat-Modus ' + (st.private ? 'AN' : 'aus') + '</button>'
             + '<span class="muted small">' + (a.owner ? '👑 Besitzer' : '🔓 freigeschaltet' + (a.exp ? ' bis ' + esc(new Date(a.exp * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) : '')) + '</span></div>';
+        const tabs = [['main', '🏠 Übersicht'], ['toys', '🎮 Spielzeug', has('toys') && t], ['fun', '🎲 Spielereien'], ['phone', '📱 Handy', has('remote') && r]].filter(x => x.length < 3 || x[2]);
+        if (!tabs.some(x => x[0] === sub)) sub = 'main';
+        h += '<div class="chips ns-sub">' + tabs.map(([k, n]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-nsub="' + k + '">' + n + '</button>').join('') + '</div>';
         h += '<div class="nc-grid">';
+        if (sub === 'fun') h += funHtml(t, has('toys'));
+        if (sub === 'main') {
         // Avatar-Paare
         h += sec('🎭 SFW ↔ NSFW-Avatar', '<div class="ns-pairs">' + (c.pairs || []).map((p, i) => '<button type="button" class="btn ' + (st.current_avatar === p.nsfw ? 'btn-gold' : '') + '" data-ns="avatar" data-i="' + i + '">'
             + (st.current_avatar === p.nsfw ? '🔞 ' : '🙂 ') + esc(p.name || 'Avatar ' + (i + 1)) + '</button>').join('') + '</div>'
@@ -48,8 +64,10 @@
         // 18+-Instanz
         h += sec('🔞 18+-Instanz', '<p class="muted small">Neue Instanz in deiner aktuellen Welt + Einladung an dich.</p><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-ns="inst_invite">🔒 Invite-Instanz</button><button type="button" class="btn btn-sm" data-ns="inst_group"' + (c.group ? '' : ' disabled') + '>🛡 18+-Gruppen-Instanz</button></div>'
             + '<div class="nc-row"><span class="small">18+-Gruppe</span><input type="text" id="nsGroup" value="' + esc(c.group) + '" placeholder="grp_… (mit Altersschranke)" style="flex:1"><button type="button" class="btn btn-sm" data-ns="save_group">💾</button></div>');
+        if (a.owner) h += '<div class="nc-card"><h4>👑 Admin</h4><p class="small">Schlüssel-Generator & Besitzer-Werkzeuge haben jetzt einen eigenen Menüpunkt.</p><button type="button" class="btn btn-sm" data-tab-go="admin">👑 Zum Admin</button></div>';
+        }
         // Spielzeug
-        if (has('toys') && t) {
+        if (sub === 'toys' && has('toys') && t) {
             const tc = t.cfg;
             h += sec('🎮 Spielzeug (Intiface / Buttplug.io)', '<p class="small">' + (t.connected ? '✔ ' + esc(t.state) : '⚪ ' + esc(t.state)) + (t.error ? ' <span class="bad">' + esc(t.error) + '</span>' : '') + '</p>'
                 + '<div class="nc-row"><input type="text" id="nsUrl" value="' + esc(tc.url) + '" style="flex:1"><button type="button" class="btn btn-sm ' + (t.connected ? '' : 'btn-gold') + '" data-ns="' + (t.connected ? 'tdisc' : 'tconn') + '">' + (t.connected ? 'Trennen' : '🔌 Verbinden') + '</button><button type="button" class="btn btn-sm" data-ns="tscan"' + (t.connected ? '' : ' disabled') + '>🔎 Geräte suchen</button></div>'
@@ -63,24 +81,66 @@
                 + '<details class="ns-edit"><summary class="small">Einfacher OGB-Modus (alle Geräte gleich)</summary>' + chk('ogb', tc.ogb, 'OGB-/SPS-Parameter steuern alle Geräte (Nähe = Stärke)') + chk('ogb_self', tc.ogb_self, 'auch eigene Berührungen (Self)')
                 + (t.ogb_params && t.ogb_params.length ? '<p class="muted small">Gefunden: ' + t.ogb_params.map(p => '<code>' + esc(p) + '</code>').join(' ') + '</p>' : '') + '</details>'
                 + '<details class="ns-edit"><summary class="small">Eigene Regeln (beliebiger Parameter → Stärke)</summary>' + chk('auto', tc.auto, 'Regeln aktiv')
-                + '<textarea id="nsRules" rows="3" placeholder="Parameter | Gerät (all oder Nummer) | min | max   – z. B. Tail_Wag | all | 0.1 | 0.8">' + esc((tc.rules || []).map(r => r.param + ' | ' + r.device + ' | ' + r.min + ' | ' + r.max).join('\n')) + '</textarea><button type="button" class="btn btn-sm" data-ns="save_rules">💾 Speichern</button></details>', 'ns-toys');
+                + '<textarea id="nsRules" rows="3" placeholder="Parameter | Gerät (all oder Nummer) | min | max   – z. B. Tail_Wag | all | 0.1 | 0.8">' + esc((tc.rules || []).map(r => r.param + ' | ' + r.device + ' | ' + r.min + ' | ' + r.max).join('\n')) + '</textarea><button type="button" class="btn btn-sm" data-ns="save_rules">💾 Speichern</button></details>'
+                + '<p class="small" style="margin-top:10px">🌊 Muster, 🎁 Überraschung & 📊 Statistik findest du unter <a href="#" data-nsub="fun">🎲 Spielereien</a>.</p>', 'ns-toys ns-wide');
         }
         // Handy
-        if (has('remote') && r) {
+        if (sub === 'phone' && has('remote') && r) {
             h += sec('📱 Handy-Fernbedienung', chk('remote_on', r.on, 'an (im Heimnetz über die IP dieses PCs)')
                 + (r.on ? (r.running ? '<p class="small">Am Handy öffnen (gleiches WLAN):</p>' + r.urls.map(u => '<div class="nc-row"><code class="ns-url">' + esc(u) + '</code><button type="button" class="vx-copy" data-copy="' + esc(u) + '">⧉</button></div>').join('') : '<p class="small bad">⚠ ' + esc(r.error || 'startet …') + '</p>') : '')
                 + '<div class="nc-row"><span class="small">Port</span><input type="number" id="nsPort" value="' + r.port + '" min="1024" max="65535" style="width:90px"><button type="button" class="btn btn-sm" data-ns="save_port">💾</button><button type="button" class="btn btn-sm" data-ns="new_token">♻ Neuer Schlüssel</button></div>'
                 + '<p class="muted small">Panik, Privat-Modus, Avatar-Paare, Grenzen-Karte und Spielzeug-Regler. Nur mit dem Schlüssel im Link erreichbar – Link nicht teilen. Windows fragt beim ersten Start evtl. nach der Firewall (privates Netz erlauben).</p>');
         }
-        if (a.owner) h += '<div class="nc-card"><h4>👑 Admin</h4><p class="small">Schlüssel-Generator & Besitzer-Werkzeuge haben jetzt einen eigenen Menüpunkt.</p><button type="button" class="btn btn-sm" data-tab-go="admin">👑 Zum Admin</button></div>';
         box.innerHTML = h + '</div>';
     }
+    const fmtDur = s => s >= 3600 ? Math.floor(s / 3600) + ' h ' + Math.floor(s % 3600 / 60) + ' min' : s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s';
+    function funHtml(t, toysOk) {
+        let h = '';
+        const ready = toysOk && t && t.connected && t.devices.length;
+        if (toysOk && t) {
+            const p = t.pattern;
+            h += sec('🌊 Muster', (ready ? '' : '<p class="muted small">Erst unter 🎮 Spielzeug mit Intiface verbinden und ein Gerät finden.</p>')
+                + '<div class="ns-pats">' + (t.patterns || []).map(x => '<button type="button" class="btn btn-sm' + (p && p.id === x.id && !p.name.includes('🎁') ? ' btn-gold' : '') + '" data-pat="' + x.id + '"' + (ready ? '' : ' disabled') + '>' + esc(x.name) + '</button>').join('') + '</div>'
+                + (p ? '<div class="ns-patrun"><b>' + esc(p.name) + '</b> <span class="small">' + (p.left ? 'noch ' + fmtDur(p.left) : 'endlos') + '</span><div class="ns-bar"><i style="width:' + p.level + '%"></i></div><button type="button" class="btn btn-sm" data-ns="pat_stop">⏸ Muster aus</button></div>' : '')
+                + '<div class="ns-patcfg"><label><span class="small">Tempo <b>' + pc.speed + '×</b></span><input type="range" min="0.25" max="3" step="0.25" value="' + pc.speed + '" data-pc="speed"></label>'
+                + '<label><span class="small">Stärke <b>' + pc.strength + ' %</b></span><input type="range" min="5" max="100" step="5" value="' + pc.strength + '" data-pc="strength"></label>'
+                + '<label><span class="small">Dauer</span><select data-pc="secs">' + [[0, 'endlos'], [30, '30 s'], [60, '1 min'], [120, '2 min'], [300, '5 min'], [600, '10 min'], [1200, '20 min']].map(([v, n]) => '<option value="' + v + '"' + (+pc.secs === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></label>'
+                + '<label><span class="small">Gerät</span><select data-pc="device"><option value="all">alle</option>' + (t.devices || []).map(d => '<option value="' + d.index + '"' + (String(pc.device) === String(d.index) ? ' selected' : '') + '>' + esc(d.name) + '</option>').join('') + '</select></label></div>'
+                + '<p class="muted small">Läuft im Hintergrund weiter, auch wenn du die Seite wechselst. Panik und ⏹ stoppen sofort. Verknüpfungen laufen parallel – die stärkere Quelle zählt.</p>');
+            h += sec('🎁 Überraschung', '<p class="muted small">Zufälliges Muster, Tempo und Stärke für 20–60 Sekunden – was kommt, verrät die App nicht.</p><button type="button" class="btn btn-gold" data-ns="surprise"' + (ready ? '' : ' disabled') + '>🎁 Überrasch mich!</button><p class="muted small">Geht auch über die 📱 Handy-Fernbedienung.</p>');
+            const s = t.stats || {};
+            h += sec('📊 Sitzung', '<div class="ns-stats"><div><b>' + fmtDur(s.active || 0) + '</b><span class="small">aktiv</span></div><div><b>' + (s.peak || 0) + ' %</b><span class="small">Spitze</span></div><div><b>' + (s.patterns || 0) + '</b><span class="small">Muster</span></div></div>'
+                + '<p class="muted small">seit ' + esc(new Date(s.since || Date.now()).toLocaleTimeString(window.nxLoc ? nxLoc() : 'de-DE', { hour: '2-digit', minute: '2-digit' })) + ' · nur auf diesem PC, wird nicht gespeichert</p><button type="button" class="btn btn-sm" data-ns="stats_reset">♻ Zurücksetzen</button>');
+        }
+        h += sec('💬 Stimmung', '<p class="muted small">Ein Klick → Chatbox.</p><div class="ns-moods">' + MOODS.map((m, i) => '<button type="button" class="btn btn-sm" data-mood="' + i + '">' + esc(m) + '</button>').join('') + '</div>'
+            + '<div class="nc-row"><input type="text" id="nsMood" maxlength="144" placeholder="eigener Text …" style="flex:1"><button type="button" class="btn btn-sm" data-ns="mood_own">📨</button></div>');
+        h += sec('🤝 Consent-Check', '<p class="muted small">Fragt in der Chatbox nach: „Alles okay für dich? 🟢 weiter · 🟡 langsamer · 🔴 stopp“. Auch auf dem Handy.</p><div class="nc-row"><button type="button" class="btn btn-gold" data-ns="consent">🤝 Nachfragen</button><button type="button" class="btn btn-sm" data-ns="boundaries">🟢🟡🔴 Grenzen-Karte</button></div>');
+        h += sec('🎯 Wahrheit oder Pflicht', '<div class="nc-row"><button type="button" class="btn btn-sm" data-tod="t">💭 Wahrheit</button><button type="button" class="btn btn-sm" data-tod="d">🔥 Pflicht</button></div>'
+            + (tod ? '<p class="ns-card-big">' + esc(tod) + '</p><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-ns="tod_send">📨 In die Chatbox</button></div>' : '<p class="muted small">Zieh eine Karte – sie wird erst auf Klick in die Chatbox geschickt.</p>'));
+        h += sec('🎲 Flirt-Würfel', '<button type="button" class="btn btn-sm" data-ns="dice">🎲 Würfeln</button>' + (dice ? '<p class="ns-card-big">' + esc(dice) + '</p><button type="button" class="btn btn-sm btn-gold" data-ns="dice_send">📨 In die Chatbox</button>' : '<p class="muted small">Würfelt eine Aktion und eine Stelle.</p>'));
+        h += sec('⏳ Countdown', '<p class="muted small">Zählt in der Chatbox runter.</p><div class="nc-row">' + [3, 5, 10].map(n => '<button type="button" class="btn btn-sm" data-cd="' + n + '">' + n + '</button>').join('') + '<input type="text" id="nsCdEnd" maxlength="40" value="' + esc(ls('cdend', 'Los! 💋')) + '" style="flex:1"></div>');
+        return h;
+    }
+    const chat = (text, sound) => api('nsfw_chat', { text, sound: sound === false ? '0' : '1' }).then(d => toast(d.msg)).catch(x => toast(x.message, true));
+    let cdRun = false;
+    async function countdown(n) {
+        if (cdRun) return; cdRun = true;
+        const end = $v('#nsCdEnd') || 'Los!'; lsSet('cdend', end);
+        try { for (let i = n; i > 0; i--) { await api('nsfw_chat', { text: '⏳ ' + i + ' …', sound: '0' }); await new Promise(r => setTimeout(r, 1600)); } await api('nsfw_chat', { text: end }); toast('⏳ Countdown fertig.'); }
+        catch (x) { toast(x.message, true); } finally { cdRun = false; }
+    }
+    const patStart = (id, extra) => toysDo('toys_pattern', Object.assign({ id, speed: pc.speed, strength: pc.strength, seconds: pc.secs, device: pc.device }, extra || {}));
     const save = data => api('nsfw_cfg', data).then(d => { st = Object.assign(st, d); toast(d.msg); render(); }).catch(x => toast(x.message, true));
     const toysDo = (act, data) => api(act, data).then(d => { if (st) st.toys = d; if (d.msg) toast(d.msg); render(); }).catch(x => toast(x.message, true));
     function onClick(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onClick(e, render)) return;
         const g = e.target.closest('[data-tab-go]'); if (g) return UI.tab(g.dataset.tabGo);
         if (e.target.closest('[data-od]')) { UI.tab('client'); setTimeout(() => { const c = document.querySelector('#ncSub [data-sub="debug"]'); if (c) c.click(); }, 400); return; }
+        const sb = e.target.closest('[data-nsub]'); if (sb) { e.preventDefault(); sub = sb.dataset.nsub; lsSet('sub', sub); return render(); }
+        const pb = e.target.closest('[data-pat]'); if (pb) return patStart(pb.dataset.pat);
+        const mb = e.target.closest('[data-mood]'); if (mb) return chat(MOODS[+mb.dataset.mood]);
+        const tb = e.target.closest('[data-tod]'); if (tb) { tod = (tb.dataset.tod === 't' ? '💭 Wahrheit: ' : '🔥 Pflicht: ') + pick(tb.dataset.tod === 't' ? TRUTH : DARE); return render(); }
+        const cb = e.target.closest('[data-cd]'); if (cb) return countdown(+cb.dataset.cd);
         const b = e.target.closest('[data-ns]');
         if (!b) return;
         const a = b.dataset.ns;
@@ -88,6 +148,14 @@
         const simple = { panic: 'nsfw_panic', private: 'nsfw_private', boundaries: 'nsfw_boundaries' };
         if (simple[a]) return api(simple[a]).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));
         if (a === 'avatar') return api('nsfw_avatar', { i: b.dataset.i }).then(d => { toast(d.msg); refreshAccess(); }).catch(x => toast(x.message, true));
+        if (a === 'pat_stop') return toysDo('toys_pattern_stop');
+        if (a === 'surprise') return toysDo('toys_surprise');
+        if (a === 'stats_reset') return toysDo('toys_stats_reset');
+        if (a === 'consent') return api('nsfw_consent').then(d => toast(d.msg)).catch(x => toast(x.message, true));
+        if (a === 'mood_own') { const v = $v('#nsMood').trim(); if (v) chat(v); return; }
+        if (a === 'tod_send' && tod) return chat(tod);
+        if (a === 'dice') { dice = '🎲 ' + pick(D_ACT) + ' · ' + pick(D_SPOT); return render(); }
+        if (a === 'dice_send' && dice) return chat(dice);
         if (a === 'save_av') {
             const pairs = $v('#nsPairs').split('\n').map(l => l.split('|').map(x => x.trim())).filter(p => p.length >= 3).map(p => ({ name: p[0], sfw: p[1], nsfw: p[2] }));
             return save({ pairs: JSON.stringify(pairs), safe_avatar: $v('#nsSafe') });
@@ -111,6 +179,13 @@
     const $v = s => { const el = box.querySelector(s); return el ? el.value : ''; };
     function onChange(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onChange(e, render)) return;
+        const pe = e.target.closest('[data-pc]');
+        if (pe) {
+            pc[pe.dataset.pc] = pe.dataset.pc === 'device' ? pe.value : Number(pe.value); lsSet('pat', pc);
+            const p = st && st.toys && st.toys.pattern;
+            if (p && !p.name.includes('🎁') && pe.dataset.pc !== 'secs') patStart(p.id, { seconds: p.left || 0 }); else render();
+            return;
+        }
         const el = e.target.closest('[data-nk]');
         if (!el) return;
         const k = el.dataset.nk, v = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
@@ -121,6 +196,8 @@
     let slideT = null;
     function onInput(e) {
         if (window.NexusToyLinks && window.NexusToyLinks.onInput(e)) return;
+        const pe = e.target.closest('input[type=range][data-pc]');
+        if (pe) { const b = pe.parentNode.querySelector('b'); if (b) b.textContent = pe.dataset.pc === 'speed' ? pe.value + '×' : pe.value + ' %'; return; }
         const r = e.target.closest('input[type=range][data-dev]');
         if (!r) return;
         const s = r.parentNode.querySelector('span'); if (s) s.textContent = r.value + ' %';
@@ -130,7 +207,9 @@
     function open() {
         box = document.getElementById('nsfwBox');
         if (!box) return;
-        if (!box.dataset.bound) { box.dataset.bound = '1'; box.addEventListener('click', onClick); box.addEventListener('change', onChange); box.addEventListener('input', onInput); box.addEventListener('submit', onSubmit); }
+        if (!box.dataset.bound) { box.dataset.bound = '1'; box.addEventListener('click', onClick); box.addEventListener('change', onChange); box.addEventListener('input', onInput); box.addEventListener('submit', onSubmit);
+            box.addEventListener('pointerdown', e => { if (e.target.matches('input[type=range]')) busy = true; });
+            document.addEventListener('pointerup', () => { if (busy) { busy = false; setTimeout(render, 300); } }); }
         refreshAccess().then(render);
         clearInterval(tPoll); tPoll = setInterval(() => { if (box && !box.closest('[hidden]') && !document.hidden) refreshAccess(); }, 3000);
     }
