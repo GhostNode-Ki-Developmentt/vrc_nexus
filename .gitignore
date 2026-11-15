@@ -1,39 +1,6 @@
-# Persönliche Daten & Cache – werden auf dem Server automatisch angelegt
-budget_data.json
-fix_subs_data.json
-con_data.json
-feed_cache.json
-archive/
-archive_budget/
-countdown_data.json
-linkcheck_cache.json
-linkcheck_job.json
+node_modules/
+*.zip
 *.tmp
-links_*.json
-feed_sources.json
-.admin_auth.php
-.admin_log.php
-.site_settings.php
-.openbanking.php
-data/*.sqlite
-data/*.sqlite-*
-data/.*_key_*.php
-# neue Struktur (data/db, data/json, data/cache, data/archive, data/keys, data/uploads)
-data/*/
-data/.layout-v2
-data/config.php
-uploads/
-*.v1-backup
-budget_settings.json
-data/index.html
-
-# Auslieferungs-ZIPs (enthalten persönliche Daten)
-webseite-verbessert-*.zip
-
-# Python
 __pycache__/
-*.pyc
-clients/nexus-desktop/build/
-clients/nexus-desktop/dist/
-*.spec
-GhostNodeNexus-windows.zip
+data/
+clients/

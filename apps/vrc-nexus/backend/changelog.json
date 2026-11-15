@@ -1,5 +1,10 @@
 [
  {
+  "version": "2.10.3",
+  "title": "Neues Repository",
+  "body": "- 📦 **Neues Zuhause:** Das Repository heißt jetzt **xxloonaxx/vrc_nexus** und enthält nur noch die Apps (Windows, Android, Stream Deck). Die Webseite ist in ein eigenes Repository umgezogen.\n- 🔄 Der Updater sucht Updates jetzt direkt unter dem neuen Namen (ältere Versionen finden sie über die GitHub-Weiterleitung weiterhin)."
+ },
+ {
   "version": "2.10.2",
   "title": "Android-Fix",
   "body": "- 🩹 **Android-Fix:** Die Handy-App blieb seit 2.9.x schwarz mit `{\"error\":\"Nur sha1 verfügbar.\"}`. Die Handy-App kann jetzt auch SHA-256 (für den Admin-/Owner-Check), sie startet wieder normal.\n- Neuer Test prüft, dass die Handy-App jeden Hash kann, den das Backend benutzt."

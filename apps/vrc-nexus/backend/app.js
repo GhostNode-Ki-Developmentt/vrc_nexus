@@ -990,7 +990,7 @@ class NexusApp {
         return { version: VERSION, platform: this.mobile ? 'Android' : process.platform === 'win32' ? 'Windows' : process.platform,
             runtime: { electron: pv.electron || '', chrome: pv.chrome || '', node: pv.node || '' }, data: this.tools && this.tools.userData ? this.tools.userData : '',
             update: up ? { available: !!up.available, version: up.version || '', checked: up.checked || 0, page: up.page || '' } : null,
-            changelog: log.slice(0, n), total: log.length, repo: 'https://github.com/xxloonaxx/dashbord/releases' };
+            changelog: log.slice(0, n), total: log.length, repo: 'https://github.com/xxloonaxx/vrc_nexus/releases' };
     }
 }
 
