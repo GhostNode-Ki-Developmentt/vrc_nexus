@@ -20,6 +20,10 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### New in 2.15.1 – Voice sub-menu
+
+- 🗣 **Voice menu:** in “Game & OSC” the three voice tabs (speech input, text-to-speech, translator) are now grouped under one “🗣 Voice ▾” entry with a sub-menu; the entry shows which one is open.
+
 ### New in 2.15.0 – Audio source for live subtitles
 
 - 🔊 **Audio source for live subtitles:** choose between “System sound” (everything you hear) and any recording device – e.g. a virtual cable (VB-Cable, VoiceMeeter) carrying only VRChat, or a microphone. 🔄 reloads the device list; switching the source while listening restarts automatically.

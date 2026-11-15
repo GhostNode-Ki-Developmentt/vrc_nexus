@@ -53,9 +53,8 @@
                 <button type="button" class="chip" data-sub="cam">📷 Kamera</button>
                 <button type="button" class="chip" data-sub="macros">⚡ Makros</button>
                 <button type="button" class="chip" data-sub="auto">🤖 Automatik</button>
-                <button type="button" class="chip" data-sub="speech">🎙 Sprache</button>
-                <button type="button" class="chip" data-sub="tts">🔊 Sprachausgabe</button>
-                <button type="button" class="chip" data-sub="subs">🈯 Übersetzer</button>
+                <span class="nc-subgrp"><button type="button" class="chip nc-subtop" data-subgrp="voice" aria-haspopup="true">🗣 Sprache <i>▾</i></button>
+                    <span class="nc-subdrop" role="menu"><button type="button" class="chip" data-sub="speech">🎙 Spracheingabe</button><button type="button" class="chip" data-sub="tts">🔊 Sprachausgabe</button><button type="button" class="chip" data-sub="subs">🈯 Übersetzer</button></span></span>
                 <button type="button" class="chip" data-sub="log">📜 Spiel-Log</button>
                 <button type="button" class="chip" data-sub="people">🧑‍🤝‍🧑 Getroffen</button>
                 <button type="button" class="chip" data-sub="visits">🌐 Besuche</button>
@@ -237,7 +236,12 @@
                     <div class="set-row"><div><b>OSC-Port (empfangen)</b><div class="nx-hint">Standard 9001</div></div><input form="ncCfg" type="number" name="osc_listen_port" min="1" max="65535"></div>
                 </div></div>
             </div>`;
-        $('#ncSub').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) showSub(b.dataset.sub); });
+        $('#ncSub').addEventListener('click', e => {
+            const g = e.target.closest('[data-subgrp]');
+            if (g) { e.stopPropagation(); g.parentNode.classList.toggle('open'); return; }
+            const b = e.target.closest('[data-sub]'); if (b) { document.querySelectorAll('#ncSub .nc-subgrp.open').forEach(x => x.classList.remove('open')); showSub(b.dataset.sub); }
+        });
+        document.addEventListener('click', e => { if (!e.target.closest('.nc-subgrp')) document.querySelectorAll('#ncSub .nc-subgrp.open').forEach(x => x.classList.remove('open')); });
         if (window.NexusUI && window.NexusUI.subnav) window.NexusUI.subnav();   // Menü links: Reiter nach oben holen
         // Chatbox
         const chat = $('#ncChat');
@@ -339,6 +343,7 @@
         sub = name;
         store.set('sub', name);
         $$('#ncSub [data-sub]').forEach(b => b.classList.toggle('on', b.dataset.sub === name));
+        document.querySelectorAll('#ncSub .nc-subgrp').forEach(g => { const t = g.querySelector('.nc-subtop'), cur = g.querySelector('[data-sub="' + name + '"]'); t.classList.toggle('on', !!cur); t.innerHTML = cur ? '🗣 ' + cur.textContent.replace(/^\S+\s/, '') + ' <i>▾</i>' : '🗣 Sprache <i>▾</i>'; });
         $$('.nc-pane').forEach(p => { p.hidden = p.dataset.p !== name; });
         if (name === 'log') loadLog(true);
         if (name === 'params') loadParams();
