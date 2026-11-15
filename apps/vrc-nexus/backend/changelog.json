@@ -1,8 +1,13 @@
 [
  {
+  "version": "2.14.1",
+  "title": "Patreon link updated",
+  "body": "- ❤ Patreon link updated to patreon.com/cw/VRCNexusTools."
+ },
+ {
   "version": "2.14.0",
   "title": "Patreon & supporters",
-  "body": "- ❤ **Patreon in “About”:** banner, short note and a “Support on Patreon” button (patreon.com/c/vrcnexustool). The link can be changed before each build via the GitHub secret or variable `PATREON_URL`.\n- 💖 **Supporters list:** active patrons are shown grouped by tier. The list is fetched from Patreon at build time (GitHub secret `PATREON_TOKEN`, never shipped in the app) – only display name and tier."
+  "body": "- ❤ **Patreon in “About”:** banner, short note and a “Support on Patreon” button (patreon.com/cw/VRCNexusTools). The link can be changed before each build via the GitHub secret or variable `PATREON_URL`.\n- 💖 **Supporters list:** active patrons are shown grouped by tier. The list is fetched from Patreon at build time (GitHub secret `PATREON_TOKEN`, never shipped in the app) – only display name and tier."
  },
  {
   "version": "2.13.4",

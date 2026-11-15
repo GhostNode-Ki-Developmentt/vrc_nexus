@@ -1622,7 +1622,7 @@ test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App
     // 💬 Discord-Einladung unter „Über“ und in der News
     assert.strictEqual(app.about().discord, require('../backend/links.json').discord);
     assert.ok(/^https:\/\/discord\.gg\//.test(app.about().discord));
-    assert.strictEqual(app.about().patreon, 'https://www.patreon.com/c/vrcnexustool'); assert.ok(Array.isArray(app.about().supporters));
+    assert.strictEqual(app.about().patreon, 'https://www.patreon.com/cw/VRCNexusTools'); assert.ok(Array.isArray(app.about().supporters));
     assert.ok(d.embeds[0].fields.some(f => f.name === '💬 Discord'), 'Discord-Link in der News');
     delete process.env.NEXUS_OWNER_HASH;
     app.tools.stop(); if (app.toys) app.toys.stop(); if (app.toyremote) app.toyremote.stop();

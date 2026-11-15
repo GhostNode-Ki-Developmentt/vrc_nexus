@@ -20,9 +20,13 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### New in 2.14.1 – Patreon link updated
+
+- ❤ Patreon link updated to patreon.com/cw/VRCNexusTools.
+
 ### New in 2.14.0 – Patreon & supporters
 
-- ❤ **Patreon in “About”:** banner, short note and a “Support on Patreon” button (patreon.com/c/vrcnexustool). The link can be changed before each build via the GitHub secret or variable `PATREON_URL`.
+- ❤ **Patreon in “About”:** banner, short note and a “Support on Patreon” button (patreon.com/cw/VRCNexusTools). The link can be changed before each build via the GitHub secret or variable `PATREON_URL`.
 - 💖 **Supporters list:** active patrons are shown grouped by tier. The list is fetched from Patreon at build time (GitHub secret `PATREON_TOKEN`, never shipped in the app) – only display name and tier.
 
 ### New in 2.13.4 – Translations completed
