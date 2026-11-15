@@ -1337,8 +1337,20 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
             setTimeout(() => this.onmessage({ data: JSON.stringify([reply]) }), 1); }
         close() { this.readyState = 3; } }
     fr.toys.WebSocket = FakeWS;
+    fr.toys.probeHook = (h) => h === '127.0.0.1';
+    await fr.post({ act: 'toys_cfg', url: 'ws://192.168.2.119:12345/' }, {});
     st = await fr.post({ act: 'toys_connect' }, {});
     assert.ok(st.connected && st.devices[0].name === 'Testgerät');
+    assert.strictEqual(fr.toys.cfg().url, 'ws://127.0.0.1:12345', 'LAN-IP ohne Antwort → automatisch 127.0.0.1');
+    assert.ok(/umgestellt/.test(st.msg));
+    // anderer Client schon verbunden: TCP offen, WebSocket wird sofort geschlossen
+    const fr2 = await mk(FRIEND); fr2.nsfw.trusted.push(kp.pub); await fr2.post({ act: 'nsfw_unlock', token: iss.token }, {});
+    fr2.toys.probeHook = () => true;
+    fr2.toys.WebSocket = class { constructor() { setTimeout(() => this.onclose && this.onclose({}), 5); } close() {} };
+    await assert.rejects(fr2.post({ act: 'toys_connect' }, {}), /anderes Programm/);
+    fr2.toys.probeHook = () => false;
+    await assert.rejects(fr2.post({ act: 'toys_connect' }, {}), /Start Server/);
+    fr2.toys.stop(); fr2.tools.stop();
     await fr.post({ act: 'toys_set', device: '0', level: '0.5' }, {});
     assert.strictEqual(sent.filter(m => m.ScalarCmd).pop().ScalarCmd.Scalars[0].Scalar, 0.5);
     await fr.post({ act: 'toys_cfg', ogb: '1', ogb_self: '0', ogb_min: '0' }, {});

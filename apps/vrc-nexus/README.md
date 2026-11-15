@@ -20,6 +20,11 @@ Alles aus dem Nexus des Dashboards:
   - OSC-Fernbedienung: Chatbox, Tipp-Anzeige, Avatar-Parameter, Eingaben, Schnellknöpfe, **Chatbox-Rotator**
 - Läuft im **Infobereich** weiter (Fenster schließen = minimieren), auf Wunsch **Start mit Windows**
 
+### Neu in 2.9.4 – Intiface-Verbindung: automatische Adresse & klare Fehler
+
+- **Intiface verbinden – bessere Erkennung**: Antwortet die eingetragene Netzwerk-IP nicht, Intiface aber unter `127.0.0.1`, stellt VRC Nexus die Adresse **automatisch** um (Intiface hört von Haus aus nur auf dem eigenen PC).
+- **Klare Fehlermeldungen** statt „nicht erreichbar“: „auf dem Port läuft nichts → Start Server drücken“, „andere IP → Listen on all network interfaces / Firewall“ oder „Intiface lehnt ab → **schon ein anderes Programm verbunden** (z. B. VRCFury Haptics, OscGoesBrrr) – Intiface erlaubt nur eine Verbindung“.
+
 ### Neu in 2.9.3 – Freischalt-Schlüssel gelten jetzt überall
 
 - **Öffentlicher Schlüssel des Besitzers eingebaut**: Freischalt-Schlüssel aus dem Admin-Bereich funktionieren jetzt in jeder VRC-Nexus-App (ab dieser Version) – weiterhin nur für das VRChat-Konto, für das sie ausgestellt wurden.

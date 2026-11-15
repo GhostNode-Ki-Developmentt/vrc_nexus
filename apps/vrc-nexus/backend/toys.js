@@ -68,20 +68,54 @@ class Toys {
     }
 
     // ---------- Verbindung ----------
-    connect() {
-        if (this.ws && this.ws.readyState <= 1) return Promise.resolve(this.status());
-        const url = this.cfg().url;
+    /** Ist überhaupt etwas auf host:port? (unterscheidet „Server aus“ von „lehnt ab“) */
+    probe(host, port) {
+        if (this.probeHook) return Promise.resolve(this.probeHook(host, port));
+        return new Promise(res => {
+            const sock = require('net').connect({ host, port, timeout: 2000 });
+            const done = ok => { try { sock.destroy(); } catch (e) { /* egal */ } res(ok); };
+            sock.once('connect', () => done(true)); sock.once('error', () => done(false)); sock.once('timeout', () => done(false));
+        });
+    }
+    async connect() {
+        if (this.ws && this.ws.readyState <= 1) return this.status();
+        let url = this.cfg().url;
         const WS = this.WebSocket || globalThis.WebSocket;
-        if (!WS) throw new UserError('WebSocket wird hier nicht unterstützt.');
+        if (!WS) throw new UserError('WebSocket wird in dieser App-Version nicht unterstützt.');
         this.state = 'verbindet …'; this.error = '';
+        let u; try { u = new URL(url); } catch (e) { throw new UserError('Adresse ungültig.'); }
+        const port = int(u.port) || 12345, local = /^(127\.0\.0\.1|localhost|\[::1\])$/i.test(u.hostname);
+        let open = await this.probe(u.hostname, port);
+        if (!open && !local && await this.probe('127.0.0.1', port)) {
+            // Intiface hört standardmäßig nur auf diesem PC → automatisch auf 127.0.0.1 umstellen
+            url = 'ws://127.0.0.1:' + port; this.saveCfg({ url }); open = true;
+            this.note = 'Adresse auf ' + url + ' umgestellt – Intiface hört nur auf diesem PC.';
+        }
+        if (!open) {
+            this.state = 'getrennt';
+            this.error = local ? 'Auf Port ' + port + ' läuft nichts – in Intiface Central „Start Server“ drücken und den Port prüfen (Einstellungen → Server Port).'
+                : 'Unter ' + u.hostname + ':' + port + ' läuft nichts. Läuft Intiface auf diesem PC, ws://127.0.0.1:' + port + ' nehmen; auf einem anderen PC dort „Listen on all network interfaces“ einschalten und die Firewall freigeben.';
+            throw new UserError(this.error);
+        }
         return new Promise((resolve, reject) => {
+            let opened = false;
             const ws = new WS(url);
             this.ws = ws;
-            const fail = e => { this.state = 'getrennt'; this.error = 'Intiface Central nicht erreichbar (' + url + ') – läuft es und ist der Server gestartet?'; reject(new UserError(this.error)); };
-            ws.onerror = fail;
-            ws.onclose = () => { if (this.ws === ws) { this.ws = null; this.state = 'getrennt'; this.devices.clear(); } };
+            const t = setTimeout(() => fail(), 6000);
+            const fail = () => {
+                clearTimeout(t);
+                if (this.ws === ws) this.ws = null;
+                try { ws.close(); } catch (e) { /* egal */ }
+                this.state = 'getrennt';
+                this.error = opened ? 'Intiface hat die Anmeldung abgelehnt (Protokoll-Version?) – Intiface Central aktualisieren.'
+                    : 'Intiface ist erreichbar, lehnt die Verbindung aber ab. Meist ist schon ein anderes Programm verbunden (z. B. VRCFury Haptics, OscGoesBrrr) – Intiface erlaubt nur eine Verbindung: das andere Programm trennen oder beenden.';
+                reject(new UserError(this.error));
+            };
+            ws.onerror = () => { if (!opened || this.state === 'verbindet …') fail(); };
+            ws.onclose = () => { if (!opened) return fail(); if (this.ws === ws) { this.ws = null; this.state = 'getrennt'; this.error = 'Verbindung zu Intiface beendet.'; this.devices.clear(); } };
             ws.onmessage = ev => this.onMessage(String(ev.data));
             ws.onopen = async () => {
+                opened = true;
                 try {
                     const info = await this.req({ RequestServerInfo: { ClientName: 'VRC Nexus', MessageVersion: 3 } });
                     const si = info.ServerInfo || {};
@@ -89,8 +123,10 @@ class Toys {
                     this.state = 'verbunden · ' + (si.ServerName || 'Intiface');
                     const dl = await this.req({ RequestDeviceList: {} });
                     for (const d of arr((dl.DeviceList || {}).Devices)) this.addDevice(d);
-                    resolve(this.status());
-                } catch (e) { fail(e); }
+                    clearTimeout(t);
+                    resolve(Object.assign(this.status(), this.note ? { msg: this.note } : {}));
+                    this.note = '';
+                } catch (e) { fail(); }
             };
         });
     }
@@ -254,7 +290,7 @@ class Toys {
         switch (act) {
             case 'toys_status': return this.status();
             case 'toys_cfg': { const c = this.saveCfg(input); return Object.assign(this.status(), { cfg: c, msg: 'Gespeichert.' }); }
-            case 'toys_connect': return Object.assign(await this.connect(), { msg: 'Mit Intiface verbunden.' });
+            case 'toys_connect': { const r = await this.connect(); return Object.assign({ msg: 'Mit Intiface verbunden.' }, r); }
             case 'toys_disconnect': this.disconnect(); return this.status();
             case 'toys_scan': return Object.assign(await this.scan(), { msg: 'Suche Geräte (10 s) …' });
             case 'toys_set': return await this.set(str(input.device || 'all'), Number(input.level));
