@@ -295,7 +295,7 @@
     function renderMe() {
         const m = state.me;
         $('#me').innerHTML = img(m.image, 'vx-me-img', m.name) + '<div><b style="color:' + esc(tcol(m)) + '">' + esc(m.name) + '</b><span>' + statusDot(m.status)
-            + esc(m.status_desc || (ST[m.status] || {}).label || '') + '</span></div>';
+            + esc(m.status_desc || (ST[m.status] || {}).label || '') + '</span></div><button type="button" class="vx-logout" title="Abmelden" aria-label="Abmelden">⏻</button>';
         const f = $('#statusForm');
         if (f && !f.dataset.touched) {
             const r = f.querySelector('input[value="' + CSS.escape(m.status) + '"]'); if (r) r.checked = true;
@@ -1709,7 +1709,10 @@
         if (!('Notification' in window)) return toast('Dieser Browser kann keine Benachrichtigungen.', true);
         Notification.requestPermission().then(p => { if (p === 'granted') notify('VRC Nexus', 'So sehen Benachrichtigungen aus 🐾'); else toast('Benachrichtigungen sind im Browser blockiert.', true); });
     });
-    $('#logoutBtn').addEventListener('click', () => { if (confirm('VRChat-Verbindung trennen? Freunde, Verlauf und Notizen bleiben gespeichert.')) api('logout').then(() => location.reload()).catch(x => toast(x.message, true)); });
+    /** 🚪 Abmelden – Knopf im Konto-Bereich und ⏻ am eigenen Profil oben rechts */
+    const doLogout = () => { if (confirm('Von VRChat abmelden? Freunde, Verlauf und Notizen bleiben auf diesem Gerät gespeichert.')) api('logout').then(() => location.reload()).catch(x => toast(x.message, true)); };
+    $('#logoutBtn').addEventListener('click', doLogout);
+    document.addEventListener('click', e => { if (e.target.closest('.vx-logout')) { e.preventDefault(); e.stopPropagation(); doLogout(); } }, true);
 
     // ---------- Gruppen-Moderation im Profil ----------
     const gcan = (g, p) => g.perms.includes('*') || g.perms.includes(p);

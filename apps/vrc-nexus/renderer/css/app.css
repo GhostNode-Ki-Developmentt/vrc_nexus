@@ -748,3 +748,5 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .nc-subdrop { display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 50; flex-direction: column; gap: 4px; min-width: 190px; padding: 6px; background: var(--surface, #0b0f16); border: 1px solid var(--accent-cyan); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
 .nc-subgrp.open .nc-subdrop { display: flex; }
 .nc-subdrop .chip { text-align: left; white-space: nowrap; }
+.vx-me { position: relative; } .vx-logout { margin-left: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; font-size: 0.95rem; }
+.vx-logout:hover { color: #ff5555; border-color: #ff5555; background: rgba(255, 85, 85, 0.1); }

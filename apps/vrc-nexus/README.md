@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 2.15.2 – Log out button
+
+- 🚪 **Log out:** new ⏻ button right on your profile card (next to your name) and a clear “🚪 Log out” button under More → Account. Friends, history and notes stay saved on the device.
+
 ### New in 2.15.1 – Voice sub-menu
 
 - 🗣 **Voice menu:** in “Game & OSC” the three voice tabs (speech input, text-to-speech, translator) are now grouped under one “🗣 Voice ▾” entry with a sub-menu; the entry shows which one is open.
