@@ -26,6 +26,7 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 - 🪪 **Nexus account:** older VRChat accounts with a short user ID can now connect (no more "invalid VRChat user ID").
 - ✔ **Age check:** the app now reads your own VRChat profile first and also recognises accounts that are verified with the 18+ badge hidden; the status endpoint is only used as a second source.
+- 🌐 The "Worlds" menu entry is now called "My worlds", matching "My avatars".
 - 👥 **Friends bar:** right-click menu (open profile, join, view instance, request invite, invite to my instance, copy ID), a "Just online" section for friends who came online in the last 10 minutes, sorting (A–Z, recently active, by world), long lists load in steps and stay smooth, and group instances can be joined straight from the list.
 
 ### New in 3.0.3 – Every Stream Deck action on your phone
