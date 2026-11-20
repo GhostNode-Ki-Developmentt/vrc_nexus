@@ -168,7 +168,7 @@
         if (name === 'feed') { const ft = $('#feedType'); if (sub === 'friendlog') ft.value = 'friend_add,friend_remove'; else if (ft.value === 'friend_add,friend_remove' && store.get('tabSubPrev') === 'friendlog') ft.value = ''; store.set('tabSubPrev', sub); }
         if (name === 'feed') loadFeed(true);
         if (name === 'stats') loadStats();
-        if (name === 'worlds' && !loaded.worlds) loadWorlds('favorites');
+        if (name === 'worlds' && !loaded.worlds) loadWorlds('mine');   // 3.0.4: „Meine Welten“ = eigene Welten (Favoriten stehen unter ⭐ Favoriten)
         if (name === 'avatars' && !loaded.avatars) loadAvatars('mine');
         if (name === 'groups' && !loaded.groups) loadGroups();
         if (name === 'favs' && (!loaded.favs || loaded.favsDirty)) { loaded.favs = true; loaded.favsDirty = false; loadFavs(); }
@@ -553,7 +553,7 @@
     const worldCard = w => '<button type="button" class="vx-card" data-world="' + esc(w.id) + '">' + img(w.thumb, 'vx-card-img', w.name) + '<span class="vx-card-body"><b>' + esc(w.name) + '</b><small>'
         + esc(w.author ? 'von ' + w.author : '') + '</small><span class="vx-card-meta">' + (w.friends ? '<span title="Freunde dort">👥 ' + w.friends + '</span>' : '') + (w.occupants ? '<span title="Gerade drin">🟢 ' + num(w.occupants) + '</span>' : '')
         + (w.favorites ? '<span title="Favoriten">⭐ ' + num(w.favorites) + '</span>' : '') + (w.capacity ? '<span title="Kapazität">👤 ' + w.capacity + '</span>' : '') + (w.status && w.status !== 'public' ? '<span>' + esc(w.status) + '</span>' : '') + '</span></span></button>';
-    let worldKind = 'favorites';
+    let worldKind = 'mine';
     function loadWorlds(kind, q) {
         if (kind === 'roulette') { roulette(); return; }
         worldKind = kind;
@@ -2230,7 +2230,7 @@
         loading($('#worldsBox'), '🎲 Würfle eine Welt …');
         Promise.all([api('worlds', { kind: 'favorites' }).catch(() => ({ worlds: [] })), api('worlds', { kind: 'active' }).catch(() => ({ worlds: [] }))]).then(([a, b]) => {
             const all = a.worlds.concat(b.worlds).filter((w, i, l) => l.findIndex(x => x.id === w.id) === i);
-            loadWorlds(['search', 'roulette'].includes(worldKind) ? 'favorites' : worldKind);
+            loadWorlds(['search', 'roulette'].includes(worldKind) ? 'mine' : worldKind);
             if (!all.length) return toast('Keine Welten zum Auswürfeln gefunden.', true);
             let w;
             do { w = all[Math.floor(Math.random() * all.length)]; } while (all.length > 1 && w.id === roulette.last);
