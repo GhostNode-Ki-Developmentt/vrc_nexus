@@ -1,6 +1,6 @@
 {
   "controller_type": "vive_controller",
-  "description": "VRC Nexus – Overlay ein/aus (Doppeldruck)",
+  "description": "VRC Nexus – Overlay ein/aus (Doppeldruck) + VR-Bewegung (Space Flight / Turn / Walk)",
   "name": "VRC Nexus",
   "bindings": {
     "/actions/nexus": {
@@ -11,6 +11,48 @@
           "inputs": {
             "double": {
               "output": "/actions/nexus/in/toggle"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/grip",
+          "mode": "button",
+          "inputs": {
+            "click": {
+              "output": "/actions/nexus/in/fly_left"
+            },
+            "double": {
+              "output": "/actions/nexus/in/space_reset"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/grip",
+          "mode": "button",
+          "inputs": {
+            "click": {
+              "output": "/actions/nexus/in/fly_right"
+            },
+            "double": {
+              "output": "/actions/nexus/in/gravity"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/trackpad",
+          "mode": "trackpad",
+          "inputs": {
+            "click": {
+              "output": "/actions/nexus/in/turn_left"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/trackpad",
+          "mode": "trackpad",
+          "inputs": {
+            "click": {
+              "output": "/actions/nexus/in/walk_right"
             }
           }
         }

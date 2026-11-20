@@ -81,6 +81,7 @@ class NexusApp {
         this.admin = new (require('./admin').Admin)(this);
         this.tts = opts.mobile ? null : new Tts(this, opts.crypt);
         this.media = opts.mobile ? null : new Media(this);
+        this.vrspace = new (require('./vrspace').VrSpace)(this);
         this.osctools = new OscTools(this);               // 3.2.5: auch am Handy (Szenen, Aufnahme über die eigene OSC-Verbindung)
         this.vrc.onWatch = (name, world) => { if (this.settings.get('notify.watch')) this.tools.alert('🟢 ' + name + ' ist online', world ? 'in ' + world : 'gerade ins Spiel gekommen'); };
         this.vrc.onWatchEvent = (name, kind, world) => {
@@ -191,6 +192,7 @@ class NexusApp {
             if (act === 'clipboard_write') { const h = this.tools && this.tools.host; if (!h || !h.copy) throw new UserError('Nicht verfügbar.'); h.copy(cut(str(input.text), 5000)); return { ok: true }; }
             if (act.startsWith('subs_')) { if (!this.subs) throw new UserError('Übersetzer gibt es nur in der Windows-App.'); return await this.subs.action(act, input); }
             if (act.startsWith('speech_')) { if (!this.speech) throw new UserError('Spracheingabe gibt es nur in der Windows-App.'); return await this.speech.action(act, input); }
+            if (act.startsWith('space_')) return await this.vrspace.action(act, input);   // 3.3 VR-Bewegung
             if (act === 'overlay_act') return await this.tools.apiAction(str(input.action), input);
             if (act === 'overlay_cfg') { const s = this.settings.all(); return { phrases: str(s['vr.overlay_phrases']).split('\n').map(x => x.trim()).filter(Boolean).slice(0, 40), translate: !!s['vr.overlay_translate'], target: str(s['tr.chat_target'] || '') }; }
             if (act.startsWith('ins_')) return await this.insights.action(act, input);

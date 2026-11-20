@@ -2096,6 +2096,78 @@ test('3.2.5: Handy-OSC – Knöpfe und Parameter-Seite über die eigene OSC-Verb
     app.tools.stop && app.tools.stop();
 });
 
+test('3.3: VR-Bewegung – Einstellungen, Befehl an den SteamVR-Helfer (gemockt), Ursprung merken, Autostart mit VRChat', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { VrSpace } = require('../backend/vrspace');
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    // Einstellungen: nur vr.space*/fly*/turn*/walk*, Grenzen geprüft, Ursprung nicht von außen setzbar
+    let r = await app.post({ act: 'space_get' }, {});
+    assert.strictEqual(r.cfg['vr.fly_on'], true); assert.strictEqual(r.windows, false); assert.ok(r.schemes.standard.knuckles.fly);
+    r = await app.post({ act: 'space_save', 'vr.fly_mul': '9999', 'vr.turn_comfort': '30', 'vr.walk_lock_roll': '1', 'vr.space_orig': '1,2,3', 'ui.theme': 'x', quiet: '1' }, {});
+    assert.strictEqual(r.cfg['vr.fly_mul'], 500); assert.strictEqual(r.cfg['vr.turn_comfort'], '30'); assert.strictEqual(r.cfg['vr.walk_lock_roll'], true);
+    assert.strictEqual(app.settings.get('vr.space_orig'), ''); assert.ok(!('vr.space_orig' in r.cfg));
+    await assert.rejects(app.post({ act: 'space_reset' }, {}), /Windows-App/);
+    const c = VrSpace.command(app.settings.all());
+    assert.strictEqual(c.flymul, 5); assert.strictEqual(c.tstep, 30); assert.strictEqual(c.lr, 1); assert.strictEqual(c.on, 0); assert.strictEqual(c.legacy, 0);
+
+    // SteamVR-Helfer mocken: Electron + child_process
+    const Module = require('module'), cp = require('child_process'), { EventEmitter } = require('events');
+    const wins = [];
+    const realLoad = Module._load;
+    Module._load = function (req, ...a) { if (req === 'electron') return { BrowserWindow: function () { wins.push(1); this.webContents = { setFrameRate() {}, on() {}, invalidate() {} }; this.loadURL = () => {}; this.destroy = () => {}; } }; return realLoad.call(this, req, ...a); };
+    const realSpawn = cp.spawn, procs = [];
+    cp.spawn = (exe, args) => { const p = new EventEmitter(); p.args = args; p.frames = []; p.stdout = new EventEmitter(); p.stdout.setEncoding = () => {};
+        p.stdin = { on() {}, end() {}, writableLength: 0, write(b) { if (b[0] === 2) p.frames.push(JSON.parse(b.slice(5).toString('utf8'))); } }; p.kill = () => {}; procs.push(p); return p; };
+    delete require.cache[require.resolve('../vroverlay')];
+    try {
+        const { VrOverlay } = require('../vroverlay');
+        const exe = path.join(os.tmpdir(), 'NexusOverlay-test.exe'); fs.writeFileSync(exe, '');
+        const saved = {};
+        const vo = new VrOverlay({ exe, icon: 'i.png', url: 'x', saveSetting: (k, v) => { saved[k] = v; } });
+        vo.steamVrRunning = async () => true;
+        let vrc = false; vo.vrchatRunning = async () => vrc;
+        const flush = () => new Promise(res => setTimeout(res, 20));
+        const say = (p, o) => p.stdout.emit('data', JSON.stringify(o) + '\n');
+        // nur VR-Bewegung, ohne Overlay → Helfer ohne Dashboard-Reiter und ohne Fenster
+        vo.apply(Object.assign({}, app.settings.all(), { 'vr.space': true, 'vr.overlay': false }));
+        await flush();
+        assert.strictEqual(procs.length, 1); assert.deepStrictEqual(procs[0].args, ['i.png', 'nodash']); assert.strictEqual(wins.length, 0);
+        say(procs[0], { ev: 'ready' });
+        const sc = procs[0].frames.find(f => f.cmd === 'space');
+        assert.ok(sc && sc.on === 1 && sc.fly === 1 && sc.flymul === 5, 'Einstellungen gehen an den Helfer');
+        assert.ok(!procs[0].frames.some(f => f.cmd === 'mode' || f.cmd === 'show'), 'ohne Overlay keine Fenster-Befehle');
+        say(procs[0], { ev: 'space_orig', m: '1,0,0,0.5,0,1,0,0,0,0,1,-0.25' });
+        assert.strictEqual(saved['vr.space_orig'], '1,0,0,0.5,0,1,0,0,0,0,1,-0.25');
+        say(procs[0], { ev: 'space_orig', m: 'rm -rf /' });
+        assert.strictEqual(saved['vr.space_orig'], '1,0,0,0.5,0,1,0,0,0,0,1,-0.25', 'nur Zahlen');
+        say(procs[0], { ev: 'space', x: 1.5, y: 0.25, z: -2, yaw: 90, pitch: 0, roll: 0, drag: true });
+        let st = vo.state().space;
+        assert.strictEqual(st.on, true); assert.strictEqual(st.x, 1.5); assert.strictEqual(st.yaw, 90); assert.strictEqual(st.drag, true);
+        say(procs[0], { ev: 'gravity', v: true }); assert.strictEqual(saved['vr.fly_gravity'], '1');
+        vo.spaceCmd('reset'); assert.deepStrictEqual(procs[0].frames[procs[0].frames.length - 1], { cmd: 'space_reset' });
+        say(procs[0], { ev: 'space_reset' }); assert.strictEqual(saved['vr.space_orig'], ''); assert.strictEqual(vo.state().space.x, 0);
+        // gemerkter Ursprung (nach Absturz) geht beim nächsten Start mit
+        assert.strictEqual(VrSpace.command(Object.assign({}, app.settings.all(), { 'vr.space_orig': '1,0,0,0,0,1,0,0,0,0,1,0' })).orig, '1,0,0,0,0,1,0,0,0,0,1,0');
+        // Autostart: erst mit laufendem VRChat
+        vo.stop();
+        vo.apply(Object.assign({}, app.settings.all(), { 'vr.space': false, 'vr.space_autostart': true, 'vr.overlay': false }));
+        await flush();
+        assert.strictEqual(procs.length, 1, 'ohne VRChat kein Helfer'); assert.strictEqual(vo.status, 'wartet auf VRChat');
+        vrc = true;
+        vo.apply(Object.assign({}, app.settings.all(), { 'vr.space': false, 'vr.space_autostart': true, 'vr.overlay': false }));
+        await flush();
+        assert.strictEqual(procs.length, 2);
+        say(procs[1], { ev: 'ready' });
+        assert.strictEqual(procs[1].frames.find(f => f.cmd === 'space').on, 1);
+        assert.strictEqual(vo.state().space.auto, true);
+        // Overlay an → Helfer mit Dashboard neu starten
+        vo.apply(Object.assign({}, app.settings.all(), { 'vr.space': true, 'vr.overlay': true }));
+        await flush();
+        assert.strictEqual(procs.length, 3); assert.deepStrictEqual(procs[2].args, ['i.png']); assert.strictEqual(wins.length, 1);
+        vo.stop(); clearInterval(vo.watch);
+    } finally { Module._load = realLoad; cp.spawn = realSpawn; delete require.cache[require.resolve('../vroverlay')]; }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

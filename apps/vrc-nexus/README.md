@@ -22,6 +22,16 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.3.0 – VR movement (Space Flight · Space Turn · Space Walk)
+
+In-game movement for VR, under **Game & OSC → 🚀 VR movement** and in the **SteamVR overlay** (new "🚀 Movement" tab). Own implementation in the existing SteamVR helper: it moves and rotates the playspace (SteamVR standing zero pose) – no extra driver needed.
+
+- 🚀 **Space Flight:** hold the button and grab the world to move yourself; drag multiplier, grab with left/right/both hands, gravity (fall back to the floor, with strength), X/Y/Z axis lock, live X/Y/Z offset.
+- 🔄 **Space Turn:** rotate the playspace around you by moving your hand around your head; turn multiplier, smoothing, comfort mode (smooth or 15°/30°/45° steps), invert direction.
+- 🧭 **Space Walk:** change pitch/roll/yaw by rotating your hand; rotation multiplier, smoothing, momentum, invert direction, pitch/roll/yaw lock.
+- 🎮 **Controls:** status with Connect/Disconnect, "start when VRChat starts in VR", button mapping **Standard** (SteamVR input, rebindable in SteamVR → Controller bindings → VRC Nexus) or **Legacy** (fixed buttons), with a controller graphic of the assigned button for Index, Quest/Rift, Vive and WMR. Reset returns to the original playspace; the original is remembered and restored when the helper quits.
+- Works without the SteamVR overlay being enabled (the helper then runs without a dashboard tab).
+
 ### New in 3.2.5 – OSC on the phone
 
 - 📡 **Own OSC connection from the phone straight to VRChat** (no PC app needed): enter the PC's IP under Menu → **OSC & parameters**, test the connection, and start VRChat with the launch option shown there (`--osc=9000:<phone IP>:9001`) so it accepts OSC from the network and reports parameter values to the phone. Uses a small built-in Android UDP module (local network addresses only).

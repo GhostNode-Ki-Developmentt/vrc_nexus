@@ -1062,3 +1062,59 @@ Wert (bei „Wert setzen“)	Value (for “set value”)	Valeur (pour « défini
 empfängt	receiving	réception	受信中
 nichts empfangen	nothing received	rien reçu	受信なし
 noch nichts von VRChat empfangen	nothing received from VRChat yet	encore rien reçu de VRChat	VRChatからまだ何も受信していません
+Achsensperre	Axis lock	Verrouillage des axes	軸ロック
+Ausrichtung zurücksetzen	Reset orientation	Réinitialiser l’orientation	向きをリセット
+Ausrichtung ändern (Pitch / Roll / Yaw): Taste halten und die Hand drehen – z. B. an Wänden oder Decken laufen.	Change orientation (pitch / roll / yaw): hold the button and rotate your hand – e.g. to walk on walls or ceilings.	Changer l’orientation (tangage / roulis / lacet) : maintiens le bouton et tourne la main – p. ex. pour marcher sur les murs ou au plafond.	向きを変更（ピッチ／ロール／ヨー）：ボタンを押したまま手を回す – 壁や天井を歩くことも。
+Beim Start von VRChat in VR starten	Start when VRChat starts in VR	Démarrer quand VRChat démarre en VR	VRChatをVRで起動したときに開始
+Controller	Controller	Manette	コントローラー
+Drag-Multiplikator	Drag multiplier	Multiplicateur de déplacement	ドラッグ倍率
+Drag-Steuerung	Drag control	Commande de déplacement	ドラッグ操作
+Dreh-Steuerung	Turn control	Commande de rotation	回転操作
+Drehung zurücksetzen	Reset rotation	Réinitialiser la rotation	回転をリセット
+Gravitation	Gravity	Gravité	重力
+Gravitations-Steuerung	Gravity control	Commande de gravité	重力操作
+Greifen mit	Grab with	Saisir avec	掴む手
+Komfortmodus	Comfort mode	Mode confort	快適モード
+Legacy (feste Tasten)	Legacy (fixed buttons)	Legacy (boutons fixes)	レガシー（固定ボタン）
+Nachrollen	Momentum	Inertie	慣性
+Position zurücksetzen	Reset position	Réinitialiser la position	位置をリセット
+Quest / Rift (Touch)	Quest / Rift (Touch)	Quest / Rift (Touch)	Quest / Rift（Touch）
+Richtung umkehren	Invert direction	Inverser le sens	方向を反転
+Rotations-Multiplikator	Rotation multiplier	Multiplicateur de rotation	回転倍率
+Spielbereich drehen: Taste halten und die Hand um dich herum bewegen.	Rotate the playspace: hold the button and move your hand around you.	Faire pivoter l’espace de jeu : maintiens le bouton et déplace la main autour de toi.	プレイエリアを回転：ボタンを押したまま手を自分の周りで動かす。
+Spielbereich verschieben: Taste halten und die Welt greifen – Hand ziehen bewegt dich.	Move the playspace: hold the button and grab the world – pulling your hand moves you.	Déplacer l’espace de jeu : maintiens le bouton et saisis le monde – tirer la main te déplace.	プレイエリアを移動：ボタンを押したまま世界を掴む – 手を引くと移動します。
+Standard (SteamVR-Eingabe, änderbar)	Standard (SteamVR input, rebindable)	Standard (entrée SteamVR, modifiable)	標準（SteamVR入力、変更可能）
+Stufen 15°	15° steps	Paliers de 15°	15°刻み
+Stufen 30°	30° steps	Paliers de 30°	30°刻み
+Stufen 45°	45° steps	Paliers de 45°	45°刻み
+Tastenbelegung	Button mapping	Affectation des boutons	ボタン割り当て
+Turn-Multiplikator	Turn multiplier	Multiplicateur de rotation	ターン倍率
+VR-Bewegung	VR movement	Mouvement VR	VR移動
+🚀 VR-Bewegung	🚀 VR movement	🚀 Mouvement VR	🚀 VR移動
+🚀 Bewegung	🚀 Movement	🚀 Mouvement	🚀 移動
+VR-Bewegung gibt es nur in der Windows-App mit SteamVR.	VR movement is only available in the Windows app with SteamVR.	Le mouvement VR n’existe que dans l’app Windows avec SteamVR.	VR移動はSteamVRを使うWindowsアプリでのみ利用できます。
+Valve Index	Valve Index	Valve Index	Valve Index
+Vive (Zauberstab)	Vive (wand)	Vive (baguette)	Vive（ワンド）
+Walk-Steuerung	Walk control	Commande de marche	ウォーク操作
+Windows MR	Windows MR	Windows MR	Windows MR
+automatisch mit VRChat	automatically with VRChat	automatiquement avec VRChat	VRChatと自動
+beide	both	les deux	両方
+beiden Händen	both hands	les deux mains	両手
+doppelt	double press	double appui	ダブル押し
+fließend	smooth	fluide	スムーズ
+gedrückt halten	hold	maintenir	長押し
+greift	grabbing	saisie	掴み中
+linker Hand	left hand	main gauche	左手
+links, doppelt	left, double press	gauche, double appui	左、ダブル押し
+rechter Hand	right hand	main droite	右手
+rechts, doppelt	right, double press	droite, double appui	右、ダブル押し
+Verbinden	Connect	Connecter	接続
+Verbunden	Connected	Connecté	接続済み
+Nicht verbunden	Not connected	Non connecté	未接続
+Space Flight	Space Flight	Space Flight	Space Flight
+wartet auf VRChat	waiting for VRChat	attend VRChat	VRChatを待機中
+wartet auf SteamVR	waiting for SteamVR	attend SteamVR	SteamVRを待機中
+Die Tasten lassen sich in SteamVR ändern: Einstellungen → Controller → Belegung verwalten → VRC Nexus. Sie gelten zusätzlich zu VRChat – doppelt belegte Tasten lösen beides aus.	The buttons can be changed in SteamVR: Settings → Controllers → Manage controller bindings → VRC Nexus. They work in addition to VRChat – buttons used by both trigger both.	Les boutons se modifient dans SteamVR : Paramètres → Manettes → Gérer les affectations → VRC Nexus. Ils s’ajoutent à VRChat – un bouton utilisé des deux côtés déclenche les deux.	ボタンはSteamVRで変更できます：設定 → コントローラー → バインドの管理 → VRC Nexus。VRChatと併用されるため、重複したボタンは両方を実行します。
+Legacy liest die Tasten direkt vom Controller (ohne SteamVR-Belegung). Grip greift dabei auch in VRChat.	Legacy reads the buttons directly from the controller (without SteamVR bindings). Grip will also grab in VRChat.	Legacy lit les boutons directement sur la manette (sans affectation SteamVR). Le grip saisit aussi dans VRChat.	レガシーはコントローラーから直接ボタンを読み取ります（SteamVRの割り当てなし）。グリップはVRChatでも掴みます。
+Ausrichtung sperren	Lock rotation	Verrouiller la rotation	回転をロック
+nur in der Windows-App	Windows app only	uniquement dans l’app Windows	Windowsアプリのみ

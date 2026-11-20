@@ -28,18 +28,74 @@
       "name": "/actions/nexus/in/toggle",
       "type": "boolean",
       "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/fly_left",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/fly_right",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/turn_left",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/turn_right",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/walk_left",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/walk_right",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/space_reset",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/nexus/in/gravity",
+      "type": "boolean",
+      "requirement": "optional"
     }
   ],
   "localization": [
     {
       "language_tag": "de_DE",
       "/actions/nexus": "VRC Nexus",
-      "/actions/nexus/in/toggle": "Overlay ein/aus"
+      "/actions/nexus/in/toggle": "Overlay ein/aus",
+      "/actions/nexus/in/fly_left": "Space Flight (links greifen)",
+      "/actions/nexus/in/fly_right": "Space Flight (rechts greifen)",
+      "/actions/nexus/in/turn_left": "Space Turn (links)",
+      "/actions/nexus/in/turn_right": "Space Turn (rechts)",
+      "/actions/nexus/in/walk_left": "Space Walk (links)",
+      "/actions/nexus/in/walk_right": "Space Walk (rechts)",
+      "/actions/nexus/in/space_reset": "Spielbereich zurücksetzen",
+      "/actions/nexus/in/gravity": "Gravitation an/aus"
     },
     {
       "language_tag": "en_US",
       "/actions/nexus": "VRC Nexus",
-      "/actions/nexus/in/toggle": "Toggle overlay"
+      "/actions/nexus/in/toggle": "Toggle overlay",
+      "/actions/nexus/in/fly_left": "Space Flight (grab left)",
+      "/actions/nexus/in/fly_right": "Space Flight (grab right)",
+      "/actions/nexus/in/turn_left": "Space Turn (left)",
+      "/actions/nexus/in/turn_right": "Space Turn (right)",
+      "/actions/nexus/in/walk_left": "Space Walk (left)",
+      "/actions/nexus/in/walk_right": "Space Walk (right)",
+      "/actions/nexus/in/space_reset": "Reset playspace",
+      "/actions/nexus/in/gravity": "Toggle gravity"
     }
   ]
 }

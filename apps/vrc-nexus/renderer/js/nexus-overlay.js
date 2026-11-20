@@ -13,6 +13,7 @@
     function toast(m) { const t = $('#ovToast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200); }
     const run = p => p.then(d => { toast(d.msg || '✔'); setTimeout(load, 500); }).catch(e => toast('⚠ ' + e.message));
 
+    let space = null;   // 3.3 VR-Bewegung
     let tab = 'friends', data = null, cfg = { phrases: [] }, text = '';
     const EMOJI = ['👋', '😊', '😂', '❤️', '👍', '🎉', '😴', '🦊', '✨', '🙏', '😭', '🔥'];
 
@@ -31,6 +32,20 @@
             + '<h3>Makros</h3><div class="ov-grid">' + (data.macros.length ? data.macros.map(m => '<button class="btn gold" data-a="macro" data-id="' + esc(m.id) + '">⚡ ' + esc(m.name) + '</button>').join('') : '<span style="color:#8796a5">Keine Makros.</span>') + '</div>'
             + (data.params.length ? '<h3>Parameter</h3><div class="ov-grid">' + data.params.filter(p => p.type === 'bool').map(p => '<button class="btn' + (p.value === true ? ' on' : '') + '" data-a="toggle" data-v="' + esc(p.name) + '">' + esc(p.name) + '</button>').join('') + '</div>' : '')
             + '<h3>VRChat</h3><div class="ov-grid"><button class="btn" data-a="rejoin">🔄 Neu beitreten</button><button class="btn" data-a="input" data-v="Voice">🎙 Mikro</button><button class="btn" data-a="input" data-v="Jump">⤒ Springen</button><button class="btn" data-a="hide">🙈 Overlay aus</button></div>',
+        space: () => {
+            if (!space) return '<div class="ov-empty">Lade …</div>';
+            const c = space.cfg, s = Object.assign({ x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0 }, space.state || {});
+            const on = k => (c[k] ? ' on' : '');
+            const step = (k, v, l) => '<button class="btn sm" data-a="sp_step" data-k="' + k + '" data-v="' + v + '">' + l + '</button>';
+            return '<h3>' + (s.on ? '🟢 Verbunden' : '🔴 Nicht verbunden') + ' · X ' + s.x.toFixed(2) + ' · Y ' + s.y.toFixed(2) + ' · Z ' + s.z.toFixed(2) + ' m · Yaw ' + s.yaw + '° · Pitch ' + s.pitch + '° · Roll ' + s.roll + '°</h3>'
+                + '<div class="ov-grid"><button class="btn' + on('vr.space') + '" data-a="sp_tog" data-k="vr.space">🔌 ' + (c['vr.space'] ? 'Trennen' : 'Verbinden') + '</button><button class="btn gold" data-a="sp_reset">↺ Zurücksetzen</button></div>'
+                + '<h3>Funktionen</h3><div class="ov-grid"><button class="btn' + on('vr.fly_on') + '" data-a="sp_tog" data-k="vr.fly_on">🚀 Space Flight</button><button class="btn' + on('vr.turn_on') + '" data-a="sp_tog" data-k="vr.turn_on">🔄 Space Turn</button>'
+                + '<button class="btn' + on('vr.walk_on') + '" data-a="sp_tog" data-k="vr.walk_on">🧭 Space Walk</button><button class="btn' + on('vr.fly_gravity') + '" data-a="sp_tog" data-k="vr.fly_gravity">🪂 Gravitation</button></div>'
+                + '<h3>Drag ' + (c['vr.fly_mul'] / 100).toFixed(1) + '× · Drehen ' + (c['vr.turn_mul'] / 100).toFixed(1) + '× · Walk ' + (c['vr.walk_mul'] / 100).toFixed(1) + '×</h3><div class="ov-grid">'
+                + step('vr.fly_mul', -25, '➖ Drag') + step('vr.fly_mul', 25, '➕ Drag') + step('vr.turn_mul', -25, '➖ Drehen') + step('vr.turn_mul', 25, '➕ Drehen') + step('vr.walk_mul', -25, '➖ Walk') + step('vr.walk_mul', 25, '➕ Walk') + '</div>'
+                + '<h3>Sperren</h3><div class="ov-grid">' + ['x', 'y', 'z'].map(a => '<button class="btn sm' + on('vr.fly_lock_' + a) + '" data-a="sp_tog" data-k="vr.fly_lock_' + a + '">' + a.toUpperCase() + '</button>').join('')
+                + ['pitch', 'roll', 'yaw'].map(a => '<button class="btn sm' + on('vr.walk_lock_' + a) + '" data-a="sp_tog" data-k="vr.walk_lock_' + a + '">' + a[0].toUpperCase() + a.slice(1) + '</button>').join('') + '</div>';
+        },
         cam: () => '<div class="ov-grid"><button class="btn gold" data-a="cam" data-v="Capture">📸 Foto</button><button class="btn" data-a="cam" data-v="CaptureDelayed">⏱ Timer</button><button class="btn" data-a="burst">🎞 Serie (5)</button><button class="btn" data-a="cam" data-v="Close">✖ Kamera zu</button></div>'
             + '<h3>Modus</h3><div class="ov-grid">' + [[1, 'Foto'], [2, 'Stream'], [3, 'Emoji'], [6, 'Drohne']].map(([m, l]) => '<button class="btn' + (data.cam.mode === m ? ' on' : '') + '" data-a="mode" data-v="' + m + '">' + l + '</button>').join('') + '</div>'
             + '<h3>Zoom</h3><div class="ov-grid"><button class="btn" data-a="zoom" data-v="-10">➖ Zoom</button><button class="btn" data-a="zoom" data-v="10">➕ Zoom</button></div>'
@@ -45,9 +60,9 @@
         try { m.innerHTML = V[tab](); } catch (e) { m.innerHTML = '<div class="ov-empty">⚠ ' + esc(e.message) + '</div>'; }
         m.scrollTop = top;
     }
-    function load() { return api('home_data').then(d => { data = d; render(); }).catch(e => { $('#ovMain').innerHTML = '<div class="ov-empty">⚠ ' + esc(e.message) + '</div>'; }); }
+    function load() { if (tab === 'space') api('space_get').then(r => { space = r; render(); }).catch(() => {}); return api('home_data').then(d => { data = d; render(); }).catch(e => { $('#ovMain').innerHTML = '<div class="ov-empty">⚠ ' + esc(e.message) + '</div>'; }); }
 
-    $('#ovTabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; $('#ovMain').scrollTop = 0; render(); } });
+    $('#ovTabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; $('#ovMain').scrollTop = 0; render(); if (tab === 'space') load(); } });
     $('#ovMain').addEventListener('click', e => {
         const add = e.target.closest('[data-add]');
         if (add) { text = (text + add.dataset.add).slice(0, 500); render(); return; }
@@ -67,6 +82,9 @@
         if (a === 'rejoin') return run(act('rejoin'));
         if (a === 'input') return run(act('input', { name: v }));
         if (a === 'hide') return run(act('overlay', { on: '' }));
+        if (a === 'sp_tog') return api('space_save', { [b.dataset.k]: space.cfg[b.dataset.k] ? '0' : '1', quiet: '1' }).then(r => { space = r; render(); }).catch(x => toast('⚠ ' + x.message));
+        if (a === 'sp_step') return api('space_save', { [b.dataset.k]: Math.max(10, (space.cfg[b.dataset.k] || 100) + Number(v)), quiet: '1' }).then(r => { space = r; render(); }).catch(x => toast('⚠ ' + x.message));
+        if (a === 'sp_reset') return api('space_reset').then(r => { space = r; toast(r.msg); render(); }).catch(x => toast('⚠ ' + x.message));
         if (a === 'cam') return run(act('camera', { cmd: v }));
         if (a === 'burst') return run(act('camera', { cmd: 'burst', count: 5, seconds: 2 }));
         if (a === 'mode') return run(act('camera', { cmd: 'Mode', value: v }));

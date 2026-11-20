@@ -125,8 +125,9 @@ const host = {
     },
     overlayState: () => (vr ? vr.state() : null),
     overlayToggle: async on => { if (!vr) throw new Error('Overlay nicht verfügbar.'); return vr.toggle(on); },
+    spaceCmd: op => { if (!vr) throw new Error('SteamVR-Helfer nicht verfügbar.'); return vr.spaceCmd(op); },
     applySettings: (changed, s) => {
-        if (vr && (changed.includes('*') || changed.some(k => k.startsWith('vr.overlay')))) vr.apply(s);   // inkl. vr.overlay_hud*
+        if (vr && (changed.includes('*') || changed.some(k => /^vr\.(overlay|space|fly|turn|walk)/.test(k)))) vr.apply(s);   // inkl. vr.overlay_hud* und 3.3 VR-Bewegung
         prefs = { 'sys.hw_accel': s['sys.hw_accel'], 'sys.close_to_tray': s['sys.close_to_tray'], 'sys.start_minimized': s['sys.start_minimized'], 'adv.devtools': s['adv.devtools'] };
         try { fs.writeFileSync(PREFS_FILE, JSON.stringify(prefs)); } catch (e) { /* egal */ }
         if (tray && changed.includes('sys.autostart')) tray.setContextMenu(trayMenu());
@@ -204,7 +205,8 @@ app.whenReady().then(async () => {
     const ovIcon = path.join(app.getPath('userData'), 'overlay-icon.png');
     try { fs.writeFileSync(ovIcon, fs.readFileSync(path.join(RENDERER, 'icon.png'))); } catch (e) { /* egal */ }
     vr = new VrOverlay({ exe: app.isPackaged ? path.join(process.resourcesPath, 'overlay', 'NexusOverlay.exe') : path.join(__dirname, 'overlay', 'bin', 'Release', 'net48', 'NexusOverlay.exe'),
-        icon: ovIcon, url: 'app://nexus/overlay.html', hudUrl: 'app://nexus/hud.html', notify });
+        icon: ovIcon, url: 'app://nexus/overlay.html', hudUrl: 'app://nexus/hud.html', notify,
+        saveSetting: (k, v) => { try { nexus.settings.save({ [k]: v }); } catch (e) { /* egal */ } } });
     vr.apply(nexus.settings.all());
     protocol.handle('app', async request => {
         const url = new URL(request.url);

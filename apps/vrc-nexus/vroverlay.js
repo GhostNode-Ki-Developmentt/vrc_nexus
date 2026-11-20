@@ -5,7 +5,9 @@
  *  - schickt jedes neue Bild an NexusOverlay.exe (OpenVR) → eigener Reiter im SteamVR-Dashboard + Handgelenk/frei im Raum
  *  - Laser-Klicks/Scrollen aus SteamVR kommen als Maus-Ereignisse zurück
  * Startet automatisch, sobald SteamVR (vrserver.exe) läuft und das Overlay eingeschaltet ist.
+ * 3.3: derselbe Helfer macht die VR-Bewegung (Space Flight / Turn / Walk) – auch ohne Overlay („nodash“: kein Dashboard-Reiter, kein Fenster).
  */
+const { VrSpace } = require('./backend/vrspace');
 const { BrowserWindow } = require('electron');
 const { spawn, execFile } = require('child_process');
 const fs = require('fs');
@@ -31,24 +33,57 @@ class VrOverlay {
         this.pendingFrame = null;
         this.watch = null;
         this.failures = 0;
+        this.saveSetting = opts.saveSetting || (() => {});
+        this.space = null; this.spaceErr = ''; this.vrchat = false;
+    }
+    /** VR-Bewegung gewünscht? (eingeschaltet oder „beim Start von VRChat in VR“ und VRChat läuft) */
+    wantSpace() { const s = this.cfg; return !!s['vr.space'] || (!!s['vr.space_autostart'] && this.vrchat); }
+    wantHelper() { return !!this.cfg['vr.overlay'] || this.wantSpace(); }
+    sendSpace() {
+        if (!this.proc) return;
+        const c = VrSpace.command(this.cfg);
+        c.on = this.wantSpace() ? 1 : 0;
+        this.cmd(c);
+    }
+    spaceState() {
+        const sp = this.space || {};
+        return { available: true, running: !!this.proc, on: !!this.proc && this.wantSpace(), auto: !this.cfg['vr.space'] && this.wantSpace(), status: this.proc ? (this.spaceErr ? '⚠ ' + this.spaceErr : this.status) : this.status,
+            x: sp.x || 0, y: sp.y || 0, z: sp.z || 0, yaw: sp.yaw || 0, pitch: sp.pitch || 0, roll: sp.roll || 0, drag: !!sp.drag, gravity: !!this.cfg['vr.fly_gravity'] };
+    }
+    spaceCmd(op) {
+        if (op === 'reset') { if (!this.proc) throw new Error('Der SteamVR-Helfer läuft nicht.'); this.cmd({ cmd: 'space_reset' }); return; }
+        throw new Error('Unbekannter Befehl.');
     }
     state() {
         const li = this.lastInput;
-        return { enabled: !!this.cfg['vr.overlay'], running: !!this.proc, visible: this.visible, mode: this.cfg['vr.overlay_mode'] || 'wrist',
+        return { space: this.spaceState(), enabled: !!this.cfg['vr.overlay'], running: !!this.proc, visible: this.visible, mode: this.cfg['vr.overlay_mode'] || 'wrist',
             status: this.status + (this.proc && this.inputMsg ? ' · ⚠ Controller-Taste nicht verfügbar (' + this.inputMsg + ')' : '') + (li ? ' · letzte Laser-Eingabe ' + li.t + ' bei ' + li.x + ',' + li.y + ' (' + Math.round((Date.now() - li.at) / 1000) + ' s her)' : this.proc ? ' · noch keine Laser-Eingabe empfangen' : '') };
     }
 
     apply(s) {
         this.cfg = s;
         clearInterval(this.watch);
-        if (!s['vr.overlay']) { this.stop(); this.status = 'aus'; return; }
+        if (!s['vr.overlay'] && !s['vr.space'] && !s['vr.space_autostart']) { this.stop(); this.status = 'aus'; return; }
         if (!fs.existsSync(this.exe)) { this.status = 'NexusOverlay.exe fehlt (nur im Windows-Build enthalten)'; return; }
-        // alle 15 s schauen, ob SteamVR läuft
-        const check = () => this.steamVrRunning().then(on => { if (on && !this.proc) this.start(); if (!on && this.proc) this.stop(); if (!on) this.status = 'wartet auf SteamVR'; });
+        // alle 15 s schauen, ob SteamVR läuft (und für „beim Start von VRChat“: ob VRChat läuft)
+        const check = () => Promise.all([this.steamVrRunning(), s['vr.space_autostart'] ? this.vrchatRunning() : Promise.resolve(false)]).then(([on, vrc]) => {
+            const was = this.wantSpace();
+            this.vrchat = vrc;
+            if (this.proc && this.dash !== !!this.cfg['vr.overlay']) this.stop();          // Overlay an/aus → Helfer mit/ohne Dashboard neu starten
+            if (on && !this.proc && this.wantHelper()) this.start();
+            if (this.proc && (!on || !this.wantHelper())) this.stop();
+            if (!on) this.status = 'wartet auf SteamVR';
+            else if (!this.wantHelper()) this.status = 'wartet auf VRChat';
+            if (this.proc && was !== this.wantSpace()) this.sendSpace();
+        });
         check();
         this.watch = setInterval(check, 15000);
-        if (this.proc) { this.sendLayout(); this.syncHud(); }
+        if (this.proc) { this.sendLayout(); this.syncHud(); this.sendSpace(); }
         if (this.win) this.win.webContents.setFrameRate(Math.max(1, Math.min(30, Number(s['vr.overlay_fps']) || 10)));
+    }
+    vrchatRunning() {
+        if (process.platform !== 'win32') return Promise.resolve(false);
+        return new Promise(r => execFile('tasklist', ['/fi', 'imagename eq VRChat.exe', '/fo', 'csv', '/nh'], { windowsHide: true, timeout: 8000 }, (e, out) => r(!e && /vrchat\.exe/i.test(String(out)))));
     }
     steamVrRunning() {
         if (process.platform !== 'win32') return Promise.resolve(false);
@@ -58,7 +93,9 @@ class VrOverlay {
     start() {
         if (this.proc || this.failures > 5) return;
         this.status = 'startet …';
-        const p = spawn(this.exe, [this.icon], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true, cwd: path.dirname(this.exe) });
+        this.dash = !!this.cfg['vr.overlay'];
+        this.space = null; this.spaceErr = '';
+        const p = spawn(this.exe, this.dash ? [this.icon] : [this.icon, 'nodash'], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true, cwd: path.dirname(this.exe) });
         this.proc = p;
         let buf = '';
         p.stdout.setEncoding('utf8');
@@ -75,7 +112,7 @@ class VrOverlay {
             else this.status = 'SteamVR beendet';
             this.closeWindow();
         });
-        this.openWindow();
+        if (this.dash) this.openWindow();
     }
     stop() {
         if (this.proc) { try { this.cmd({ cmd: 'quit' }); this.proc.stdin.end(); } catch (e) { /* egal */ } const p = this.proc; setTimeout(() => { try { p.kill(); } catch (e) { /* egal */ } }, 1500); this.proc = null; }
@@ -158,12 +195,20 @@ class VrOverlay {
             case 'ready':
                 this.status = 'läuft';
                 this.failures = 0;
+                this.sendSpace();
+                if (!this.dash) break;
                 this.sendLayout();
                 this.syncHud();
                 if (this.cfg['vr.overlay_show'] !== false && (this.cfg['vr.overlay_mode'] || 'wrist') !== 'off') this.cmd({ cmd: 'show' });
                 if (wc) wc.invalidate();
                 break;
             case 'error': this.status = '⚠ ' + m.msg; break;
+            // ---- 3.3 VR-Bewegung ----
+            case 'space': this.space = m; break;
+            case 'space_orig': if (/^[-0-9.,eE]+$/.test(String(m.m || ''))) this.saveSetting('vr.space_orig', String(m.m)); break;   // Ursprung merken (falls der Helfer abstürzt)
+            case 'space_reset': this.space = Object.assign({}, this.space, { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0 }); this.saveSetting('vr.space_orig', ''); break;
+            case 'gravity': this.saveSetting('vr.fly_gravity', m.v ? '1' : '0'); break;
+            case 'space_error': this.spaceErr = String(m.msg || 'Fehler'); break;
             case 'fps': this.fps = { app: Number(m.app) || 0, min: Number(m.min) || 0, at: Date.now() }; break;
             case 'visible': this.visible = !!m.v; break;
             case 'toggled': this.visible = !!m.v; break;
