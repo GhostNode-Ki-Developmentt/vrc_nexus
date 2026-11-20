@@ -2029,6 +2029,48 @@ test('3.0.0: Nexus-Knöpfe (Android) – Seiten, Säubern, Ausführen über Dash
     assert.strictEqual((await app2.post({ act: 'btn_get' }, {})).cfg.pages[0].name, 'Test');
 });
 
+test('3.0.3: Nexus-Knöpfe – alle Stream-Deck-Aktionen über „Nexus-Aktion“ (Handy → Dashboard → PC) + Anzeige-Knöpfe', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { NEXUS_ACTIONS } = require('../backend/dashlink');
+    const { KINDS, FIELDS } = require('../backend/buttons');
+    const db = await openDatabase(null);
+    const phone = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
+    const queue = [];
+    phone.link.remoteSend = async (kind, d) => { queue.push({ id: queue.length + 1, kind, payload: JSON.parse(JSON.stringify(d)) }); return { ok: true }; };
+    phone.link.remoteState = async () => ({ state: { running: true, world_name: 'Popcorn Palace', players: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] } });
+    // alle Plugin-Aktionen haben eine Knopf-Art
+    for (const k of ['param_step', 'rotator', 'launch', 'rejoin', 'pc_open', 'camera', 'macro', 'macro_stop', 'avatar', 'friend', 'overlay', 'speech', 'media', 'quicktext', 'scene', 'record', 'chatmods', 'tts', 'instance_create', 'show_friends', 'show_players', 'show_notifs', 'show_info']) assert.ok(KINDS[k], k);
+    const cfg = { pages: [{ name: 'Deck', buttons: [
+        { kind: 'rotator', on: '' }, { kind: 'media', cmd: 'next' }, { kind: 'camera', cmd: 'Zoom', value: '80' }, { kind: 'quicktext', index: '2' },
+        { kind: 'param_step', name: 'Hue', ptype: 'float', step: '0.1' }, { kind: 'tts', text: 'Hallo {puls}', chatbox: true }, { kind: 'overlay', on: '1' },
+        { kind: 'media', cmd: 'rm -rf' }, { kind: 'show_players' }, { kind: 'show_info', tpl: '{world}: {players}' }, { kind: 'macro', id: 'Böse' },
+    ] }] };
+    let r = await phone.post({ act: 'btn_save', cfg: JSON.stringify(cfg) }, {});
+    const b = r.cfg.pages[0].buttons;
+    assert.strictEqual(b[7].cmd, 'toggle', 'unbekannter Wert → Standard');
+    for (const i of [0, 1, 2, 3, 4, 5, 6, 10]) await phone.post({ act: 'btn_run', id: b[i].id }, {});
+    assert.ok(queue.every(c => c.kind === 'nexus' && NEXUS_ACTIONS.includes(c.payload.action)));
+    assert.deepStrictEqual(queue[0].payload, { action: 'rotator', data: {} }, 'leer = umschalten');
+    assert.deepStrictEqual(queue[2].payload.data, { cmd: 'Zoom', value: '80' });
+    assert.strictEqual(queue[3].payload.data.index, 1, 'Nr. 2 → Index 1');
+    assert.deepStrictEqual(queue[4].payload.data, { name: 'Hue', type: 'float', step: 0.1 });
+    assert.strictEqual(queue[6].payload.data.on, true);
+    // Anzeige-Knöpfe
+    r = await phone.post({ act: 'btn_live', page: r.cfg.pages[0].id }, {});
+    assert.strictEqual(r.values[b[8].id], '3'); assert.strictEqual(r.values[b[9].id], 'Popcorn Palace: 3');
+    assert.strictEqual((await phone.post({ act: 'btn_run', id: b[8].id }, {})).tab, 'remote');
+    // PC holt die Befehle ab und führt sie wie Stream-Deck-Tasten aus
+    const pc = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    const ran = [], acks = [];
+    pc.tools.apiAction = async (a, d) => { ran.push([a, d]); return { ok: true }; };
+    pc.link.req = async (m, path, body) => { if (path === 'osc') return { commands: queue.concat([{ id: 99, kind: 'nexus', payload: { action: 'plugin_update', data: {} } }]) }; if (path === 'osc_ack') acks.push(...body.results); return {}; };
+    await pc.link.pullOsc();
+    assert.deepStrictEqual(ran.map(x => x[0]), ['rotator', 'media', 'camera', 'quicktext', 'param_step', 'tts', 'overlay']);
+    assert.ok(acks.find(a => a.id === 8 && !a.ok && /Makro/.test(a.error)), 'nur am PC angelegte Makros');
+    assert.ok(acks.find(a => a.id === 99 && !a.ok), 'nicht erlaubte Aktion abgelehnt');
+    assert.ok(FIELDS.camera.length === 2);
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

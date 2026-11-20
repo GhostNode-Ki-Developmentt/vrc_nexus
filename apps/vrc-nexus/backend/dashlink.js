@@ -9,6 +9,10 @@
 const { UserError, str, int, now, cut } = require('./util');
 const { UID, VERSION } = require('./vrchat');
 
+/** vom Handy erlaubte Aktionen (wie auf der Webseite, NC_NEXUS_ACTIONS) */
+const NEXUS_ACTIONS = ['toggle', 'param_step', 'preset', 'rotator', 'launch', 'rejoin', 'camera', 'macro', 'macro_stop', 'instance_create', 'avatar', 'friend',
+    'overlay', 'speech', 'media', 'quicktext', 'scene', 'record', 'chatmods', 'tts', 'open'];
+
 class DashLink {
     constructor(app) {
         this.app = app;
@@ -81,6 +85,13 @@ class DashLink {
         for (const c of d.commands || []) {
             try {
                 const p = Object.assign({}, c.payload || {});
+                if (c.kind === 'nexus') {          // Nexus-Knöpfe (Android): dieselben Aktionen wie die Stream-Deck-Tasten
+                    if (!NEXUS_ACTIONS.includes(str(p.action))) throw new Error('Aktion nicht erlaubt.');
+                    // Makros nur, wenn am PC angelegt (kein fremdes Skript über das Dashboard)
+                    if (p.action === 'macro' && !(this.app.macros && this.app.macros.find(str((p.data || {}).id)))) throw new Error('Makro nicht gefunden.');
+                    await this.app.tools.apiAction(str(p.action), Object.assign({}, p.data || {}));
+                    results.push({ id: c.id, ok: true }); this.status.received++; continue;
+                }
                 if (c.kind === 'chatbox' && p.translate && this.app.tr.provider()) p.text = (await this.app.tr.chat(str(p.text), str(p.target))).text;
                 await this.app.game.oscSend(c.kind, Object.assign(p, { sound: p.sound ? '1' : '', split: p.split ? '1' : '' }));
                 results.push({ id: c.id, ok: true });
@@ -118,4 +129,4 @@ class DashLink {
 DashLink.prototype.remoteState = function () { return this.req('GET', 'remote'); };
 DashLink.prototype.remoteSend = function (kind, data) { return this.req('POST', 'send', Object.assign({}, data, { kind })); };
 
-module.exports = { DashLink };
+module.exports = { NEXUS_ACTIONS, DashLink };

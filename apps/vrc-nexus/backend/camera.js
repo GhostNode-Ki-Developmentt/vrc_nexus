@@ -107,4 +107,4 @@ class Camera {
     }
 }
 
-module.exports = { Camera, MODES, SLIDERS, TOGGLES };
+module.exports = { Camera, MODES, SLIDERS, TOGGLES, ACTIONS };

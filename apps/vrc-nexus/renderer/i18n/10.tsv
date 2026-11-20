@@ -849,3 +849,42 @@ NSFW gibt es nur mit „Verified 18+“: VRChat-Altersverifizierung (18+) abgesc
 VRChat ist gerade nicht erreichbar – bitte später noch einmal.	VRChat is unreachable right now – please try again later.	VRChat est injoignable pour le moment – réessaie plus tard.	現在VRChatに接続できません – 後でもう一度お試しください。
 ✖ VRChat meldet keine Altersverifizierung (18+) für dein Konto.	✖ VRChat reports no age verification (18+) for your account.	✖ VRChat ne signale aucune vérification d’âge (18+) pour ton compte.	✖ VRChatはあなたのアカウントの年齢確認（18+）を報告していません。
 Die Webseite hat noch kein VRChat-Konto zum Prüfen des Bio-Codes – im Dashboard unter VRC Nexus ein VRChat-Konto verbinden.	The website has no VRChat account yet to check the bio code – connect a VRChat account in the dashboard under VRC Nexus.	Le site n’a pas encore de compte VRChat pour vérifier le code de bio – connecte un compte VRChat dans le tableau de bord sous VRC Nexus.	サイトにはプロフィールコードを確認するVRChatアカウントがまだありません – ダッシュボードのVRC NexusでVRChatアカウントを接続してください。
+Parameter-Schritt (+/−)	Parameter step (+/−)	Pas de paramètre (+/−)	パラメーター増減 (+/−)
+VRC Nexus öffnen (am PC)	Open VRC Nexus (on the PC)	Ouvrir VRC Nexus (sur le PC)	VRC Nexus を開く（PC）
+Makro	Macro	Macro	マクロ
+Makros stoppen	Stop macros	Arrêter les macros	マクロを停止
+Spracheingabe	Voice input	Saisie vocale	音声入力
+Freunde online (Anzeige)	Friends online (display)	Amis en ligne (affichage)	オンラインのフレンド（表示）
+Anzeige	Display	Affichage	表示
+Spieler in der Instanz (Anzeige)	Players in the instance (display)	Joueurs dans l’instance (affichage)	インスタンスのプレイヤー（表示）
+Benachrichtigungen (Anzeige)	Notifications (display)	Notifications (affichage)	通知（表示）
+Schritt, z. B. 0.1 oder -1	Step, e.g. 0.1 or -1	Pas, p. ex. 0.1 ou -1	増減値（例: 0.1 や -1）
+umschalten	toggle	basculer	切り替え
+Foto mit Selbstauslöser	Photo with self-timer	Photo avec retardateur	セルフタイマー撮影
+Serienbild	Burst	Rafale	連写
+Kamera schließen	Close camera	Fermer la caméra	カメラを閉じる
+Wert (falls nötig)	Value (if needed)	Valeur (si nécessaire)	値（必要な場合）
+Makro-Name (am PC angelegt)	Macro name (created on the PC)	Nom de la macro (créée sur le PC)	マクロ名（PCで作成）
+beitreten oder Einladung anfragen	join or request an invite	rejoindre ou demander une invitation	参加または招待をリクエスト
+in meine Instanz einladen	invite to my instance	inviter dans mon instance	自分のインスタンスに招待
+Selbst-Einladung zu ihm/ihr	self-invite to them	s’auto-inviter chez cette personne	相手のところへセルフ招待
+Aufnahme starten	Start recording	Démarrer l’enregistrement	録音を開始
+Aufnahme stoppen	Stop recording	Arrêter l’enregistrement	録音を停止
+Play/Pause	Play/Pause	Lecture/Pause	再生/一時停止
+Nr. (1 = erster Schnelltext)	No. (1 = first quick text)	N° (1 = premier texte rapide)	番号（1 = 最初のクイックテキスト）
+Schnelltext Nr.	Quick text no.	Texte rapide n°	クイックテキスト番号
+letzten Text erneut senden	send the last text again	renvoyer le dernier texte	最後のテキストを再送信
+Szenen-ID oder Name	Scene ID or name	ID ou nom de la scène	シーンIDまたは名前
+Aufnahme starten/stoppen	Start/stop recording	Démarrer/arrêter l’enregistrement	記録の開始/停止
+Abspielen/stoppen	Play/stop	Lire/arrêter	再生/停止
+Aufnahme (zum Abspielen)	Recording (to play)	Enregistrement (à lire)	記録（再生用）
+Modul (leer = alle), z. B. time, media, status	Module (empty = all), e.g. time, media, status	Module (vide = tous), p. ex. time, media, status	モジュール（空 = すべて）例: time, media, status
+Text, auch mit {Variablen}	Text, {variables} allowed	Texte, {variables} possibles	テキスト（{変数} 使用可）
+wrld_… (leer = aktuelle Welt)	wrld_… (empty = current world)	wrld_… (vide = monde actuel)	wrld_…（空 = 現在のワールド）
+Einladung+	Invite+	Invitation+	招待+
+USA Ost	US East	USA Est	米国東部
+grp_… (nur bei Gruppe)	grp_… (group only)	grp_… (groupe uniquement)	grp_…（グループのみ）
+{world} · {players} Spieler · {time}	{world} · {players} players · {time}	{world} · {players} joueurs · {time}	{world} · {players}人 · {time}
+Freund wählen …	Choose a friend …	Choisir un ami …	フレンドを選択 …
+Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.	Shows the current value and opens the matching section when tapped.	Affiche la valeur actuelle et ouvre la section correspondante d’un toucher.	現在の値を表示し、タップで該当する画面を開きます。
+Variablen: {world} {players} {friends} {notifs} {avatar} {time}	Variables: {world} {players} {friends} {notifs} {avatar} {time}	Variables : {world} {players} {friends} {notifs} {avatar} {time}	変数: {world} {players} {friends} {notifs} {avatar} {time}

@@ -5,13 +5,14 @@
     if (!UI) return;
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
     const T = s => (window.t ? window.t(s) : s);
-    let box = null, d = null, page = 0, edit = false, sel = '';
+    let box = null, d = null, page = 0, edit = false, sel = '', live = {}, liveT = null;
     const TABS = [['home', '🏠 Start'], ['remote', '🎮 PC-Fernbedienung'], ['community', '🫂 Community'], ['notifs', '🔔 Benachrichtigungen'], ['friends', '👥 Freundesliste'], ['locations', '📍 Freunde-Orte'], ['calendar', '📅 Gruppen-Kalender']];
     const cur = () => d.cfg.pages[Math.min(page, d.cfg.pages.length - 1)];
-    const save = (quiet) => api('btn_save', { cfg: JSON.stringify(d.cfg), quiet: quiet ? '1' : '' }).then(r => { d.cfg = r.cfg; if (r.msg) toast(r.msg); render(); }).catch(e => toast('⚠ ' + e.message, true));
+    const save = (quiet) => api('btn_save', { cfg: JSON.stringify(d.cfg), quiet: quiet ? '1' : '' }).then(r => { d.cfg = r.cfg; if (r.msg) toast(r.msg); render(); if (!edit) poll(); }).catch(e => toast('⚠ ' + e.message, true));
 
     function form(b) {
-        const k = d.kinds, opt = (list, v) => list.map(([val, l]) => '<option value="' + esc(val) + '"' + (val === v ? ' selected' : '') + '>' + esc(T(l)) + '</option>').join('');
+        const k = d.kinds, tr = l => { const i = l.indexOf(' · '); return i < 0 ? T(l) : T(l.slice(0, i)) + l.slice(i); };
+        const opt = (list, v) => list.map(([val, l]) => '<option value="' + esc(val) + '"' + (val === v ? ' selected' : '') + '>' + esc(tr(l)) + '</option>').join('');
         let f = '';
         if (b.kind === 'chatbox') f = '<textarea name="text" rows="2" maxlength="500" placeholder="' + esc(T('Text für die Chatbox am PC')) + '">' + esc(b.text || '') + '</textarea>';
         if (b.kind === 'typing') f = '<label class="check"><input type="checkbox" name="on"' + (b.on ? ' checked' : '') + '> ' + esc(T('einschalten (sonst aus)')) + '</label>';
@@ -20,6 +21,15 @@
             + '<select name="ptype">' + opt([['bool', 'Bool'], ['int', 'Int'], ['float', 'Float']], b.ptype) + '</select><input type="text" name="value" placeholder="' + esc(T('Wert')) + '" value="' + esc(b.value || '') + '" style="width:80px"></div>';
         if (b.kind === 'status') f = '<select name="status">' + opt([['join me', '🔵 Join Me'], ['active', '🟢 Online'], ['ask me', '🟠 Ask Me'], ['busy', '🔴 Beschäftigt']], b.status) + '</select><input type="text" name="desc" maxlength="32" placeholder="' + esc(T('Status-Text (optional)')) + '" value="' + esc(b.desc || '') + '">';
         if (b.kind === 'tab') f = '<select name="tab">' + opt(TABS, b.tab) + '</select>';
+        // Stream-Deck-Aktionen: Felder kommen vom Backend (buttons.js FIELDS)
+        for (const [n, t, x] of (d.fields && d.fields[b.kind]) || []) {
+            const v = b[n] === undefined ? '' : b[n];
+            if (t === 'sel') f += '<select name="' + n + '">' + opt(x, String(v)) + '</select>';
+            else if (t === 'check') f += '<label class="check"><input type="checkbox" name="' + n + '"' + (v ? ' checked' : '') + '> ' + esc(T(x)) + '</label>';
+            else if (t === 'friend') f += '<select name="' + n + '"><option value="">' + esc(T('Freund wählen …')) + '</option>' + opt(d.friends || [], String(v)) + '</select>';
+            else f += '<input type="' + (t === 'num' ? 'number' : 'text') + '" step="any" name="' + n + '" placeholder="' + esc(T(x)) + '" value="' + esc(v) + '">';
+        }
+        if (d.kinds[b.kind] && d.kinds[b.kind][2] === 'Anzeige') f += '<p class="nx-hint">' + esc(T('Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.')) + (b.kind === 'show_info' ? ' ' + esc(T('Variablen: {world} {players} {friends} {notifs} {avatar} {time}')) : '') + '</p>';
         return '<form class="nc-card bt-form"><h4>✎ ' + esc(T('Knopf')) + '</h4>'
             + '<div class="nc-row"><input type="text" name="icon" maxlength="4" value="' + esc(b.icon) + '" style="width:64px;text-align:center"><input type="text" name="label" maxlength="30" placeholder="' + esc(T('Beschriftung')) + '" value="' + esc(b.label) + '" style="flex:1"></div>'
             + '<div class="bt-colors">' + d.colors.map(c => '<button type="button" class="bt-c bt-' + (c || 'none') + (c === b.color ? ' on' : '') + '" data-bcol="' + c + '" title="' + esc(c || T('Standard')) + '"></button>').join('') + '</div>'
@@ -39,7 +49,7 @@
                 + '<label class="small">' + esc(T('Spalten')) + ' <select data-bcols="1">' + [2, 3, 4, 5, 6].map(n => '<option' + (n === d.cfg.cols ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></label>'
                 + '<button type="button" class="nc-link" data-breset="1">' + esc(T('Beispiel-Knöpfe')) + '</button></div>' : '')
             + '<div class="bt-grid' + (edit ? ' editing' : '') + '" style="--cols:' + d.cfg.cols + '">' + p.buttons.map(x => '<button type="button" class="bt-key bt-' + (x.color || 'none') + (x.id === sel ? ' sel' : '') + '" data-bid="' + esc(x.id) + '">'
-                + '<span class="bt-ic">' + esc(x.icon) + '</span><span class="bt-l">' + esc(x.label || T(d.kinds[x.kind][1])) + '</span>' + (edit ? '<i>✎</i>' : '') + '</button>').join('')
+                + '<span class="bt-ic">' + esc(x.icon) + '</span>' + (live[x.id] !== undefined ? '<b class="bt-v">' + esc(live[x.id]) + '</b>' : '') + '<span class="bt-l">' + esc(x.label || T(d.kinds[x.kind][1])) + '</span>' + (edit ? '<i>✎</i>' : '') + '</button>').join('')
             + (!p.buttons.length ? '<p class="vx-empty">' + esc(T('Noch keine Knöpfe – „Bearbeiten“ → „＋ Knopf“.')) + '</p>' : '') + '</div>'
             + (edit && b ? form(b) : '')
             + '<p class="vx-small">' + esc(T('PC-Knöpfe laufen über die Dashboard-Verbindung (wie die PC-Fernbedienung) – am PC muss VRC Nexus mit dem Dashboard verbunden sein. Kein Stream Deck nötig.')) + ' · ' + esc(T('Idee von Natsu')) + ' 💡</p>';
@@ -47,12 +57,13 @@
     function readForm(f, b) {
         const v = n => f.elements[n] ? (f.elements[n].type === 'checkbox' ? f.elements[n].checked : f.elements[n].value) : undefined;
         Object.assign(b, { icon: v('icon'), label: v('label'), kind: v('kind') });
-        for (const n of ['text', 'on', 'name', 'mode', 'ptype', 'value', 'status', 'desc', 'tab']) if (v(n) !== undefined) b[n] = v(n);
+        const extra = ((d.fields && d.fields[b.kind]) || []).map(x => x[0]);
+        for (const n of ['text', 'on', 'name', 'mode', 'ptype', 'value', 'status', 'desc', 'tab'].concat(extra)) if (v(n) !== undefined) b[n] = v(n);
     }
     function bind() {
         box.addEventListener('click', e => {
             const t = e.target;
-            const pg = t.closest('[data-bpg]'); if (pg) { page = +pg.dataset.bpg; sel = ''; return render(); }
+            const pg = t.closest('[data-bpg]'); if (pg) { page = +pg.dataset.bpg; sel = ''; live = {}; render(); return poll(); }
             if (t.closest('[data-bedit]')) { edit = !edit; sel = ''; if (!edit) save(true); return render(); }
             const key = t.closest('[data-bid]');
             if (key) {
@@ -80,7 +91,13 @@
             const p = cur(), b = sel && p.buttons.find(x => x.id === sel);
             if (!b) return;
             if (t.matches('[data-bpage]') && t.value !== '') { readForm(t.form, b); p.buttons.splice(p.buttons.indexOf(b), 1); d.cfg.pages[+t.value].buttons.push(b); sel = ''; return save(true); }
-            if (t.name === 'kind') { readForm(t.form, b); return render(); }
+            if (t.name === 'kind') {
+                const old = d.kinds[b.kind] ? d.kinds[b.kind][0] : '';
+                const keep = b.icon && b.icon !== old && b.icon !== '⭐';
+                readForm(t.form, b);
+                if (!keep && d.kinds[b.kind]) b.icon = d.kinds[b.kind][0];     // Symbol passend zur Aktion, solange kein eigenes gewählt ist
+                return render();
+            }
         });
         box.addEventListener('submit', e => {
             e.preventDefault();
@@ -89,13 +106,21 @@
             readForm(e.target, b); sel = ''; document.activeElement.blur(); save(true);
         });
     }
+    /** Anzeige-Knöpfe: Werte alle 15 s holen, solange der Bereich sichtbar ist */
+    function poll() {
+        clearTimeout(liveT);
+        if (!box || !d || !document.body.contains(box) || !box.offsetParent) return;
+        const p = cur();
+        if (p.buttons.some(x => /^show_/.test(x.kind))) api('btn_live', { page: p.id }).then(r => { live = r.values || {}; render(); }).catch(() => {});
+        liveT = setTimeout(poll, 15000);
+    }
     window.NexusButtons = {
         open() {
             const el = document.getElementById('btnBox');
             if (!el) return;
             if (box !== el) { box = el; bind(); }
             if (!d) box.innerHTML = '<div class="vx-loading">' + esc(T('Lade …')) + '</div>';
-            api('btn_get').then(r => { d = r; render(); }).catch(e => { box.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; });
+            api('btn_get').then(r => { d = r; render(); poll(); }).catch(e => { box.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; });
         },
     };
 })();
