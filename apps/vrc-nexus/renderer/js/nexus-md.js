@@ -5,7 +5,8 @@
 (function () {
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const safeUrl = u => /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : '';
-    const link = (href, text) => '<a href="' + href + '" target="_blank" rel="noopener noreferrer nofollow">' + text + '</a>';
+    // Welt-Links (vrchat.com/home/world/wrld_…) öffnen das Welt-Fenster in der App
+    const link = (href, text) => { const w = /vrchat\.com\/home\/world\/(wrld_[0-9a-f-]{36})/i.exec(href); return '<a href="' + href + '" target="_blank" rel="noopener noreferrer nofollow"' + (w ? ' data-world="' + w[1] + '"' : '') + '>' + text + '</a>'; };
     function inline(t) {
         const codes = [];
         t = t.replace(/`([^`\n]+)`/g, (m, c) => { codes.push('<code>' + c + '</code>'); return '\u0000' + (codes.length - 1) + '\u0000'; });

@@ -877,6 +877,67 @@
             + '<div class="js-in">' + ents.map(([kk, x]) => jsonTree(x, arrOf ? undefined : kk, depth + 1)).join('') + '</div><span class="js-p">' + (arrOf ? ']' : '}') + '</span></details>';
     }
 
+    // ======================= 3.2: Welt-Fenster – Community-Funktionen + 🔞 NSFW-Beschreibung =======================
+    const T = s => (window.t ? window.t(s) : s);
+    function worldCommunity(id, name, bar, info, body) {
+        const md = t => (window.NexusMD ? window.NexusMD.render(t) : esc(t));
+        const url = 'https://vrchat.com/home/world/' + id;
+        const row = document.createElement('div');
+        row.className = 'w-comm';
+        info.prepend(row);
+        const draw = (d) => {
+            row.innerHTML = '<span class="w-comm-t">🫂 ' + esc(T('Community')) + '</span>'
+                + '<button type="button" class="btn btn-sm" data-wc="feed">📰 ' + esc(T('Im Feed teilen')) + '</button>'
+                + (d && d.nsfw ? '<button type="button" class="btn btn-sm" data-wc="nsfw">🔞 ' + esc(T('Im NSFW-Feed teilen')) + '</button>' : '')
+                + (!MOBILE ? '<button type="button" class="btn btn-sm" data-wc="chat">💬 ' + esc(T('Per Chat senden')) + '</button>' : '')
+                + '<button type="button" class="btn btn-sm" data-wc="link">🔗 ' + esc(T('Link kopieren')) + '</button>';
+        };
+        draw(null);
+        const share = rating => {
+            const note = prompt(T('Kommentar zum Teilen (optional, Markdown möglich):'), '');
+            if (note === null) return;
+            api('comm_post', { text: (note.trim() ? note.trim() + '\n\n' : '') + '🌍 **' + name + '**\n' + url, rating }).then(() => toast(T('Geteilt.'))).catch(e => toast('⚠ ' + e.message, true));
+        };
+        row.addEventListener('click', e => {
+            const b = e.target.closest('[data-wc]'); if (!b) return;
+            const k = b.dataset.wc;
+            if (k === 'link') return UI.copy(url);
+            if (k === 'feed' || k === 'nsfw') return share(k === 'nsfw' ? 'nsfw' : 'sfw');
+            if (k === 'chat') return api('chat_list').then(d => {
+                const list = (d.chats || d.convs || d.items || []).slice(0, 15);
+                if (!list.length) return toast(T('Noch keine Chats – zuerst unter Community → Chat einen Chat beginnen.'), true);
+                UI.popMenu(b, [{ head: T('Senden an …') }].concat(list.map(c => ({ label: '💬 ' + (c.name || c.uid), fn: () => api('chat_send', { uid: c.uid, text: '🌍 **' + name + '**\n' + url }).then(() => toast(T('Gesendet.'))).catch(x => toast('⚠ ' + x.message, true)) }))));
+            }).catch(x => toast('⚠ ' + x.message, true));
+        });
+        // NSFW-Beschreibungen: Reiter nur für Verified 18+ mit NSFW an (prüft die Webseite)
+        api('comm_world', { world: id }).then(d => {
+            draw(d);
+            if (!d.nsfw || !document.contains(bar)) return;
+            const tb = document.createElement('button');
+            tb.type = 'button'; tb.dataset.et = 'nsfwdesc'; tb.className = 'u-tab18'; tb.textContent = '🔞 ' + T('NSFW-Beschreibung') + (d.count ? ' (' + d.count + ')' : '');
+            bar.querySelector('[data-et="info"]').after(tb);
+            const pane = document.createElement('div');
+            pane.className = 'u-pane w-nsfw'; pane.dataset.up = 'nsfwdesc'; pane.hidden = true;
+            body.append(pane);
+            const paint = x => {
+                const mine = (x.notes || []).find(n => n.own);
+                pane.innerHTML = '<p class="nx-hint">' + esc(T('Beschreibungen der Community für Erwachsene (nur sichtbar für Verified 18+ mit NSFW an). Markdown möglich.')) + '</p>'
+                    + (x.notes || []).map(n => '<div class="nc-card w-note"><div class="small muted"><a href="#" data-user="' + esc(n.author) + '">' + esc(n.name || n.author) + '</a> · ' + esc(new Date(n.updated * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) + '</div><div class="md">' + md(n.text) + '</div></div>').join('')
+                    + '<form class="nc-card w-note-form"><h4>✎ ' + esc(T(mine ? 'Meine Beschreibung bearbeiten' : 'Eigene Beschreibung schreiben')) + '</h4><textarea name="text" rows="4" maxlength="2000">' + esc(mine ? mine.text : '') + '</textarea>'
+                    + '<div class="nc-row"><button class="btn btn-sm btn-gold">' + esc(T('Speichern')) + '</button>' + (mine ? '<button type="button" class="btn btn-sm btn-danger" data-wdel="1">🗑 ' + esc(T('Löschen')) + '</button>' : '') + '</div></form>';
+            };
+            paint(d);
+            const save = text => api('comm_world_note', { world: id, text }).then(x => { paint(x); toast(x.msg || T('Gespeichert.')); tb.textContent = '🔞 ' + T('NSFW-Beschreibung') + (x.count ? ' (' + x.count + ')' : ''); }).catch(er => toast('⚠ ' + er.message, true));
+            pane.addEventListener('submit', e => { e.preventDefault(); save(e.target.text.value); });
+            pane.addEventListener('click', e => { if (e.target.closest('[data-wdel]') && confirm(T('Eigene Beschreibung löschen?'))) save(''); });
+            bar.addEventListener('click', e => {
+                const b = e.target.closest('[data-et]'); if (!b) return;
+                pane.hidden = b.dataset.et !== 'nsfwdesc';
+                if (b.dataset.et === 'nsfwdesc') { $$('[data-et]', bar).forEach(x => x.classList.toggle('on', x === b)); $$('.u-pane', body).forEach(p => { if (p !== pane) p.hidden = true; }); }
+            });
+        }).catch(() => { /* kein Nexus-Konto: nur Teilen-Knöpfe ohne Konto-Funktionen */ });
+    }
+
     // ======================= Welt- & Avatar-Fenster: Reiter „Info“ und „JSON“ =======================
     function entityTabs(kind, id, name) {
         const body = $('#userBody'), head = body.querySelector('.vx-w-head');
@@ -890,6 +951,7 @@
         bar.className = 'u-tabs';
         bar.innerHTML = '<button type="button" data-et="info" class="on">Info</button><button type="button" data-et="json">JSON</button>';
         body.append(bar, info, json);
+        if (kind === 'world') worldCommunity(id, name, bar, info, body);
         const load = () => {
             loading(json);
             api('tools_raw_json', { kind, id }).then(d => {

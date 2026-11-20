@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.2.0",
+  "title": "NSFW world descriptions",
+  "body": "- 🔞 **NSFW world descriptions:** in the world window there is a new “🔞 NSFW description” tab next to “Info”. Verified 18+ people with NSFW on can write their own description of a world (Markdown allowed) and read the others'; everyone else only sees that descriptions exist – the website enforces this. Moderators can remove descriptions.\n- 🔞 **Share in the NSFW feed** directly from the world window."
+ },
+ {
   "version": "3.1.2",
   "title": "NSFW overhaul completed",
   "body": "- 🔒 **Toy remote via the GhostNode website now checked on the server:** sending and receiving through the website relay needs your Nexus account with Verified 18+ and NSFW switched on, and you can only read your own mailbox. Your own relay address keeps working as before (your account token is never sent there).\n- 👁 **Who can see your 18+ profile:** everyone with Verified 18+ and NSFW on (default) or only you."

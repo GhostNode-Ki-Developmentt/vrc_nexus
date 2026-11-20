@@ -22,6 +22,18 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.0 – One Community area, chat-style feed, Markdown
+
+- 🫂 **Community and Social merged:** one menu area with Feed, Chat, My profile, Friend list, Friend log, Groups and Blocked & muted; the NSFW switch sits in the same bar. Warn list and the group mod centre moved to **Tools**.
+- 👤 **My profile shows everything:** tabs for your Community profile, **Status & VRChat** (status, VRChat bio/pronouns/links, notifications – formerly "Account & status") and your 18+ profile. "Me" in the friends bar opens it.
+- ⚙ **Connection & data** (connected as, sync info, CSV exports, shortcuts) moved to Settings → System; the extra log-out button there is gone (log out via the power button at the top).
+- 💬 **Feed as a chat:** oldest at the top, newest at the bottom, input at the bottom, your own posts on the right, refreshes every 10 seconds.
+- ✍ **Markdown in feed and chat:** **bold**, *italic*, ~~strike~~, `code`, code blocks, quotes, lists, headings, links and ||spoilers|| – safe, no HTML.
+- 🌍 **World window – Community:** share a world in the feed (with a comment), send it to a chat partner or copy the link; shared world links open the world right in the app.
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+- 🖼 **Profile pictures:** missing pictures are now taken from VRChat's presence data or the last known picture instead of showing the placeholder.
+- 🎚 **Slim scrollbars:** thin and subtle everywhere, only a fine line in the side bars; the coloured bar is gone.
+
 ### New in 3.1.3 – Title bar in the app design
 
 - 🪟 **Windows title bar in the app design:** the grey Windows title bar is gone – VRC Nexus draws its own (logo, name, current page) in the colours of your theme, and the minimise / maximise / close buttons take on the theme colours too (snap layouts keep working).
