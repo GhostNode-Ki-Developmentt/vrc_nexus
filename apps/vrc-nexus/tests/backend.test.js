@@ -1873,6 +1873,46 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     delete process.env.NEXUS_ACCT_BASE;
 });
 
+test('3.0.0: Community – App reicht nur mit Konto-Token durch, Mod-Schlüssel nur für Moderatoren, Bilder über cimg, NSFW-Feed gesperrt ohne Freigabe', async () => {
+    const http = require('http');
+    const { NexusApp } = require('../backend/app');
+    const ME = 'usr_00000000-0000-4000-8000-0000000000cc';
+    const seen = [];
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    const srv = http.createServer((req, res) => { let b = ''; req.on('data', c => { b += c; }); req.on('end', () => {
+        const a = new URL(req.url, 'http://x').searchParams.get('a'), j = JSON.parse(b || '{}');
+        seen.push([a, j]);
+        if (a === 'media') { res.writeHead(j.id === 'a'.repeat(24) ? 200 : 400, { 'Content-Type': j.id === 'a'.repeat(24) ? 'image/png' : 'application/json' }); return res.end(j.id === 'a'.repeat(24) ? png : '{"error":"x"}'); }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(a === 'upload' ? { id: 'b'.repeat(24), status: j.rating === 'nsfw' ? 'pending' : 'ok' } : { items: [], ok: true }));
+    }); });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_COMM_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    app.vrc.account = () => ({ vrc_id: ME, me: {} });
+    const post = (act, d, f) => app.post(Object.assign({ act }, d || {}), f || {});
+    await assert.rejects(post('comm_feed', { rating: 'sfw' }), /Nexus-Konto/);
+    grant18(app, false);
+    await post('comm_feed', { rating: 'sfw' });
+    assert.strictEqual(seen[0][1].token, 'a'.repeat(64)); assert.strictEqual(seen[0][1].key, '', 'kein Mod-Schlüssel ohne Rolle');
+    await assert.rejects(post('comm_feed', { rating: 'nsfw' }), /NSFW/);
+    await post('comm_post', { text: 'hi', media: ['x', 'y'], parent: '0' });
+    assert.deepStrictEqual(seen[seen.length - 1][1].media, ['x', 'y']);
+    const r = await post('comm_upload', { rating: 'sfw' }, { file: { buffer: png, name: 't.png' } });
+    assert.strictEqual(r.id, 'b'.repeat(24)); assert.strictEqual(seen[seen.length - 1][1].data, png.toString('base64'));
+    let img = await app.handle({ method: 'GET', query: new URLSearchParams('cimg=' + 'a'.repeat(24)) });
+    assert.strictEqual(img.status, 200); assert.strictEqual(img.headers['Content-Type'], 'image/png');
+    img = await app.handle({ method: 'GET', query: new URLSearchParams('cimg=' + 'c'.repeat(24)) });
+    assert.strictEqual(img.status, 404);
+    img = await app.handle({ method: 'GET', query: new URLSearchParams('cimg=../../etc') });
+    assert.strictEqual(img.status, 404);
+    await assert.rejects(post('comm_hack'), /Unbekannte/);
+    app.tools.stop(); srv.close();
+    delete process.env.NEXUS_COMM_BASE;
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

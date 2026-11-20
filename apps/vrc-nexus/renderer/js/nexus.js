@@ -177,6 +177,7 @@
         if (name === 'global') loadGlobal();
         if (name === 'moderation') loadModeration();
         if (name === 'warn' && window.NexusWarn) window.NexusWarn.open();
+        if (name === 'community' && window.NexusCommunity) window.NexusCommunity.open(sub);
         if (name === 'calendar') loadCalendar(false);
         if (name === 'gallery' && !loaded.gallery) loadGallery(false);
         if (name === 'client' && window.NexusClient) window.NexusClient.open();
@@ -192,7 +193,7 @@
         syncSubNav(name);
     }
     // ---------- Unterpunkte oben (bei Menü links): Gruppen-Einträge oder die eigenen Reiter der Seite ----------
-    const SUBNAV = { client: '#ncSub', notifs: '#nfView' };   // Seiten mit eigenen Unterreitern
+    const SUBNAV = { client: '#ncSub', notifs: '#nfView', community: '#cmtSub' };   // Seiten mit eigenen Unterreitern
     const subHomes = new Map();                                // verschobenes Element → ursprünglicher Platz
     function syncSubNav(name) {
         const bar = $('#subNav');

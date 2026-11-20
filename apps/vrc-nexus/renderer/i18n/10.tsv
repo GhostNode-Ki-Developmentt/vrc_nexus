@@ -750,3 +750,46 @@ Erst das Nexus-Konto verbinden.	Connect the Nexus account first.	Connecte d’ab
 Absender hat keine NSFW-Freigabe (Verified 18+).	Sender has no NSFW clearance (Verified 18+).	L’expéditeur n’a pas d’accès NSFW (Verified 18+).	送信者にNSFW許可（Verified 18+）がありません。
 🔞 „Verified 18+“ ist abgelaufen	🔞 “Verified 18+” has expired	🔞 « Verified 18+ » a expiré	🔞「Verified 18+」の期限が切れました
 VRChat zeigt keinen sichtbaren 18+-Status mehr. NSFW ist gesperrt – Status in VRChat sichtbar machen und „18+ neu prüfen“.	VRChat no longer shows a visible 18+ status. NSFW is locked – make the status visible in VRChat and press “Re-check 18+”.	VRChat n’affiche plus de statut 18+ visible. Le NSFW est verrouillé – rends le statut visible dans VRChat puis « Revérifier 18+ ».	VRChatで18+ステータスが表示されなくなりました。NSFWはロック中です – VRChatで表示してから「18+を再確認」を押してください。
+18+-Profilteil (nur für Verified 18+ mit NSFW an sichtbar)	18+ profile section (only visible to Verified 18+ with NSFW on)	Section 18+ du profil (visible seulement pour Verified 18+ avec NSFW activé)	18+プロフィール欄（NSFWオンのVerified 18+のみ表示）
+Als NSFW umstufen	Reclassify as NSFW	Reclasser en NSFW	NSFWに再分類
+Ausblenden	Hide	Masquer	非表示
+Banner	Banner	Bannière	バナー
+Beitrag bearbeiten	Edit post	Modifier la publication	投稿を編集
+Beitrag löschen?	Delete post?	Supprimer la publication ?	投稿を削除しますか？
+Bild hochgeladen – „Speichern“ nicht vergessen.	Image uploaded – don’t forget to “Save”.	Image envoyée – n’oublie pas « Enregistrer ».	画像をアップロードしました – 「保存」を忘れずに。
+Feed	Feed	Fil	フィード
+Freigeben	Approve	Approuver	承認
+Getrennter NSFW-Feed – nur für Verified 18+ mit eingeschaltetem NSFW. Nichts davon erscheint in der normalen Timeline.	Separate NSFW feed – only for Verified 18+ with NSFW turned on. None of it appears in the normal timeline.	Fil NSFW séparé – seulement pour Verified 18+ avec NSFW activé. Rien n’apparaît dans la timeline normale.	独立したNSFWフィード – NSFWオンのVerified 18+専用。通常のタイムラインには表示されません。
+Interessen (mit Komma)	Interests (comma-separated)	Centres d’intérêt (séparés par des virgules)	興味（カンマ区切り）
+Keine offenen Meldungen.	No open reports.	Aucun signalement ouvert.	未処理の報告はありません。
+Links (https://…, mit Komma)	Links (https://…, comma-separated)	Liens (https://…, séparés par des virgules)	リンク（https://…、カンマ区切り）
+Melden	Report	Signaler	報告
+NSFW-Bilder erscheinen nach Prüfung durch einen Moderator.	NSFW images appear after review by a moderator.	Les images NSFW apparaissent après vérification par un modérateur.	NSFW画像はモデレーターの確認後に表示されます。
+NSFW-Bilder zur Freigabe	NSFW images to review	Images NSFW à vérifier	確認待ちのNSFW画像
+NSFW-Feed	NSFW feed	Fil NSFW	NSFWフィード
+Nichts zu prüfen.	Nothing to review.	Rien à vérifier.	確認するものはありません。
+Noch keine Beiträge.	No posts yet.	Pas encore de publications.	まだ投稿はありません。
+Notiz für das Protokoll (optional)	Note for the log (optional)	Note pour le journal (facultatif)	ログ用メモ（任意）
+Profil bearbeiten	Edit profile	Modifier le profil	プロフィールを編集
+Profilbild	Profile picture	Photo de profil	プロフィール画像
+Sanktionen	Sanctions	Sanctions	制裁
+Sperren	Ban	Bannir	禁止
+Sprachen	Languages	Langues	言語
+Wartende Beiträge	Pending posts	Publications en attente	承認待ちの投稿
+Warum meldest du diesen Beitrag?	Why are you reporting this post?	Pourquoi signales-tu cette publication ?	この投稿を報告する理由は？
+ausgeblendet	hidden	masqué	非表示
+bearbeitet	edited	modifié	編集済み
+gesperrt	banned	banni	禁止中
+wartet auf Freigabe	awaiting approval	en attente d’approbation	承認待ち
+Über mich	About me	À propos de moi	自己紹介
+Antworten	Reply	Répondre	返信
+Posten	Post	Publier	投稿
+Antworten …	Reply …	Répondre …	返信 …
+Etwas für den NSFW-Feed …	Something for the NSFW feed …	Quelque chose pour le fil NSFW …	NSFWフィードに投稿 …
+Was gibt’s Neues?	What’s new?	Quoi de neuf ?	最近どう？
+Du bist in der Community gesperrt.	You are banned from the community.	Tu es banni·e de la communauté.	コミュニティから禁止されています。
+Du bist gerade stummgeschaltet.	You are currently muted.	Tu es actuellement en sourdine.	現在ミュートされています。
+Konto in der Community sperren?	Ban this account from the community?	Bannir ce compte de la communauté ?	このアカウントをコミュニティから禁止しますか？
+Gepostet.	Posted.	Publié.	投稿しました。
+Gepostet – das NSFW-Bild wird vor dem Erscheinen von einem Moderator geprüft.	Posted – the NSFW image will be reviewed by a moderator before it appears.	Publié – l’image NSFW sera vérifiée par un modérateur avant d’apparaître.	投稿しました – NSFW画像は表示前にモデレーターが確認します。
+Für die Community erst das Nexus-Konto verbinden (Einstellungen → Erweitert).	To use the community, connect your Nexus account first (Settings → Advanced).	Pour la communauté, connecte d’abord ton compte Nexus (Paramètres → Avancé).	コミュニティを使うには、先にNexusアカウントを接続してください（設定 → 詳細）。

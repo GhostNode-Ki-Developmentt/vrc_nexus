@@ -64,6 +64,7 @@ class NexusApp {
         this.backup = new CloudBackup(this, opts.crypt);
         this.account = new (require('./account').Account)(this, opts.crypt);
         this.warn = new (require('./warnlist').WarnList)(this);
+        this.comm = new (require('./community').Community)(this);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
@@ -95,6 +96,7 @@ class NexusApp {
             if (q.has('bgimg')) { const b = this.db.setting('ui_bg_file', ''); const m = /^data:(image\/(png|jpeg|gif|webp));base64,(.+)$/.exec(b);
                 return m ? { status: 200, headers: { 'Content-Type': m[1], 'Cache-Control': 'private, max-age=31536000' }, body: Buffer.from(m[3], 'base64') } : { status: 404, headers: {}, body: '' }; }
             if (q.has('img')) return await this.image(q.get('img'), int(q.get('v')) || 1, int(q.get('s')));
+            if (q.has('cimg')) return await this.comm.image(q.get('cimg'));
             if (q.has('export')) return download(this.vrc.exportCsv(q.get('export') === 'feed' ? 'feed' : 'friends'), 'text/csv; charset=utf-8', 'vrc-nexus_' + (q.get('export') === 'feed' ? 'verlauf' : 'freunde') + '_' + new Date().toISOString().slice(0, 10) + '.csv');
             if (q.has('client_export')) return download(this.game.exportCsv(), 'text/csv; charset=utf-8', 'vrchat-spiellog_' + new Date().toISOString().slice(0, 10) + '.csv');
             if (q.has('shot')) { const r = await this.tools.shotImage(q.get('shot'), q.get('t') === '1'); return { status: 200, headers: { 'Content-Type': r.type, 'Cache-Control': 'private, max-age=3600' }, body: r.body }; }
@@ -193,6 +195,7 @@ class NexusApp {
             if (act === 'about_supporters') return await this.liveSupporters();
             if (act.startsWith('tts_')) { if (!this.tts) throw new UserError('Die Sprachausgabe gibt es nur in der Windows-App.'); return await this.tts.action(act, input); }
             if (act.startsWith('acct_')) return await this.account.action(act, input);
+            if (act.startsWith('comm_')) return await this.comm.action(act, input, files);
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }
