@@ -13,7 +13,7 @@
         return card('🔑 Freischalt-Schlüssel', (st.owner_key ? '<p class="small">Öffentlicher Schlüssel ' + (st.key_known ? '✔ in der App hinterlegt' : '⚠ noch <b>nicht</b> in der App hinterlegt – an Claude schicken, damit andere Apps deine Schlüssel prüfen können.') + '</p><div class="nc-row"><code class="ns-url">' + esc(st.owner_key) + '</code><button type="button" class="vx-copy" data-copy="' + esc(st.owner_key) + '">⧉</button></div>'
             : '<p class="small">Noch kein Schlüsselpaar.</p><button type="button" class="btn btn-sm btn-gold" data-ad="keypair">🔑 Schlüsselpaar erzeugen</button>')
             + (st.owner_key ? '<form class="ns-issue" id="adIssue"><input name="uid" placeholder="VRChat-User-ID (usr_…) oder Profil-Link" required><input name="name" placeholder="Name (optional)"><select name="days"><option value="30">30 Tage</option><option value="90">90 Tage</option><option value="365" selected>1 Jahr</option><option value="0">unbegrenzt</option></select>'
-                + '<label class="check small"><input type="checkbox" name="f_toys" checked> Spielzeug</label><label class="check small"><input type="checkbox" name="f_remote" checked> Handy</label><input name="note" placeholder="Notiz (z. B. Discord-Name)"><button class="btn btn-sm btn-gold">＋ Schlüssel erzeugen</button></form>'
+                + '<label class="check small"><input type="checkbox" name="f_nsfw" checked> 🔞 NSFW</label><label class="check small"><input type="checkbox" name="f_toys" checked> Spielzeug</label><label class="check small"><input type="checkbox" name="f_remote" checked> Handy</label><label class="check small" title="Moderator: verwaltet die Warnliste (später auch Community &amp; Chat) – kein NSFW, keine Besitzer-Rechte"><input type="checkbox" name="f_mod"> 🛡 Moderator</label><input name="note" placeholder="Notiz (z. B. Discord-Name)"><button class="btn btn-sm btn-gold">＋ Schlüssel erzeugen</button></form>'
                 + (lastToken ? '<div class="ns-newtok"><b>Neuer Schlüssel</b> – nur für diese Person, an ihre User-ID gebunden (schon kopiert):<div class="nc-row"><code class="ns-url">' + esc(lastToken) + '</code><button type="button" class="vx-copy" data-copy="' + esc(lastToken) + '">⧉</button></div></div>' : '')
                 + '<table class="nx-list ns-keys"><thead><tr><th>Name</th><th>User-ID</th><th>Rechte</th><th>Bis</th><th></th></tr></thead><tbody>' + (items.length ? items.map(k => '<tr class="' + (k.revoked ? 'ns-rev' : '') + '"><td>' + esc(k.name || '–') + (k.note ? '<br><small class="muted">' + esc(k.note) + '</small>' : '') + '</td><td><code class="small">' + esc(k.uid) + '</code></td><td class="small">' + esc(k.f.join(', ')) + '</td>'
                     + '<td class="small">' + (k.exp ? esc(new Date(k.exp * 1000).toLocaleDateString(loc())) : '∞') + '</td><td><button type="button" class="btn btn-sm ' + (k.revoked ? '' : 'btn-danger') + '" data-ad="revoke" data-id="' + esc(k.id) + '" data-on="' + (k.revoked ? '0' : '1') + '">' + (k.revoked ? 'entsperren' : 'sperren') + '</button></td></tr>').join('') : '<tr><td colspan="5" class="muted small">Noch keine Schlüssel.</td></tr>') + '</tbody></table>'
@@ -24,6 +24,7 @@
         if (box.contains(document.activeElement) && document.activeElement.matches('input, textarea')) return;
         const s = sys;
         box.innerHTML = '<div class="nc-grid">' + keysCard()
+            + (window.NexusWarn ? card('⚠ Warnliste (GhostNode)', '<div id="adWarn"></div>', 'ad-wide') : '')
             + card('🧪 Ereignis simulieren', '<p class="muted small">Testet Benachrichtigungen, Automatik und Warnungen, ohne dass jemand wirklich kommt.</p><div class="nc-row"><input type="text" id="adSimName" placeholder="Name" value="Testspieler" style="flex:1"></div>'
                 + '<div class="nc-row"><button type="button" class="btn btn-sm" data-ad="sim" data-k="player_join">👋 Spieler kommt</button><button type="button" class="btn btn-sm" data-ad="sim" data-k="player_leave">🚪 Spieler geht</button><button type="button" class="btn btn-sm" data-ad="sim" data-k="video">📺 Video startet</button></div>')
             + card('✨ Spielereien', '<p class="muted small">In die Chatbox:</p><div class="nc-row ad-fun"><button type="button" class="btn btn-sm" data-ad="fun" data-k="crown">👑 Admin da</button><button type="button" class="btn btn-sm" data-ad="fun" data-k="hearts">💖 Herz-Animation</button><button type="button" class="btn btn-sm" data-ad="fun" data-k="countdown">3️⃣2️⃣1️⃣ Countdown</button>'
@@ -36,6 +37,7 @@
             + card('🔍 API-Konsole (nur lesen)', '<form class="nc-row" id="adApi"><input type="text" name="path" placeholder="/auth/user  ·  /worlds/wrld_…  ·  /users/usr_…" style="flex:1" value="/auth/user"><button class="btn btn-sm btn-gold">GET</button></form>'
                 + '<div class="nc-row"><button type="button" class="btn btn-sm" data-ad="apicopy"' + (apiOut ? '' : ' disabled') + '>⧉ Antwort kopieren</button></div><pre class="ad-log" id="adApiOut">' + esc(apiOut || 'Antwort erscheint hier.') + '</pre>', 'ad-wide')
             + '</div>';
+        if (window.NexusWarn) window.NexusWarn.admin(box.querySelector('#adWarn'));
     }
     function load() {
         return Promise.all([api('nsfw_state').then(d => { st = d; }), api('admin_sys').then(d => { sys = d; })]).then(render).catch(x => { box.innerHTML = '<div class="vx-error">⚠ ' + esc(x.message) + '</div>'; });
@@ -85,7 +87,8 @@
     function onSubmit(e) {
         if (e.target.id === 'adIssue') {
             e.preventDefault();
-            const f = e.target, feats = ['nsfw'].concat(f.f_toys.checked ? ['toys'] : [], f.f_remote.checked ? ['remote'] : []);
+            const f = e.target, feats = [].concat(f.f_nsfw.checked ? ['nsfw'] : [], f.f_toys.checked ? ['toys'] : [], f.f_remote.checked ? ['remote'] : [], f.f_mod.checked ? ['mod'] : []);
+            if (!feats.length) return toast('Mindestens ein Recht wählen.', true);
             api('nsfw_admin_issue', { uid: f.uid.value, name: f.name.value, days: f.days.value, note: f.note.value, features: feats.join(',') })
                 .then(d => { lastToken = d.token; st.issued = d.items; toast(d.msg); document.activeElement.blur(); render(); UI.copy(d.token); }).catch(x => toast(x.message, true));
         }

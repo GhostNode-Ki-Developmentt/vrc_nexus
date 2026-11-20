@@ -162,7 +162,7 @@
     const TR = ['VRChat-Team', 'Trusted User', 'Known User', 'User', 'New User', 'Visitor', 'Nuisance', '?'];
     function loadPlayers() { return api('tools_players').then(d => { plData = d; renderPlayers(); }).catch(fail($('#plBox'))); }
     function plRow(p, left) {
-        return '<tr class="' + (left ? 'pl-left' : '') + '" data-user="' + esc(p.id) + '">'
+        return '<tr class="' + (left ? 'pl-left' : '') + (p.icons.some(i => i[0] === 'warn') ? ' pl-warn' : '') + '" data-user="' + esc(p.id) + '">'
             + '<td class="pl-av">' + img(p.image, 'vx-av', '') + '</td>'
             + '<td title="' + esc(left ? 'gegangen ' + t2(p.left) : 'seit ' + t2(p.since)) + '">' + (left ? '⬅ ' + t2(p.left) : esc(UI.dur(p.since))) + '</td>'
             + '<td><span class="pl-name" style="color:' + esc(UI.tcol(p)) + '">' + esc(p.name) + '</span>' + (p.pronouns ? ' <span class="vx-pron">' + esc(p.pronouns) + '</span>' : '') + (!p.id ? ' <span class="vx-small">(ohne ID)</span>' : '') + '</td>'

@@ -176,6 +176,7 @@
         if (name === 'shop' && !loaded.shop) loadShop();
         if (name === 'global') loadGlobal();
         if (name === 'moderation') loadModeration();
+        if (name === 'warn' && window.NexusWarn) window.NexusWarn.open();
         if (name === 'calendar') loadCalendar(false);
         if (name === 'gallery' && !loaded.gallery) loadGallery(false);
         if (name === 'client' && window.NexusClient) window.NexusClient.open();
@@ -469,7 +470,7 @@
         let h = '<div class="vx-u-head">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
             + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + (u.pronouns ? ' · ' + esc(u.pronouns) : '') + '</div>'
             + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill" title="Entwicklerin von VRC Nexus">👑 Nexus Admin</span>' : '') + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
-            + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';
+            + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (window.NexusWarn ? window.NexusWarn.pill(u.warn) : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';
         if (l.kind === 'world') {
             h += '<div class="vx-u-loc">' + img(w.thumb, 'vx-u-world', '') + '<div><b><a href="#" data-world="' + esc(l.world) + '">' + esc((w.name) || 'Unbekannte Welt') + '</a></b><small>' + esc(l.label) + (w.author ? ' · von ' + esc(w.author) : '') + (w.capacity ? ' · max. ' + w.capacity : '') + '</small><span class="vx-u-btns">'
                 + (joinable(l) ? '<a class="btn btn-sm btn-gold" href="' + esc(launch(l.location)) + '">▶ Beitreten (Spiel)</a><button type="button" class="btn btn-sm" data-act="invite_self" data-loc="' + esc(l.location) + '">📨 Selbst-Einladung</button>' : '')
@@ -503,7 +504,7 @@
             + '<label class="field">Eigene Listen (mit Komma trennen)</label><input type="text" name="lists" maxlength="200" value="' + esc(u.lists || '') + '" placeholder="z. B. Stammtisch, Discord, EF-Gruppe" list="listNames">'
             + '<datalist id="listNames">' + [...new Set(state.friends.flatMap(f => f.lists || []))].map(n => '<option value="' + esc(n) + '">').join('') + '</datalist>'
             + '<label class="vx-auto"><input type="checkbox" name="remote" value="1"> auch als VRChat-Notiz speichern (max. 256 Zeichen)</label><button class="btn btn-sm btn-gold">Speichern</button></form>'
-            + '<h4>Verlauf</h4><div class="vx-u-feed" id="uFeed">Lade …</div></div></div>';
+            + '<h4>Verlauf</h4><div class="vx-u-feed" id="uFeed">Lade …</div>' + (window.NexusWarn ? '<div id="uWarn"></div>' : '') + '</div></div>';
         h += '<div class="vx-u-actions"><a class="btn btn-sm" href="https://vrchat.com/home/user/' + encodeURIComponent(u.id) + '" target="_blank" rel="noopener noreferrer">↗ vrchat.com</a>'
             + (myLoc && u.is_friend ? '<button type="button" class="btn btn-sm btn-gold" data-act="invite" title="In deine aktuelle Instanz einladen">📨 Zu mir einladen</button>' : '')
             + '<button type="button" class="btn btn-sm" data-mod="mute">🔇 Stummschalten</button><button type="button" class="btn btn-sm" data-mod="hideAvatar">🙈 Avatar ausblenden</button><button type="button" class="btn btn-sm btn-danger" data-mod="block">⛔ Blockieren</button>'
@@ -511,6 +512,7 @@
         const body = $('#userBody');
         body.innerHTML = h;
         favPicker('friend', u.id, { name: u.name, image: u.image, sub: u.status_desc || '' }, u.is_friend);
+        if (window.NexusWarn && $('#uWarn')) window.NexusWarn.profile($('#uWarn'), u);
         body.querySelector('.vx-note-form').addEventListener('submit', e => {
             e.preventDefault();
             const f = e.target;

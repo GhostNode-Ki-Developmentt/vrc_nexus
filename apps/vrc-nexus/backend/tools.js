@@ -648,6 +648,8 @@ class Tools {
         const n = notes.get(p.id) || {};
         const langs = tags.filter(t => t.startsWith('language_')).map(t => LANG[t.slice(9)] || t.slice(9));
         const icons = [];
+        const wl = p.id && this.app.warn ? this.app.warn.badges()[p.id.toLowerCase()] : null;
+        if (wl) icons.push(['warn', '⚠', 'Warnliste: ' + wl.label + ' (' + wl.count + ' Meldungen)']);
         if (p.id === meId) icons.push(['me', '🫵', 'Du']);
         if (p.id && p.id === ownerId) icons.push(['owner', '👑', 'Instanz-Besitzer']);
         if (f) icons.push(['friend', '🤝', 'Freund']);
@@ -1092,6 +1094,7 @@ class Tools {
             quick: this.app.osctools ? (() => { const c = this.app.osctools.cbx(); return { list: c.quick.map(q => ({ id: q.id, name: q.label || q.text.slice(0, 24) })), last: c.hist[0] ? c.hist[0].text.slice(0, 40) : '' }; })() : null,
             scenes: this.app.osctools ? this.app.osctools.scenes().map(x => ({ id: x.id, name: x.name })) : [],
             recs: this.app.osctools ? (() => { const t = this.app.osctools.status(); return { list: t.recs.map(r => ({ id: r.id, name: r.name, dur: r.dur })), recording: t.recording, playing: t.playing }; })() : null,
+            warn: this.app.warn ? (() => { const p = this.app.warn.present(); return { present: p.length, names: p.map(x => x.name).slice(0, 5), recent: this.app.warn.recent.filter(x => Date.now() - x.at < 600000).length }; })() : null,
             heart: this.app.heart ? (() => { const h = this.app.heart.status(); return { on: h.cfg.source !== 'off', bpm: h.bpm, active: h.active, min: h.stats.min, max: h.stats.max, hist: h.hist.slice(-30).map(x => x[1]) }; })() : null,
             chatmods: this.app.chatmods ? (() => { const c = this.app.chatmods.cfg(); return { on: !!c.on, mods: Object.fromEntries(Object.entries(c.mods).map(([k, m]) => [k, !!m.on])) }; })() : null,
             vars: (() => { try { const v = this.app.game.values(); return Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === 'string' || typeof x === 'number').slice(0, 150).map(([k, x]) => [k, String(x).slice(0, 80)])); } catch (e) { return {}; } })() };

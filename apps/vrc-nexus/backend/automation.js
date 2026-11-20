@@ -14,6 +14,7 @@ const TRIGGERS = {
     player_join: ['👋 Spieler kommt', 'all|friends|others'], player_leave: ['🚪 Spieler geht', 'all|friends|others'], world_join: ['🌐 Welt betreten', ''],
     avatar_change: ['🎭 Avatar gewechselt', ''], afk_on: ['💤 AFK an', ''], afk_off: ['☀️ AFK aus', ''], param: ['🎚 Parameter = Wert', 'Name=Wert'],
     time: ['🕒 Uhrzeit', 'HH:MM'], interval: ['🔁 Alle N Minuten', 'Minuten'], vrc_start: ['▶️ VRChat gestartet', ''], vrc_quit: ['⏹️ VRChat beendet', ''], screenshot: ['📸 Screenshot', ''],
+    warn_join: ['⚠ Gewarnter Spieler kommt', ''],
 };
 const PLAYERS = ['Spotify.exe', 'foobar2000.exe', 'AIMP.exe', 'MusicBee.exe', 'vlc.exe', 'TIDAL.exe', 'Deezer.exe', 'Amazon Music.exe'];
 const IDLE_TITLES = /^(spotify( free| premium)?|foobar2000|aimp|musicbee|vlc media player|tidal|deezer|amazon music|n\/a|)$/i;

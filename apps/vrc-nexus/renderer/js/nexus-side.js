@@ -22,7 +22,7 @@
     const sub = f => f.state === 'online' ? (f.loc && f.loc.kind === 'world' ? (f.loc.world_name || 'Welt') + (f.loc.access ? ' · ' + f.loc.access : '') : f.loc && f.loc.kind === 'private' ? 'Private Welt' : 'Im Spiel')
         : f.state === 'active' ? (f.status_desc || 'Website / App') : (f.last_login ? 'zuletzt ' + UI.ago(Math.floor(Date.parse(f.last_login) / 1000)) : 'offline');
     const row = f => '<button type="button" class="fs-row fs-' + esc(f.state) + '" data-user="' + esc(f.id) + '">' + UI.img(f.image, 'fs-img', f.name)
-        + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(f.state === 'offline' ? 'offline' : f.status) + ' <span style="color:' + esc(UI.tcol(f)) + '">' + esc(f.name) + '</span></b><small data-no-i18n>' + esc(sub(f)) + '</small></span></button>';
+        + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(f.state === 'offline' ? 'offline' : f.status) + ' <span style="color:' + esc(UI.tcol(f)) + '">' + esc(f.name) + '</span>' + (window.NexusWarn ? window.NexusWarn.mark(f.id) : '') + '</b><small data-no-i18n>' + esc(sub(f)) + '</small></span></button>';
     function section(key, title, list, count) {
         const on = !!open[key];
         return '<div class="fs-sec"><button type="button" class="fs-head" data-sec="' + key + '"><i>' + (on ? '▾' : '▸') + '</i> ' + title + ' <small>— ' + (count === undefined ? list.length : count) + '</small></button>'

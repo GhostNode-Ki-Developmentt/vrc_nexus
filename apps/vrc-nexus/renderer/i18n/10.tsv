@@ -653,3 +653,61 @@ Kein Puls	No heart rate	Pas de fréquence cardiaque	心拍なし
 Brustgurt oder Uhr über die Pulsoid-App	Chest strap or watch via the Pulsoid app	Ceinture ou montre via l’appli Pulsoid	Pulsoidアプリ経由の胸ベルトまたはウォッチ
 Uhr oder Gurt über HypeRate	Watch or strap via HypeRate	Montre ou ceinture via HypeRate	HypeRate経由のウォッチまたはベルト
 App schickt den Puls schon an VRChat	App already sends heart rate to VRChat	L’appli envoie déjà la fréquence à VRChat	アプリが既にVRChatへ心拍を送信
+6 Monate	6 months	6 mois	6か月
+Alle Meldungen	All reports	Tous les signalements	すべての報告
+Alle Meldungen zu dieser Person löschen	Delete all reports about this person	Supprimer tous les signalements de cette personne	この人物への報告をすべて削除
+Alle Meldungen zu dieser Person löschen?	Delete all reports about this person?	Supprimer tous les signalements de cette personne ?	この人物への報告をすべて削除しますか？
+Antwort	Reply	Réponse	回答
+Antwort (optional)	Reply (optional)	Réponse (facultatif)	回答（任意）
+Aus deinem Spiel-Log übernehmen:	Take from your game log:	Reprendre depuis ton journal de jeu :	ゲームログから引用：
+Bei VRChat melden	Report to VRChat	Signaler à VRChat	VRChatに報告
+Beweis (Pflicht): Screenshot-Pfad oder Spiel-Log-Zeile	Evidence (required): screenshot path or game log line	Preuve (obligatoire) : chemin de capture ou ligne du journal	証拠（必須）：スクリーンショットのパスまたはゲームログの行
+Dein Einspruch wird geprüft.	Your appeal is being reviewed.	Ton recours est en cours d’examen.	異議申し立てを確認中です。
+Du stehst selbst auf der Warnliste. Wenn das ein Irrtum ist, kannst du Einspruch einlegen.	You are on the warning list yourself. If this is a mistake, you can appeal.	Tu figures toi-même sur la liste d’alerte. Si c’est une erreur, tu peux faire recours.	あなた自身が警告リストに載っています。誤りの場合は異議を申し立てられます。
+Einspruch	Appeal	Recours	異議申し立て
+Einspruch annehmen und ALLE Meldungen zu dieser Person löschen?	Accept the appeal and delete ALL reports about this person?	Accepter le recours et supprimer TOUS les signalements de cette personne ?	異議を承認し、この人物への報告をすべて削除しますか？
+Einspruch senden	Send appeal	Envoyer le recours	異議を送信
+Gerade in deiner Instanz	In your instance right now	Dans ton instance en ce moment	現在あなたのインスタンスにいる人
+Gespeichert auf	Stored on	Enregistré sur	保存先
+Gesperrte Schlüssel-IDs	Revoked key IDs	ID de clés révoquées	無効化されたキーID
+Gewarnte Personen	Flagged people	Personnes signalées	警告対象者
+Kurz: was ist passiert?	Briefly: what happened?	En bref : que s’est-il passé ?	簡単に：何がありましたか？
+Melden und Abrufen der gemeinsamen Warnliste gibt es mit Freischalt-Schlüssel.	Reporting and viewing the shared warning list requires an unlock key.	Signaler et consulter la liste d’alerte commune nécessite une clé de déverrouillage.	共有警告リストの報告と閲覧には解除キーが必要です。
+Meldung löschen?	Delete report?	Supprimer le signalement ?	報告を削除しますか？
+Meldungen	reports	signalements	件の報告
+Meldungen bis sichtbar	reports until visible	signalements avant affichage	表示に必要な報告数
+Moderatoren ernennt die Besitzerin im 👑 Admin-Bereich (Freischalt-Schlüssel mit „🛡 Moderator“).	The owner appoints moderators in the 👑 Admin area (unlock key with “🛡 Moderator”).	La propriétaire nomme les modérateurs dans l’espace 👑 Admin (clé avec « 🛡 Modérateur »).	モデレーターはオーナーが 👑 管理エリアで任命します（「🛡 モデレーター」付きの解除キー）。
+Niemand von der Warnliste in deiner Instanz.	Nobody from the warning list is in your instance.	Personne de la liste d’alerte dans ton instance.	警告リストの人はインスタンスにいません。
+Noch keine Meldungen.	No reports yet.	Pas encore de signalements.	まだ報告はありません。
+Offene Einsprüche	Open appeals	Recours ouverts	未処理の異議
+Sichtbar ab	Visible from	Visible à partir de	表示条件
+Sichtbar für andere erst ab mehreren unabhängigen Meldungen. Bitte nur echte Vorfälle mit Beweis melden – Missbrauch führt zur Sperre des Schlüssels.	Only visible to others after several independent reports. Please only report real incidents with evidence – abuse gets your key revoked.	Visible pour les autres seulement après plusieurs signalements indépendants. Ne signale que de vrais incidents avec preuve – tout abus entraîne la révocation de ta clé.	複数の独立した報告があって初めて他の人に表示されます。証拠のある実際の出来事だけを報告してください。悪用するとキーが無効になります。
+Steht auf der gemeinsamen Warnliste	On the shared warning list	Figure sur la liste d’alerte commune	共有警告リストに掲載
+Tage	days	jours	日
+Verwaltung (Admin)	Management (admin)	Gestion (admin)	管理（管理者）
+auch von dir	also by you	aussi par toi	あなたも報告
+bis	until	jusqu’au	まで
+gilt	valid for	valable	有効期間
+neu gültig (Tage)	renew (days)	renouveler (jours)	更新（日数）
+zuletzt	last	dernier	最終
+zurückziehen	withdraw	retirer	取り下げ
+Meine Meldung bearbeiten	Edit my report	Modifier mon signalement	自分の報告を編集
+Melden (Crasher, Ripper, Troll …)	Report (crasher, ripper, troll …)	Signaler (crasher, ripper, troll …)	報告（クラッシャー、リッパー、荒らし…）
+Meldung speichern	Save report	Enregistrer le signalement	報告を保存
+Noch niemand mit genug Meldungen.	Nobody with enough reports yet.	Personne n’a encore assez de signalements.	十分な報告がある人はまだいません。
+Die Warnliste gibt es nur mit Freischalt-Schlüssel.	The warning list requires an unlock key.	La liste d’alerte nécessite une clé de déverrouillage.	警告リストには解除キーが必要です。
+Crasher	Crasher	Crasheur	クラッシャー
+Ripper	Ripper	Ripper	リッパー
+Gemeinsame Warnliste für Crasher, Ripper und Troller – gespeichert auf der GhostNode-Webseite, nur für freigeschaltete Nutzer. Sichtbar erst ab mehreren unabhängigen Meldungen mit Beweis. Betritt jemand von der Liste deine Instanz, bekommst du einen Hinweis (nie in der Chatbox).	Shared warning list for crashers, rippers and trolls – stored on the GhostNode website, only for unlocked users. Visible only after several independent reports with evidence. If someone on the list joins your instance, you get a notice (never in the chatbox).	Liste d’alerte commune pour crasheurs, rippers et trolls – stockée sur le site GhostNode, réservée aux utilisateurs déverrouillés. Visible seulement après plusieurs signalements indépendants avec preuve. Si quelqu’un de la liste rejoint ton instance, tu reçois une alerte (jamais dans la chatbox).	クラッシャー、リッパー、荒らしの共有警告リスト – GhostNodeサイトに保存、解除済みユーザー専用。証拠付きの独立した報告が複数あって初めて表示されます。リストの人がインスタンスに入ると通知します（チャットボックスには出しません）。
+🔞 NSFW	🔞 NSFW	🔞 NSFW	🔞 NSFW
+🛡 Moderator	🛡 Moderator	🛡 Modérateur	🛡 モデレーター
+Mindestens ein Recht wählen.	Choose at least one permission.	Choisis au moins un droit.	権限を1つ以上選んでください。
+⚠ Warnliste (GhostNode)	⚠ Warning list (GhostNode)	⚠ Liste d’alerte (GhostNode)	⚠ 警告リスト（GhostNode）
+Meldung gespeichert.	Report saved.	Signalement enregistré.	報告を保存しました。
+Meldung zurückgezogen.	Report withdrawn.	Signalement retiré.	報告を取り下げました。
+GhostNode-Webseite nicht erreichbar.	GhostNode website unreachable.	Site GhostNode injoignable.	GhostNodeサイトに接続できません。
+Ein Beweis ist Pflicht (Screenshot-Pfad oder Spiel-Log-Zeile).	Evidence is required (screenshot path or game log line).	Une preuve est obligatoire (chemin de capture ou ligne du journal).	証拠は必須です（スクリーンショットのパスまたはゲームログの行）。
+Bitte einen Grund wählen.	Please choose a reason.	Choisis une raison.	理由を選んでください。
+Die Warnliste gibt es nur mit Freischalt-Schlüssel (Einstellungen → 🔞 NSFW / Schlüssel).	The warning list requires an unlock key (Settings → 🔞 NSFW / key).	La liste d’alerte nécessite une clé (Paramètres → 🔞 NSFW / clé).	警告リストには解除キーが必要です（設定 → 🔞 NSFW / キー）。
+⚠ Gewarnter Spieler kommt	⚠ Flagged player joins	⚠ Joueur signalé arrive	⚠ 警告対象プレイヤーが参加
+Grund	Reason	Raison	理由

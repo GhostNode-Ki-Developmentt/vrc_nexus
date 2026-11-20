@@ -16,7 +16,9 @@ const OWNER_HASH = '23e799d90cf62600203499e3f4d2712bb1a016e71dac64718b2c7d8267b2
 const TRUSTED = [
     'MCowBQYDK2VwAyEAg3Ejm0ec/StudDQryGwNGNr55UKQT3EQYvdPhL3dvo4=',   // Besitzer, erzeugt am 15.11.2026
 ];
-const FEATURES = { nsfw: 'NSFW-Werkzeuge', toys: 'Spielzeug-Steuerung (Intiface)', remote: 'Handy-Fernbedienung' };
+const FEATURES = { nsfw: 'NSFW-Werkzeuge', toys: 'Spielzeug-Steuerung (Intiface)', remote: 'Handy-Fernbedienung', mod: 'Moderator' };
+/** Rechte, die den NSFW-Bereich freischalten (Moderator allein schaltet NSFW NICHT frei) */
+const NSFW_FEATURES = ['nsfw', 'toys', 'remote'];
 const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 const hashId = id => crypto.createHash('sha256').update(str(id)).digest('hex');
@@ -74,12 +76,25 @@ class Nsfw {
     access() {
         const uid = this.myId();
         if (!uid) return { owner: false, unlocked: false, features: [], reason: 'Nicht bei VRChat angemeldet.' };
-        if (this.isOwner(uid)) return { owner: true, unlocked: true, features: Object.keys(FEATURES), exp: 0 };
+        if (this.isOwner(uid)) return { owner: true, unlocked: true, key: true, mod: true, features: Object.keys(FEATURES), exp: 0 };
         const t = this.myToken();
         if (!t) return { owner: false, unlocked: false, features: [], reason: '' };
         const r = this.check(t, uid);
         if (r.error) return { owner: false, unlocked: false, features: [], reason: r.error };
-        return { owner: false, unlocked: true, features: arr(r.payload.f).filter(f => FEATURES[f]), exp: int(r.payload.exp), note: str(r.payload.n) };
+        const features = arr(r.payload.f).filter(f => FEATURES[f]);
+        return { owner: false, unlocked: features.some(f => NSFW_FEATURES.includes(f)), key: true, mod: features.includes('mod'), features, exp: int(r.payload.exp), note: str(r.payload.n) };
+    }
+    /** Schlüssel für Online-Dienste (Warnliste): eigener Freischalt-Schlüssel – die Besitzerin unterschreibt sich einen kurzlebigen selbst */
+    serviceToken() {
+        const uid = this.myId();
+        if (!uid) return '';
+        if (this.isOwner(uid)) {
+            const k = this.ownerKey();
+            if (!k) return '';
+            return this.sign({ v: 1, id: 'own' + crypto.randomBytes(4).toString('hex'), uid, f: ['mod'], iat: now(), exp: now() + 900 });
+        }
+        const t = this.myToken();
+        return t && !this.check(t, uid).error ? t : '';
     }
     need(f) { const a = this.access(); if (!a.unlocked || (f && !a.features.includes(f))) throw new UserError('Nicht freigeschaltet.'); return a; }
 

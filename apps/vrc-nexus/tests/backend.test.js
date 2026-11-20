@@ -1723,6 +1723,73 @@ test('3.0.0: Puls – gemeinsame Quelle (OSC, HypeRate-Mock), Avatar-Parameter, 
     delete process.env.NEXUS_HYPERATE_WS;
 });
 
+test('3.0.0: Warnliste über GhostNode (Mock) – Schlüssel nötig, Kennzeichen, Alarm nie in Chatbox, Moderator schaltet kein NSFW frei', async () => {
+    const crypto = require('crypto');
+    const { NexusApp } = require('../backend/app');
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+    const pub = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
+    const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const tok = (uid, f) => { const body = b64u(JSON.stringify({ v: 1, id: 'k1', uid, f, iat: 1, exp: 0 })); return 'NXK1.' + body + '.' + b64u(crypto.sign(null, Buffer.from(body), privateKey)); };
+    const ME = 'usr_00000000-0000-4000-8000-000000000001', BAD = 'usr_00000000-0000-4000-8000-000000000009';
+    // Mock von nexuswarn.php
+    const seen = [];
+    const items = [{ id: BAD, name: 'Bad Guy', count: 2, reasons: { crasher: 2 }, reason: 'crasher', first: 1, last: 2, mine: false }];
+    const srv = require('http').createServer((req, res) => {
+        let b = ''; req.on('data', c => { b += c; }); req.on('end', () => {
+            const a = new URL(req.url, 'http://x').searchParams.get('a'), j = JSON.parse(b);
+            seen.push([a, j]);
+            res.setHeader('Content-Type', 'application/json');
+            if (!/^NXK1\./.test(j.token || '')) { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Kein Schlüssel' })); }
+            if (a === 'list') return res.end(JSON.stringify({ items, mine: [], me: { listed: false }, min: 2, admin: true }));
+            if (a === 'report') return res.end(JSON.stringify({ ok: true }));
+            if (a === 'admin_list') return res.end(JSON.stringify({ min: 2, revoked: [], reports: [], appeals: [], log: [] }));
+            res.end(JSON.stringify({ ok: true }));
+        });
+    });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_WARN_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir(), notify: (t, b) => notes.push(t + ' ' + b) } });
+    const notes = [], chat = [];
+    app.game.osc.stopListen();
+    app.game.osc.chatbox = async t => { chat.push(t); };
+    app.nsfw.myId = () => ME;
+    app.nsfw.trusted.push(pub);
+    const post = (act, d) => app.post(Object.assign({ act }, d || {}), {});
+    // ohne Schlüssel: verständlicher Fehler, nichts geht raus
+    await assert.rejects(post('warn_list', { refresh: '1' }).then(r => { if (r.error) throw new Error(r.error); }), /Freischalt-Schlüssel/);
+    // Moderator-Schlüssel: Warnliste ja, NSFW nein
+    db.setSetting('nsfw_token', tok(ME, ['mod']));
+    const acc = app.nsfw.access();
+    assert.strictEqual(acc.unlocked, false); assert.strictEqual(acc.mod, true);
+    let r = await post('warn_list', { refresh: '1' });
+    assert.strictEqual(r.items.length, 1); assert.strictEqual(r.admin, true);
+    assert.ok(seen.some(([a, j]) => a === 'list' && j.token.startsWith('NXK1.')));
+    r = await post('warn_badges');
+    assert.strictEqual(r.badges[BAD].label, 'Crasher');
+    // melden: Beweis Pflicht
+    await assert.rejects(post('warn_save', { id: BAD, reason: 'troll', evidence: '' }), /Beweis/);
+    await post('warn_save', { id: BAD, name: 'Bad Guy', reason: 'troll', evidence: 'log 20:01', days: 30 });
+    assert.ok(seen.some(([a, j]) => a === 'report' && j.target === BAD && j.evidence === 'log 20:01' && j.days === 30));
+    // Admin durchreichen (nur erlaubte Aktionen)
+    r = await post('warn_admin_list');
+    assert.deepStrictEqual(r.reports, []);
+    await assert.rejects(post('warn_admin_hack'), /Unbekannte/);
+    // gelisteter Spieler kommt → Hinweis + Automatik, aber NIE in die Chatbox
+    app.settings.save({ 'vr.chatbox': true });
+    app.warn.onGameEvent({ kind: 'player_join', player_id: BAD, player_name: 'Bad Guy', ts: Math.floor(Date.now() / 1000), world_name: 'Testwelt' });
+    assert.ok(notes.some(n => n.includes('Crasher') && n.includes('Bad Guy')), JSON.stringify(notes));
+    assert.ok(!chat.some(t => /Bad Guy|Crasher/.test(t)), 'Warnung landete in der Chatbox');
+    assert.strictEqual(app.warn.recent[0].id, BAD);
+    // Zwischenspeicher übersteht einen Neustart (offline)
+    srv.close();
+    const app2 = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app2.game.osc.stopListen();
+    assert.ok(app2.warn.badges()[BAD]);
+    app.tools.stop(); app2.tools.stop();
+    delete process.env.NEXUS_WARN_BASE;
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

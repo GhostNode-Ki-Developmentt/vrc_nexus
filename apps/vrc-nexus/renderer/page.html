@@ -70,6 +70,7 @@
                 <button type="button" class="vx-tabbtn" data-tab="friends"><span>👥</span><em>Freundesliste</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="groups"><span>🛡️</span><em>Gruppen</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="moderation"><span>🚫</span><em>Moderation</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="warn"><span>⚠</span><em>Warnliste</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="mod"><span>🛡</span><em>Mod-Zentrale (Gruppen)</em></button>
             </div></div>
         <button type="button" class="vx-tabbtn" data-tab="notifs"><span>🔔</span><em>Benachrichtigungen</em></button>
@@ -288,6 +289,11 @@
         <div id="modBox"></div>
     </section>
 
+    <section class="vx-tab" data-pane="warn" hidden>
+        <p class="vx-small">Gemeinsame Warnliste für Crasher, Ripper und Troller – gespeichert auf der GhostNode-Webseite, nur für freigeschaltete Nutzer. Sichtbar erst ab mehreren unabhängigen Meldungen mit Beweis. Betritt jemand von der Liste deine Instanz, bekommst du einen Hinweis (nie in der Chatbox).</p>
+        <div id="warnBox"></div>
+    </section>
+
     <section class="vx-tab" data-pane="search" hidden>
         <form class="vx-tools" id="searchForm">
             <div class="chips" id="searchKinds"><button type="button" class="chip on" data-kind="users">👤 Benutzer</button><button type="button" class="chip" data-kind="worlds">🌐 Welten</button><button type="button" class="chip" data-kind="groups">🛡️ Gruppen</button></div>
@@ -384,6 +390,7 @@
 <script src="js/nexus.js"></script>
 <script src="js/nexus-client.js"></script>
 <script src="js/nexus-heart.js"></script>
+<script src="js/nexus-warn.js"></script>
 <script src="js/nexus-chatmods.js"></script>
 <script src="js/nexus-osctools.js"></script>
 <script src="js/nexus-side.js"></script>

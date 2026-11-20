@@ -45,7 +45,7 @@ class NexusApp {
         this.settings = new Settings(opts.db);
         this.vrc = new Vrc(opts.db, opts.crypt);
         this.x = new Extra(this.vrc); this.x.settings = this.settings;
-        this.game = new GameLog(opts.db, { onEvent: e => { if (this.tools) this.tools.onGameEvent(e); if (this.auto) this.auto.onGameEvent(e); if (opts.onGameEvent) opts.onGameEvent(e); } });
+        this.game = new GameLog(opts.db, { onEvent: e => { if (this.tools) this.tools.onGameEvent(e); if (this.auto) this.auto.onGameEvent(e); if (this.warn) this.warn.onGameEvent(e); if (opts.onGameEvent) opts.onGameEvent(e); } });
         this.tr = new Translator(opts.db, opts.crypt, this.settings);
         this.link = new DashLink(this);
         this.updater = new Updater(this);
@@ -62,6 +62,7 @@ class NexusApp {
         this.osclog = new OscLog(this);
         this.stream = opts.mobile ? null : new StreamBot(this, opts.crypt);
         this.backup = new CloudBackup(this, opts.crypt);
+        this.warn = new (require('./warnlist').WarnList)(this);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
@@ -190,6 +191,7 @@ class NexusApp {
             if (act === 'about') return this.about(input);
             if (act === 'about_supporters') return await this.liveSupporters();
             if (act.startsWith('tts_')) { if (!this.tts) throw new UserError('Die Sprachausgabe gibt es nur in der Windows-App.'); return await this.tts.action(act, input); }
+            if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }
             if (act.startsWith('backup_')) return await this.backup.action(act, input);
@@ -404,7 +406,7 @@ class NexusApp {
                 return { user: { nexus_admin: !!(this.nsfw && this.nsfw.isOwner(str(u.id))), id: u.id, name: str(u.displayName), image: U.userImage(u), status: str(u.status), status_desc: str(u.statusDescription), bio_html: U.formatText(u.bio),
                     links: arr(u.bioLinks).filter(l => /^https?:\/\//.test(str(l))), pronouns: str(u.pronouns), trust: U.trust(u.tags), platform: U.VRC_PLATFORM[u.last_platform] || str(u.last_platform),
                     is_friend: !!u.isFriend, joined: str(u.date_joined), last_login: str(u.last_login), last_activity: str(u.last_activity), loc, note: n.note, favorite: !!n.favorite,
-                    stats: v.friendStats(id), lists: str(n.tags), watch: !!n.watch,
+                    stats: v.friendStats(id), lists: str(n.tags), watch: !!n.watch, warn: this.warn ? this.warn.get(id) : null,
                     groups: arr(groups).map(g => ({ id: str(g.groupId), name: str(g.name), icon: str(g.iconUrl), members: int(g.memberCount), rep: !!g.isRepresenting })) } };
             }
             case 'note_save':

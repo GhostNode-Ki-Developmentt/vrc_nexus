@@ -756,3 +756,12 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 @keyframes hrBeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } }
 @media (prefers-reduced-motion: reduce) { .hr-heart { animation: none !important; } }
 .hr-spark { width: 100%; height: 54px; color: var(--accent-cyan); display: block; border-bottom: 1px solid var(--border-color); } .hr-spark.empty { height: auto; border: 0; }
+/* 3.0 Warnliste */
+.wl-mark { color: #ff5c5c; font-weight: 700; margin-left: 4px; }
+.pl-warn td { background: rgba(255, 92, 92, 0.08); } .pl-warn .pl-name { text-decoration: underline wavy #ff5c5c; }
+.wl-form summary, .wl-tg summary { cursor: pointer; padding: 6px 0; color: var(--accent-cyan); }
+.wl-f { margin-top: 6px; } .wl-f input[type=text], .wl-f textarea, .wl-rep input[type=text], .wl-rep textarea, .wl-appeal textarea { width: 100%; box-sizing: border-box; }
+.wl-ev { display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow: auto; } .wl-ev .chip { text-align: left; font-size: 0.72rem; white-space: normal; }
+.wl-ap { border-left: 2px solid var(--accent-gold); padding: 6px 10px; margin: 6px 0; background: rgba(var(--gold-rgb), 0.06); }
+.wl-rep { margin: 6px 0; } .wl-rep .nc-row input[type=text] { flex: 1 1 140px; }
+#warnBox a, #adWarn a { color: var(--accent-cyan); text-decoration: none; } #warnBox a:hover, #adWarn a:hover { text-decoration: underline; }
