@@ -8,7 +8,9 @@
     const when = ts => UI.ago ? UI.ago(ts) : new Date(ts * 1000).toLocaleString();
     let box = null, sub = 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false;
     const card = (t, html, cls) => '<div class="nc-card ' + (cls || '') + '">' + (t ? '<h4>' + t + '</h4>' : '') + html + '</div>';
-    const subs = () => [['feed', '🫂 ' + T('Feed')], ...(me && me.nsfw ? [['nsfw', '🔞 ' + T('NSFW-Feed')]] : []), ['profile', '👤 ' + T('Mein Profil')], ...(me && me.mod ? [['mod', '🛡 ' + T('Moderation')]] : [])];
+    const MOBILE = document.body.classList.contains('mobile');
+    let chat = { list: null, uid: '', open: null, timer: null };
+    const subs = () => [['feed', '🫂 ' + T('Feed')], ...(me && me.nsfw ? [['nsfw', '🔞 ' + T('NSFW-Feed')]] : []), ...(MOBILE ? [] : [['chat', '💬 ' + T('Chat') + (chat.list && chat.list.some(c => c.unread) ? ' •' : '')]]), ['profile', '👤 ' + T('Mein Profil')], ...(me && me.mod ? [['mod', '🛡 ' + T('Moderation')]] : [])];
 
     function nav() {
         const n = document.getElementById('cmtSub');
@@ -51,6 +53,41 @@
         }
         if (sub === 'profile') { box.innerHTML = profileHtml(); return; }
         if (sub === 'mod') { box.innerHTML = modHtml(); return; }
+        if (sub === 'chat') { box.innerHTML = chatHtml(); const l = box.querySelector('.ch-msgs'); if (l) l.scrollTop = l.scrollHeight; return; }
+    }
+    // ---------- 💬 Privat-Chat (Ende-zu-Ende-verschlüsselt) ----------
+    function chatHtml() {
+        const names = {};
+        ((UI.state && UI.state() && UI.state().friends) || []).forEach(f => { names[f.id] = f.name; });
+        const list = chat.list || [];
+        const o = chat.open;
+        const left = '<div class="nc-card ch-list"><h4>💬 ' + esc(T('Unterhaltungen')) + '</h4>'
+            + '<form class="nc-row ch-new"><input type="text" name="uid" placeholder="' + esc(T('VRChat-User-ID oder Profil-Link')) + '" list="chFriends" style="flex:1"><button class="btn btn-sm btn-gold">＋</button></form>'
+            + '<datalist id="chFriends">' + Object.entries(names).map(([id, n]) => '<option value="' + esc(id) + '">' + esc(n) + '</option>').join('') + '</datalist>'
+            + (list.length ? list.map(c => '<button type="button" class="ch-item' + (c.uid === chat.uid ? ' on' : '') + '" data-chopen="' + esc(c.uid) + '"><b>' + esc(c.name || names[c.uid] || c.uid.slice(0, 13) + '…') + '</b>'
+                + (c.changed ? ' <span title="' + esc(T('Schlüssel geändert')) + '">⚠</span>' : c.verified ? ' <span title="' + esc(T('verifiziert')) + '">✔</span>' : '') + (c.unread ? ' <span class="vx-badge sm">' + c.unread + '</span>' : '')
+                + '<small>' + esc(c.last ? (c.last.me ? T('Du') + ': ' : '') + String(c.last.text).slice(0, 60) : '') + '</small></button>').join('') : '<p class="small muted">' + esc(T('Noch keine Unterhaltungen.')) + '</p>')
+            + '<p class="small muted">🔒 ' + esc(T('Ende-zu-Ende-verschlüsselt: Nur du und dein Gegenüber können die Nachrichten lesen – auch die GhostNode-Webseite nicht.')) + '</p></div>';
+        if (!o) return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><p class="vx-empty">' + esc(T('Unterhaltung wählen oder neu starten.')) + '</p></div></div>';
+        const nm = names[o.uid] || (list.find(c => c.uid === o.uid) || {}).name || o.uid;
+        return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><div class="nc-row"><h4 style="margin:0">' + esc(nm) + '</h4>'
+            + (o.verified ? '<span class="vx-pill" style="--pc:#51e57e">✔ ' + esc(T('verifiziert')) + '</span>' : '') + '<button type="button" class="nc-link" data-chsafety="1" style="margin-left:auto">🔐 ' + esc(T('Sicherheitsnummer')) + '</button></div>'
+            + (o.changed ? '<div class="tts-help">⚠ ' + esc(T('Die Schlüssel dieser Person haben sich geändert (neues Gerät oder neu eingerichtet). Vergleiche die Sicherheitsnummer, bevor du Vertrauliches schreibst.')) + '</div>' : '')
+            + (chat.showSafety ? '<div class="tts-help"><b>' + esc(T('Sicherheitsnummer')) + '</b><br><code class="ch-sn">' + esc(o.safety || '–') + '</code><br><span class="small">' + esc(T('Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.')) + '</span><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-chverify="1">✔ ' + esc(T('Stimmt überein')) + '</button></div></div>' : '')
+            + (!o.ready ? '<p class="small bad">' + esc(T('Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).')) + '</p>' : '')
+            + '<div class="ch-msgs">' + (o.messages || []).map(m => '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + '"><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div><small>' + esc(new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</small></div>').join('') + '</div>'
+            + '<form class="ch-comp nc-row"><textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '></textarea><button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T('Senden')) + '</button></form></div></div>';
+    }
+    function chatLoad(poll) { return api('chat_list', poll ? { poll: '1' } : {}).then(d => { chat.list = d.items; nav(); if (sub === 'chat') render(); }).catch(e => { toast('⚠ ' + e.message, true); }); }
+    function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }
+    function chatTimer() {
+        clearInterval(chat.timer);
+        chat.timer = setInterval(() => {
+            if (!box || !box.offsetParent || sub !== 'chat') { clearInterval(chat.timer); api('chat_blur').catch(() => {}); return; }
+            if (document.hidden) return;
+            if (chat.uid) api('chat_open', { uid: chat.uid }).then(d => { const n = (chat.open && chat.open.messages || []).length; chat.open = d; if (d.messages.length !== n) render(); }).catch(() => {});
+            else chatLoad(true);
+        }, 4000);
     }
     function profileHtml() {
         if (!prof) return '<div class="vx-loading">…</div>';
@@ -106,6 +143,7 @@
         if (sub === 'feed' || sub === 'nsfw') { items = []; render(); loadFeed(); }
         else if (sub === 'profile') { profEdit = false; loadProfile(arg); }
         else if (sub === 'mod') { modData = null; render(); loadMod(); }
+        else if (sub === 'chat') { render(); chatLoad(true).then(() => { if (arg) chatOpen(arg); }); chatTimer(); }
         else render();
     }
     const replace = p => { items = items.map(x => x.id === p.id ? Object.assign(x, p) : x); Object.values(openThread).forEach(t => { t.replies = (t.replies || []).map(x => x.id === p.id ? p : x); }); };
@@ -127,6 +165,9 @@
             const del = t.closest('[data-cdel]'); if (del) { if (!confirm(T('Beitrag löschen?'))) return; return api('comm_delete', { id: del.dataset.cdel }).then(() => { items = items.filter(x => x.id !== +del.dataset.cdel); Object.values(openThread).forEach(x => { x.replies = x.replies.filter(r => r.id !== +del.dataset.cdel); }); render(); }).catch(x => toast(x.message, true)); }
             const rp = t.closest('[data-crep]'); if (rp) { const r = prompt(T('Warum meldest du diesen Beitrag?')); if (!r) return; return api('comm_report', { id: rp.dataset.crep, reason: r }).then(d => toast(d.msg)).catch(x => toast(x.message, true)); }
             const more = t.closest('[data-cmore]'); if (more) return loadFeed(true);
+            const co = t.closest('[data-chopen]'); if (co) return chatOpen(co.dataset.chopen);
+            if (t.closest('[data-chsafety]')) { chat.showSafety = !chat.showSafety; return render(); }
+            if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
             const md = t.closest('[data-cmod]');
             if (md) {
@@ -156,6 +197,8 @@
             }
             if (f.matches('.cm-pform')) return api('comm_profile_save', { bio: f.bio.value, pronouns: f.pronouns.value, languages: f.languages.value, interests: f.interests.value, links: f.links.value.split(',').map(x => x.trim()).filter(Boolean), nsfw_bio: f.nsfw_bio ? f.nsfw_bio.value : '', avatar: prof.avatar || '', banner: prof.banner || '' })
                 .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; profEdit = false; render(); }).catch(x => toast(x.message, true));
+            if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^usr_[0-9a-f-]{36}$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
+            if (f.matches('.ch-comp')) { const text = f.text.value; if (!text.trim()) return; busy = true; return api('chat_send', { uid: chat.uid, text }).then(d => { chat.open = d; f.reset(); }).catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); }); }
             if (f.matches('.cm-sform')) return api('comm_mod', { do: 'mute', vrc_id: f.vrc.value.trim(), hours: f.hours.value }).then(d => { toast(d.msg); loadMod(); }).catch(x => toast(x.message, true));
         });
     }

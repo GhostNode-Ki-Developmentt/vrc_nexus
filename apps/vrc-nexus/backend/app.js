@@ -65,6 +65,7 @@ class NexusApp {
         this.account = new (require('./account').Account)(this, opts.crypt);
         this.warn = new (require('./warnlist').WarnList)(this);
         this.comm = new (require('./community').Community)(this);
+        this.chat = opts.mobile ? null : new (require('./chat').Chat)(this, opts.crypt);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
@@ -196,6 +197,7 @@ class NexusApp {
             if (act.startsWith('tts_')) { if (!this.tts) throw new UserError('Die Sprachausgabe gibt es nur in der Windows-App.'); return await this.tts.action(act, input); }
             if (act.startsWith('acct_')) return await this.account.action(act, input);
             if (act.startsWith('comm_')) return await this.comm.action(act, input, files);
+            if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }

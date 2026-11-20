@@ -793,3 +793,23 @@ Konto in der Community sperren?	Ban this account from the community?	Bannir ce c
 Gepostet.	Posted.	Publié.	投稿しました。
 Gepostet – das NSFW-Bild wird vor dem Erscheinen von einem Moderator geprüft.	Posted – the NSFW image will be reviewed by a moderator before it appears.	Publié – l’image NSFW sera vérifiée par un modérateur avant d’apparaître.	投稿しました – NSFW画像は表示前にモデレーターが確認します。
 Für die Community erst das Nexus-Konto verbinden (Einstellungen → Erweitert).	To use the community, connect your Nexus account first (Settings → Advanced).	Pour la communauté, connecte d’abord ton compte Nexus (Paramètres → Avancé).	コミュニティを使うには、先にNexusアカウントを接続してください（設定 → 詳細）。
+Chat	Chat	Chat	チャット
+Unterhaltungen	Conversations	Conversations	会話
+VRChat-User-ID oder Profil-Link	VRChat user ID or profile link	ID utilisateur VRChat ou lien de profil	VRChatユーザーIDまたはプロフィールリンク
+Schlüssel geändert	Keys changed	Clés modifiées	鍵が変更されました
+verifiziert	verified	vérifié	確認済み
+Du	You	Toi	あなた
+Noch keine Unterhaltungen.	No conversations yet.	Pas encore de conversations.	まだ会話はありません。
+Ende-zu-Ende-verschlüsselt: Nur du und dein Gegenüber können die Nachrichten lesen – auch die GhostNode-Webseite nicht.	End-to-end encrypted: only you and the other person can read the messages – not even the GhostNode website.	Chiffré de bout en bout : seuls toi et ton interlocuteur pouvez lire les messages – pas même le site GhostNode.	エンドツーエンド暗号化：メッセージを読めるのはあなたと相手だけです – GhostNodeサイトも読めません。
+Unterhaltung wählen oder neu starten.	Choose a conversation or start a new one.	Choisis une conversation ou commence-en une.	会話を選ぶか新しく始めてください。
+Sicherheitsnummer	Safety number	Numéro de sécurité	安全番号
+Die Schlüssel dieser Person haben sich geändert (neues Gerät oder neu eingerichtet). Vergleiche die Sicherheitsnummer, bevor du Vertrauliches schreibst.	This person’s keys have changed (new device or reinstalled). Compare the safety number before you write anything confidential.	Les clés de cette personne ont changé (nouvel appareil ou réinstallation). Compare le numéro de sécurité avant d’écrire quelque chose de confidentiel.	この人の鍵が変わりました（新しいデバイスまたは再設定）。大事なことを書く前に安全番号を照合してください。
+Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.	Compare the number in person (e.g. in VRChat). If it matches, nobody is listening in.	Comparez le numéro en personne (p. ex. dans VRChat). S’il correspond, personne n’écoute.	番号を直接（例：VRChatで）照合してください。一致すれば誰も盗み見ていません。
+Stimmt überein	It matches	Il correspond	一致しています
+Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).	This person hasn’t set up chat yet (needs to open Community → Chat once).	Cette personne n’a pas encore configuré le chat (doit ouvrir Communauté → Chat une fois).	この人はまだチャットを設定していません（コミュニティ → チャットを一度開く必要があります）。
+Verschlüsselte Nachricht …	Encrypted message …	Message chiffré …	暗号化メッセージ …
+Als verifiziert markiert.	Marked as verified.	Marqué comme vérifié.	確認済みにしました。
+Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.	Please enter a VRChat user ID (usr_…) or a profile link.	Indique un ID utilisateur VRChat (usr_…) ou un lien de profil.	VRChatユーザーID（usr_…）またはプロフィールリンクを入力してください。
+Für den Chat erst das Nexus-Konto verbinden (Einstellungen → Erweitert).	To chat, connect your Nexus account first (Settings → Advanced).	Pour discuter, connecte d’abord ton compte Nexus (Paramètres → Avancé).	チャットには先にNexusアカウントを接続してください（設定 → 詳細）。
+Diese Person hat den Chat noch nicht eingerichtet (muss Nexus-Community → Chat einmal öffnen).	This person hasn’t set up chat yet (needs to open Nexus Community → Chat once).	Cette personne n’a pas encore configuré le chat (doit ouvrir Communauté Nexus → Chat une fois).	この人はまだチャットを設定していません（Nexusコミュニティ → チャットを一度開く必要があります）。
+Der verschlüsselte Chat kommt für Android später.	Encrypted chat for Android is coming later.	Le chat chiffré pour Android arrive plus tard.	Android版の暗号化チャットは後日対応です。

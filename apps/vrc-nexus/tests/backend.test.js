@@ -1913,6 +1913,69 @@ test('3.0.0: Community – App reicht nur mit Konto-Token durch, Mod-Schlüssel 
     delete process.env.NEXUS_COMM_BASE;
 });
 
+test('3.0.0: E2EE (X3DH + Double Ratchet) – Austausch, Reihenfolge, verlorene Nachrichten, Manipulation, Wiedereinspielen, falsche Signatur', () => {
+    const E = require('../backend/e2ee');
+    const clone = o => JSON.parse(JSON.stringify(o));
+    const alice = E.newDevice(3), bob = E.newDevice(3);
+    const bb = E.bundle(bob);
+    assert.strictEqual(bb.opks.length, 3);
+    // Server gibt ein Einmal-Pre-Key heraus
+    const pkg = { ik_dh: bb.ik_dh, ik_sig: bb.ik_sig, spk: bb.spk, opk: bb.opks[0] };
+    let a = E.initiate(alice, pkg);
+    const m1 = E.encrypt(a, 'Hallo Bob 🦊');
+    assert.ok(m1.pre && m1.pre.opk === bb.opks[0].id);
+    assert.ok(!JSON.stringify(m1).includes('Hallo'), 'Klartext darf nicht im Umschlag stehen');
+    const acc = E.accept(bob, m1.pre);
+    delete bob.opks[acc.opk];
+    let b = acc.st, r = E.decrypt(b, m1); b = r.st;
+    assert.strictEqual(r.text, 'Hallo Bob 🦊');
+    // Wiedereinspielen der ersten Nachricht: Einmal-Schlüssel ist verbraucht
+    assert.throws(() => E.accept(bob, m1.pre), /verbraucht/);
+    // Antwort → Ratchet-Schritt; Alice braucht danach keinen Pre-Key-Kopf mehr
+    const r1 = E.encrypt(b, 'Hi Alice');
+    r = E.decrypt(a, r1); a = r.st; assert.strictEqual(r.text, 'Hi Alice');
+    assert.ok(!E.encrypt(clone(a), 'x').pre, 'Pre-Key-Kopf nach Antwort weg');
+    // mehrere Nachrichten, außer der Reihe, eine geht verloren
+    const s = [1, 2, 3, 4, 5].map(i => E.encrypt(a, 'm' + i));
+    r = E.decrypt(b, s[2]); b = r.st; assert.strictEqual(r.text, 'm3');
+    r = E.decrypt(b, s[0]); b = r.st; assert.strictEqual(r.text, 'm1');
+    r = E.decrypt(b, s[4]); b = r.st; assert.strictEqual(r.text, 'm5');
+    r = E.decrypt(b, s[3]); b = r.st; assert.strictEqual(r.text, 'm4');
+    // m2 nie angekommen – trotzdem geht es weiter, auch nach erneutem Ratchet-Schritt
+    const r2 = E.encrypt(b, 'weiter'); r = E.decrypt(a, r2); a = r.st; assert.strictEqual(r.text, 'weiter');
+    r = E.decrypt(b, s[1]); b = r.st; assert.strictEqual(r.text, 'm2', 'späte Nachricht aus alter Kette');
+    // Wiedereinspielen einer schon gelesenen Nachricht
+    assert.throws(() => E.decrypt(b, s[1]));
+    // Manipulation: Chiffretext, Kopf
+    const m = E.encrypt(a, 'geheim');
+    const bad = clone(m); const c = Buffer.from(bad.c, 'base64'); c[0] ^= 1; bad.c = c.toString('base64');
+    const before = JSON.stringify(b);
+    assert.throws(() => E.decrypt(b, bad));
+    assert.strictEqual(JSON.stringify(b), before, 'fehlgeschlagene Entschlüsselung ändert die Sitzung nicht');
+    const bad2 = clone(m); bad2.h.n = 7; assert.throws(() => E.decrypt(b, bad2));
+    r = E.decrypt(b, m); assert.strictEqual(r.text, 'geheim');
+    // gefälschter signierter Pre-Key wird erkannt
+    const evil = E.newDevice(0), eb = E.bundle(evil);
+    assert.throws(() => E.initiate(alice, { ik_dh: bb.ik_dh, ik_sig: bb.ik_sig, spk: eb.spk }), /Signatur/);
+    // ohne Einmal-Pre-Key geht es auch (Server hat keine mehr)
+    let a2 = E.initiate(alice, { ik_dh: bb.ik_dh, ik_sig: bb.ik_sig, spk: bb.spk });
+    const x = E.encrypt(a2, 'ohne OPK'); const acc2 = E.accept(bob, x.pre);
+    assert.strictEqual(E.decrypt(acc2.st, x).text, 'ohne OPK');
+    // fremder Empfänger kann nicht entschlüsseln
+    const carol = E.newDevice(1);
+    assert.throws(() => E.decrypt(E.accept(carol, Object.assign({}, x.pre, { spk: carol.spk.id, opk: 0 })).st, x));
+    // Sicherheitsnummer: gleich auf beiden Seiten, ändert sich bei anderem Schlüssel
+    const sn1 = E.safetyNumber([alice.idSig.pub], [bob.idSig.pub]), sn2 = E.safetyNumber([bob.idSig.pub], [alice.idSig.pub]);
+    assert.strictEqual(sn1, sn2); assert.ok(/^(\d{5} ){11}\d{5}$/.test(sn1), sn1);
+    assert.notStrictEqual(sn1, E.safetyNumber([alice.idSig.pub], [carol.idSig.pub]));
+    // zu viele übersprungene Nachrichten werden abgelehnt (Speicher-Schutz)
+    const big = clone(m); big.h.n = E.MAX_SKIP + 50; assert.throws(() => E.decrypt(b, big), /übersprungene/);
+    // SPK-Wechsel: alte Nachrichten mit altem SPK gehen noch
+    const old = E.encrypt(E.initiate(alice, { ik_dh: bb.ik_dh, ik_sig: bb.ik_sig, spk: bb.spk }), 'alt');
+    E.rotateSpk(bob);
+    assert.strictEqual(E.decrypt(E.accept(bob, old.pre).st, old).text, 'alt');
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {
