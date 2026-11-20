@@ -5,7 +5,7 @@
  * werden zu einer Chatbox-Nachricht zusammengesetzt und regelmäßig an VRChat geschickt.
  * Jedes Modul: an/aus, eigene Vorlage mit Platzhaltern, nur Desktop / nur VR / beides, Reihenfolge.
  * Alle Werte stehen zusätzlich als Platzhalter im Rotator, in Makros und in der Automatik zur Verfügung.
- * Läuft nur in der Windows-App (Android hat keine Prozess-/Systemwerte).
+ * Am Handy (seit 3.2.5) nur die Module ohne Prozess-/Systemwerte (MOBILE_MODS), gesendet über die eigene OSC-Verbindung.
  */
 const os = require('os');
 const fs = require('fs');
@@ -33,6 +33,8 @@ const MODULES = {
     ping: ['📡', 'Ping', 'Antwortzeit zu den VRChat-Servern – zeigt, ob deine Verbindung gerade hakt.', '📡 {ping} ms', 'desktop'],
 };
 const ORDER = Object.keys(MODULES);
+/** 3.2.5: am Handy nur Module ohne PC-/Systemwerte */
+const MOBILE_MODS = ['status', 'time', 'weather', 'twitch', 'countdown', 'friends', 'marquee', 'anim'];
 const DEF = { on: false, seconds: 10, sep: 'line', only_game: true, order: ORDER, mods: { status: { on: true }, time: { on: true }, media: { on: true } },
     city: '', lat: null, lon: null, place: '', private: 'discord, chrome, msedge, firefox, whatsapp, telegram, signal', twitch: '', hr_param: 'HeartRate', hr_osc: true,
     cd_name: '', cd_at: '', mq_text: '', mq_width: 30, an_frames: '🌑\n🌒\n🌓\n🌔\n🌕\n🌖\n🌗\n🌘' };
@@ -85,7 +87,9 @@ class ChatMods {
         for (const k of ORDER) {
             const m = (c.mods || DEF.mods)[k] || {};
             out.mods[k] = { on: !!m.on, tpl: str(m.tpl) || MODULES[k][3], where: ['both', 'desktop', 'vr'].includes(m.where) ? m.where : MODULES[k][4] };
+            if (this.app.mobile && !MOBILE_MODS.includes(k)) out.mods[k].on = false;
         }
+        if (this.app.mobile) out.only_game = false;   // kein Spiel-Log am Handy
         return out;
     }
     save(input) {
@@ -144,7 +148,7 @@ class ChatMods {
         if (on('battery') && t - this.last.bat >= 60000) { this.last.bat = t; jobs.push(this.readBattery()); }
         if (on('fps')) this.readFps();
         if (on('ping') && t - this.last.ping >= 30000) { this.last.ping = t; jobs.push(this.readPing()); }
-        if (t - this.last.vr >= 15000) { this.last.vr = t; jobs.push(this.readVr()); }
+        if (!this.app.mobile && t - this.last.vr >= 15000) { this.last.vr = t; jobs.push(this.readVr()); }
         if (on('window') && process.platform === 'win32' && !this.win) this.startWin();
         await Promise.all(jobs.map(p => p.catch(() => {})));
     }
@@ -393,7 +397,7 @@ class ChatMods {
                 const c = this.cfg();
                 await this.refresh(c, input.refresh === '1');
                 const prev = this.compose(c, false);
-                return { cfg: c, modules: MODULES, values: this.vars(), preview: prev, vr: this.vr, gpu: !this.gpuMissing, gpu_win: !!this.gpuWin, battery: this.v.akku !== undefined, has_hr: this.hrSource() !== 'off', hr_source: this.hrSource(), hr_error: this.hrError || '',
+                return { cfg: c, modules: this.app.mobile ? Object.fromEntries(MOBILE_MODS.map(k => [k, MODULES[k]])) : MODULES, mobile: !!this.app.mobile, values: this.vars(), preview: prev, vr: this.vr, gpu: !this.gpuMissing, gpu_win: !!this.gpuWin, battery: this.v.akku !== undefined, has_hr: this.hrSource() !== 'off', hr_source: this.hrSource(), hr_error: this.hrError || '',
                     twitch_default: this.twitchChannel(), windows: process.platform === 'win32', rotator_on: !!this.app.game.cfg().rotator_enabled };
             }
             case 'cm_save': { const c = this.save(input); return { cfg: c, msg: input.quiet ? '' : 'Gespeichert.' }; }
@@ -420,4 +424,4 @@ class ChatMods {
     }
 }
 
-module.exports = { ChatMods, MODULES, WMO, GPU_PS };
+module.exports = { ChatMods, MODULES, MOBILE_MODS, WMO, GPU_PS };

@@ -71,7 +71,7 @@ class NexusApp {
         this.vrc.onUserData = (id, u) => this.deco.remember(id, u);
         this.chat = opts.mobile ? null : new (require('./chat').Chat)(this, opts.crypt);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
-        this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
+        this.chatmods = new ChatMods(this, opts.crypt);   // 3.2.5: auch am Handy (nur Module ohne PC-Werte)
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
         this.nsfw = new (require('./nsfw').Nsfw)(this, opts.crypt);
         this.toys = opts.mobile ? null : new (require('./toys').Toys)(this);
@@ -81,7 +81,7 @@ class NexusApp {
         this.admin = new (require('./admin').Admin)(this);
         this.tts = opts.mobile ? null : new Tts(this, opts.crypt);
         this.media = opts.mobile ? null : new Media(this);
-        this.osctools = opts.mobile ? null : new OscTools(this);
+        this.osctools = new OscTools(this);               // 3.2.5: auch am Handy (Szenen, Aufnahme über die eigene OSC-Verbindung)
         this.vrc.onWatch = (name, world) => { if (this.settings.get('notify.watch')) this.tools.alert('🟢 ' + name + ' ist online', world ? 'in ' + world : 'gerade ins Spiel gekommen'); };
         this.vrc.onWatchEvent = (name, kind, world) => {
             const s = this.settings;
@@ -176,7 +176,7 @@ class NexusApp {
             if (act === 'cancel_login') { this.vrc.pending = null; return { ok: true }; }
             if (act.startsWith('client_')) return await this.client(act, input);
             if (act.startsWith('cam_')) return await this.cam.action(act, input);
-            if (act.startsWith('cbx_') || act.startsWith('osct_')) { if (!this.osctools) throw new UserError('Nur in der Windows-App.'); return await this.osctools.action(act, input); }
+            if (act.startsWith('cbx_') || act.startsWith('osct_') || act.startsWith('mosc_')) { if (!this.osctools) throw new UserError('Nur in der Windows-App.'); return await this.osctools.action(act, input); }
             if (act === 'media_status') return this.media ? this.media.status() : { available: false };
             if (act === 'media_ctl') { if (!this.media) throw new UserError('Nur in der Windows-App.'); return this.media.control(str(input.cmd), str(input.id)); }
             if (act.startsWith('auto_')) return await this.auto.action(act, input);

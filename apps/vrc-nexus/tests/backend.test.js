@@ -2006,7 +2006,8 @@ test('3.2.4: Nexus-Knöpfe (Android) – nur Aktionen ohne PC (VRChat-API), alte
     const realPost = app.post.bind(app);
     app.post = async (input, files) => { if (['status', 'invite', 'instance_create'].includes(input.act)) { posts.push(input); return { ok: true, msg: 'ok' }; } return realPost(input, files); };
     app.tools.apiAction = async (a, d) => { api.push([a, d]); return { ok: true, msg: 'ok' }; };
-    assert.deepStrictEqual(Object.keys(KINDS).sort(), ['avatar', 'friend', 'instance_create', 'show_friends', 'show_notifs', 'status', 'tab']);
+    for (const k of ['status', 'tab', 'avatar', 'friend', 'instance_create', 'show_friends', 'show_notifs']) assert.strictEqual(KINDS[k][2] === 'VRChat' || KINDS[k][2] === 'App' || KINDS[k][2] === 'Anzeige', true, k);
+    assert.ok(Object.values(KINDS).every(k => ['VRChat', 'App', 'Anzeige', 'OSC'].includes(k[2])), 'nichts mehr über den PC');
     let r = await app.post({ act: 'btn_get' }, {});
     assert.ok(r.cfg.pages[0].buttons.length >= 4 && r.cfg.pages[0].buttons.every(b => KINDS[b.kind]), 'Beispiel-Knöpfe nur ohne PC');
     const show = r.cfg.pages[0].buttons.find(b => b.kind === 'show_friends');
@@ -2014,7 +2015,7 @@ test('3.2.4: Nexus-Knöpfe (Android) – nur Aktionen ohne PC (VRChat-API), alte
     // alte PC-Knöpfe aus früheren Versionen werden beim Laden ausgeblendet
     db.setSetting('nx_buttons', JSON.stringify({ v: 1, cols: 3, pages: [{ id: 'aaaaaaaaaa', name: 'Alt', buttons: [{ id: 'bbbbbbbbbb', kind: 'chatbox', text: 'x' }, { id: 'cccccccccc', kind: 'camera' }, { id: 'dddddddddd', kind: 'status', status: 'busy' }] }] }));
     r = await app.post({ act: 'btn_get' }, {});
-    assert.deepStrictEqual(r.cfg.pages[0].buttons.map(b => b.kind), ['status']);
+    assert.deepStrictEqual(r.cfg.pages[0].buttons.map(b => b.kind), ['chatbox', 'status'], 'Kamera (PC) fällt weg');
     const W = 'wrld_00000000-0000-4000-8000-000000000101', A = 'avtr_00000000-0000-4000-8000-000000000001', U = 'usr_00000000-0000-4000-8000-000000000010';
     const cfg = { cols: 9, pages: [{ name: 'Test', buttons: [
         { kind: 'status', status: 'busy', desc: 'Stream', color: 'evil', icon: '👋👋👋👋👋' },
@@ -2031,7 +2032,7 @@ test('3.2.4: Nexus-Knöpfe (Android) – nur Aktionen ohne PC (VRChat-API), alte
     const b = r.cfg.pages[0].buttons;
     assert.strictEqual(r.cfg.cols, 6); assert.strictEqual(b[0].color, ''); assert.ok(Array.from(b[0].icon).length <= 4);
     assert.strictEqual(new Set(b.map(x => x.id)).size, b.length, 'Knopf-IDs eindeutig (alte „id“ = Freund wird übernommen)'); assert.strictEqual(b[4].user, U);
-    assert.strictEqual(b[6].kind, 'status', 'PC-Art → Status'); assert.strictEqual(b[8].op, 'invite_me', 'unbekannt → Selbst-Einladung');
+    assert.strictEqual(b[6].kind, 'chatbox', 'Chatbox geht jetzt über die eigene OSC-Verbindung'); assert.strictEqual(b[8].op, 'invite_me', 'unbekannt → Selbst-Einladung');
     for (const i of [0, 2, 3, 4, 5, 8]) await app.post({ act: 'btn_run', id: b[i].id }, {});
     assert.strictEqual(sent.length, 0, 'nichts geht an den PC');
     assert.deepStrictEqual(posts.map(x => x.act), ['status', 'invite', 'instance_create']);
@@ -2043,6 +2044,56 @@ test('3.2.4: Nexus-Knöpfe (Android) – nur Aktionen ohne PC (VRChat-API), alte
     await assert.rejects(app.post({ act: 'btn_run', id: 'ffffffffff' }, {}), /nicht gefunden/);
     const app2 = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
     assert.strictEqual((await app2.post({ act: 'btn_get' }, {})).cfg.pages[0].name, 'Test');
+});
+
+test('3.2.5: Handy-OSC – Knöpfe und Parameter-Seite über die eigene OSC-Verbindung (ohne PC-App)', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
+    const sent = [];
+    app.game.osc.send = async (addr, ...args) => { sent.push([addr, ...args]); };
+    app.game.osc.chain = Promise.resolve(); app.game.osc.lastChat = 0;
+    app.game.osc.params = { EarsUp: true, Hue: 0.5, Outfit: 2, Voice: 0.2 };
+    app.link.remoteSend = async () => { throw new Error('darf nicht an den PC gehen'); };
+    assert.ok(app.osctools && app.chatmods, 'OSC-Werkzeuge und Chatbox-Module auch am Handy');
+    // Seite: nur eigene Parameter (ohne VRChat-eigene wie Voice), Favoriten
+    let m = await app.post({ act: 'mosc_get' }, {});
+    assert.deepStrictEqual(m.params.map(p => p.name + ':' + p.type), ['EarsUp:bool', 'Hue:float', 'Outfit:int']);
+    m = await app.post({ act: 'mosc_fav', name: 'Hue', type: 'float' }, {});
+    assert.deepStrictEqual(m.favs, [{ name: 'Hue', type: 'float' }]);
+    await assert.rejects(app.post({ act: 'mosc_fav', name: '../böse<x>', type: 'bool' }, {}), /Ungültig/);
+    await app.post({ act: 'mosc_set', name: 'Outfit', type: 'int', value: '3' }, {});
+    assert.deepStrictEqual(sent.pop(), ['/avatar/parameters/Outfit', 3]);
+    // Chatbox-Module am Handy: nur Module ohne PC-Werte
+    const cm = await app.post({ act: 'cm_get' }, {});
+    assert.ok(cm.mobile && cm.modules.time && !cm.modules.system && !cm.modules.media && !cm.modules.window);
+    // Knöpfe
+    const cfg = { pages: [{ name: 'OSC', buttons: [
+        { kind: 'param', name: 'EarsUp', mode: 'toggle' }, { kind: 'param_step', name: 'Hue', ptype: 'float', step: '0.25' }, { kind: 'input', name: 'Jump' },
+        { kind: 'chatbox', text: 'Hallo' }, { kind: 'chatmods', on: '1' }, { kind: 'param', name: 'Bad<script>', mode: 'set', ptype: 'int', value: '7' },
+    ] }] };
+    const r = await app.post({ act: 'btn_save', cfg: JSON.stringify(cfg) }, {});
+    const b = r.cfg.pages[0].buttons;
+    assert.strictEqual(b[5].name, 'Badscript');
+    await app.post({ act: 'btn_run', id: b[0].id }, {});
+    assert.deepStrictEqual(sent.pop(), ['/avatar/parameters/EarsUp', false], 'war an → aus');
+    await app.post({ act: 'btn_run', id: b[1].id }, {});
+    await app.post({ act: 'btn_run', id: b[1].id }, {});
+    assert.deepStrictEqual(sent.pop(), ['/avatar/parameters/Hue', { float: 1 }], '0.5 + 0.25 + 0.25, höchstens 1');
+    await app.post({ act: 'btn_run', id: b[2].id }, {});
+    assert.ok(sent.some(x => x[0] === '/input/Jump' && x[1] === 1) && sent[sent.length - 1][0] === '/input/Jump' && sent[sent.length - 1][1] === 0, 'Eingabe kurz drücken');
+    await app.post({ act: 'btn_run', id: b[3].id }, {});
+    await app.game.osc.chain;
+    assert.strictEqual(sent.pop()[0], '/chatbox/input');
+    await app.post({ act: 'btn_run', id: b[4].id }, {});
+    assert.strictEqual(app.chatmods.cfg().on, true);
+    app.chatmods.stop();
+    await app.post({ act: 'btn_run', id: b[5].id }, {});
+    assert.deepStrictEqual(sent.pop(), ['/avatar/parameters/Badscript', 7]);
+    // Empfang aus dem WLAN, sobald das Ziel nicht der eigene Rechner ist
+    const src = fs.readFileSync(require.resolve('../backend/gamelog'), 'utf8');
+    assert.ok(/0\.0\.0\.0/.test(src));
+    app.tools.stop && app.tools.stop();
 });
 
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {

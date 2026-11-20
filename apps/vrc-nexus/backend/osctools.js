@@ -29,7 +29,7 @@ class OscTools {
     store(k, v) { this.db.setSetting(k, JSON.stringify(v)); }
 
     start() {
-        if (this.app.mobile || this.tapsOn) return;
+        if (this.tapsOn) return;
         this.tapsOn = true;
         const o = this.osc;
         o.taps = o.taps || new Set();
@@ -171,7 +171,6 @@ class OscTools {
     // ---- Aufnahme & Wiedergabe ----
     recs() { return this.load('osc_recs', []).map(r => ({ id: r.id, name: r.name, dur: r.dur, n: r.events.length, at: r.at })); }
     recStart(name, max) {
-        if (this.app.mobile) throw new UserError('Nur in der Windows-App.');
         if (this.rec) throw new UserError('Aufnahme läuft schon.');
         this.rec = { name: cut(str(name).trim(), 40), start: Date.now(), max: Math.max(5, Math.min(300, int(max) || 60)), events: [] };
         // Startzustand mitnehmen, damit die Wiedergabe von der gleichen Ausgangslage beginnt
@@ -206,6 +205,27 @@ class OscTools {
     stopPlay() { if (this.playing) { this.playing.timers.forEach(clearTimeout); this.playing = null; } }
     recDel(rid) { this.store('osc_recs', this.load('osc_recs', []).filter(x => x.id !== str(rid))); }
 
+    // ---- 3.2.5: Handy-Seite „OSC“: Verbindung, Parameter mit Favoriten ----
+    favs() { return arr(this.load('osc_favs', [])).filter(f => f && /^[\w/\-. ]{1,64}$/u.test(str(f.name)) && ['bool', 'int', 'float'].includes(f.type)).slice(0, 60); }
+    favToggle(name, type) {
+        name = str(name).trim();
+        if (!/^[\w/\-. ]{1,64}$/u.test(name)) throw new UserError('Ungültiger Parametername.');
+        const l = this.favs(), i = l.findIndex(f => f.name === name);
+        if (i >= 0) l.splice(i, 1); else { if (l.length >= 60) throw new UserError('Höchstens 60 Favoriten.'); l.push({ name, type: ['bool', 'int', 'float'].includes(str(type)) ? str(type) : 'bool' }); }
+        this.store('osc_favs', l);
+        return l;
+    }
+    async mobile() {
+        const o = this.osc, c = this.app.game.cfg();
+        let ips = [];
+        try { const dg = require('dgram'); if (typeof dg.localIps === 'function') ips = await dg.localIps(); } catch (e) { ips = []; }
+        const params = Object.entries(o.params || {}).filter(([k, v]) => !BUILTIN.has(k) && (typeof v === 'boolean' || typeof v === 'number'))
+            .map(([name, value]) => ({ name, type: typeOf(value), value })).sort((a, b) => a.name.localeCompare(b.name));
+        const cm = this.app.chatmods ? this.app.chatmods.cfg() : null;
+        return Object.assign(this.status(), { cfg: { host: c.osc_host, send: c.osc_send_port, listen_port: c.osc_listen_port, listen: !!c.osc_listen }, last: o.lastPacket || 0, listen_error: o.listenError || '',
+            params, favs: this.favs(), ips, chatmods: cm ? { on: !!cm.on, seconds: cm.seconds } : null });
+    }
+
     status() {
         const o = this.osc;
         return { fwd: Object.assign(this.fwdCfg(), { count: this.fwdCount || 0 }), scenes: this.scenes().map(s => ({ id: s.id, name: s.name, n: Object.keys(s.params).length, avatar: s.avatar, at: s.at })),
@@ -225,6 +245,9 @@ class OscTools {
             case 'cbx_sched_add': { const w = this.schedAdd(input.text, input.at, input.mins); return Object.assign(this.cbx(), { msg: 'Geplant für ' + new Date(w).toLocaleString('de-DE', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) + '.' }); }
             case 'cbx_sched_del': this.schedDel(input.id); return this.cbx();
             case 'osct_status': return this.status();
+            case 'mosc_get': return await this.mobile();
+            case 'mosc_fav': this.favToggle(input.name, input.type); return await this.mobile();
+            case 'mosc_set': await this.app.game.oscSend('param', { name: input.name, type: input.type, value: input.value }); return { ok: true };
             case 'osct_test': return this.test();
             case 'osct_fwd': return Object.assign(this.status(), { fwd: this.fwdSave(input.on, input.targets), msg: 'Weiterleitung gespeichert.' });
             case 'osct_scene_save': this.sceneSave(input.name, input.only); return Object.assign(this.status(), { msg: 'Szene gespeichert.' });

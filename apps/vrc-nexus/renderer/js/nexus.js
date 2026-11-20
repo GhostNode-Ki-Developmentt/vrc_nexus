@@ -183,6 +183,7 @@
         if (name === 'warn' && window.NexusWarn) window.NexusWarn.open();
         if (name === 'community' && window.NexusCommunity) window.NexusCommunity.open(sub);
         if (name === 'buttons' && window.NexusButtons) window.NexusButtons.open();
+        if (name === 'osc' && window.NexusMOsc) window.NexusMOsc.open();
         if (name === 'netgraph' && window.NexusNet) window.NexusNet.open();   // 3.2.3: Gemeinsames Netzwerk
         if (name === 'calendar') loadCalendar(false);
         if (name === 'gallery' && !loaded.gallery) loadGallery(false);

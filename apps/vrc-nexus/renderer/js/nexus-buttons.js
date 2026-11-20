@@ -47,7 +47,7 @@
                 + '<span class="bt-ic">' + esc(x.icon) + '</span>' + (live[x.id] !== undefined ? '<b class="bt-v">' + esc(live[x.id]) + '</b>' : '') + '<span class="bt-l">' + esc(x.label || T(d.kinds[x.kind][1])) + '</span>' + (edit ? '<i>✎</i>' : '') + '</button>').join('')
             + (!p.buttons.length ? '<p class="vx-empty">' + esc(T('Noch keine Knöpfe – „Bearbeiten“ → „＋ Knopf“.')) + '</p>' : '') + '</div>'
             + (edit && b ? form(b) : '')
-            + '<p class="vx-small">' + esc(T('Alle Knöpfe laufen direkt über die VRChat-API – kein PC nötig.')) + ' · ' + esc(T('Idee von Natsu')) + ' 💡</p>';
+            + '<p class="vx-small">' + esc(T('Status, Avatar, Freunde und Instanzen laufen über die VRChat-API, OSC-Knöpfe über die eigene OSC-Verbindung des Handys (Menü → 📡 OSC).')) + ' · ' + esc(T('Idee von Natsu')) + ' 💡</p>';
     }
     function readForm(f, b) {
         const v = n => f.elements[n] ? (f.elements[n].type === 'checkbox' ? f.elements[n].checked : f.elements[n].value) : undefined;

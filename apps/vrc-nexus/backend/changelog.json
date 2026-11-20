@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.2.5",
+  "title": "OSC on the phone",
+  "body": "- 📡 **Own OSC connection from the phone straight to VRChat** (no PC app needed): enter the PC's IP under Menu → **OSC & parameters**, test the connection, and start VRChat with the launch option shown there (`--osc=9000:<phone IP>:9001`) so it accepts OSC from the network and reports parameter values to the phone. Uses a small built-in Android UDP module (local network addresses only).\n- 🎚 **Avatar parameters made for the phone:** every parameter of the current avatar as a big switch, slider or −/+ stepper, with search; ⭐ favourites stay on top and turn into a Nexus button with one tap. Parameters can also be added by name.\n- 🎛 **OSC buttons in the Stream Deck:** avatar parameter (toggle/set), parameter step (+/−), OSC input, chatbox text, clear chatbox, \"typing…\", parameter scene, recording (record/play) and chatbox modules on/off.\n- 🎭 **Scenes, recording and chatbox modules on the phone:** save and restore parameter scenes, record and replay parameter movements; chatbox modules without PC data (status, time, weather, Twitch, countdown, friends, marquee, animation)."
+ },
+ {
   "version": "3.2.4",
   "title": "Simpler phone app",
   "body": "- 📱 **Cleaner Android layout:** a fixed bottom bar (Home · Friends · Community · Buttons · Menu), a compact one-line header and sync line, and a slide-in menu with names and the same groups as the PC sidebar instead of the icon grid. Theme and language moved into the menu; the friend list shows just the search plus a \"Filter\" button.\n- 🎛 **Nexus buttons work without a PC:** only actions that run directly over the VRChat API remain – status, switch avatar, friend (self-invite / request invite / invite to my instance), create instance, open an app area, and live counters (friends online, notifications). Old PC buttons are removed automatically.\n- 🐛 **Fixes:** avatar and friend buttons no longer overwrite their own button ID; the example buttons keep stable IDs so live counters show up; messages appear above the bottom bar."

@@ -28,7 +28,7 @@
             + (c.on && d.rotator_on ? '<div class="muted small">ℹ Der Chatbox-Rotator pausiert, solange die Module senden – der Text vom Rotator kommt über das Modul „Persönlicher Status“.</div>' : '')
             + '<div class="cm-preview"><div class="cm-bubble" id="cmPrev">' + (pv.text ? esc(pv.text).replace(/\n/g, '<br>') : '<span class="muted">– noch nichts eingeschaltet –</span>') + '</div>'
             + '<div class="cm-count' + (pv.length > 144 ? ' over' : '') + '" id="cmCount">' + Math.min(pv.length, 144) + ' / 144' + (pv.dropped && pv.dropped.length ? ' · ⚠ zu lang – weggelassen: ' + pv.dropped.map(k => esc(d.modules[k][1])).join(', ') : '') + '</div></div>'
-            + '<div class="cm-list">' + c.order.map((k, i) => row(k, i)).join('') + '</div>';
+            + '<div class="cm-list">' + c.order.filter(k => d.modules[k]).map((k, i) => row(k, i)).join('') + '</div>';
     }
     function row(k, i) {
         const m = d.modules[k], s = d.cfg.mods[k], open = openMod === k;

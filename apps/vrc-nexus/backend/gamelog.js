@@ -289,7 +289,8 @@ class Osc {
                 if (this.taps) for (const f of this.taps) { try { f(address, args); } catch (e) { /* egal */ } }
             }
         });
-        s.bind(int(port) || 9001, '127.0.0.1');
+        // Ziel im eigenen Netz (z. B. Handy → PC): auch Pakete von dort annehmen, sonst nur vom eigenen Rechner
+        s.bind(int(port) || 9001, /^(127\.|localhost$)/.test(this.host) ? '127.0.0.1' : '0.0.0.0');
         s.unref();
         this.listener = s;
     }

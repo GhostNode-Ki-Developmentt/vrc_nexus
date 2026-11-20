@@ -1033,3 +1033,32 @@ Knöpfe	Buttons	Boutons	ボタン
 Filter	Filter	Filtres	フィルター
 Alle Knöpfe laufen direkt über die VRChat-API – kein PC nötig.	All buttons run directly via the VRChat API – no PC needed.	Tous les boutons passent directement par l’API VRChat – aucun PC nécessaire.	すべてのボタンはVRChat APIで直接動作します – PC不要。
 wrld_… oder Welt-Link	wrld_… or world link	wrld_… ou lien du monde	wrld_… またはワールドリンク
+Alle Parameter	All parameters	Tous les paramètres	すべてのパラメーター
+Als Nexus-Knopf anlegen	Add as Nexus button	Ajouter comme bouton Nexus	Nexusボタンとして追加
+Aufnahme-Name (leer = letzte)	Recording name (empty = latest)	Nom de l’enregistrement (vide = dernier)	録画名（空欄＝最新）
+Aufnehmen	Record	Enregistrer	録画
+Empfangen auf Port	Receive on port	Recevoir sur le port	受信ポート
+Handy und PC müssen im selben WLAN sein. Andere OSC-Programme am PC bekommen dann keine Werte mehr von VRChat.	Phone and PC must be on the same Wi-Fi. Other OSC programs on the PC will then no longer receive values from VRChat.	Le téléphone et le PC doivent être sur le même Wi-Fi. Les autres programmes OSC du PC ne recevront alors plus de valeurs de VRChat.	スマホとPCは同じWi-Fiに接続してください。PC上の他のOSCプログラムはVRChatから値を受け取れなくなります。
+Jetzt speichern	Save now	Enregistrer maintenant	今すぐ保存
+Knopf in den Nexus-Knöpfen angelegt.	Button added to Nexus buttons.	Bouton ajouté aux boutons Nexus.	Nexusボタンに追加しました。
+Name der Szene	Scene name	Nom de la scène	シーン名
+OSC & Parameter	OSC & parameters	OSC & paramètres	OSCとパラメーター
+OSC-Eingabe	OSC input	Entrée OSC	OSC入力
+PC-IP (VRChat)	PC IP (VRChat)	IP du PC (VRChat)	PCのIP（VRChat）
+PC-IP fehlt	PC IP missing	IP du PC manquante	PCのIPがありません
+Parameter suchen …	Search parameters …	Rechercher des paramètres …	パラメーターを検索 …
+Parameter von Hand (Name)	Parameter by hand (name)	Paramètre manuel (nom)	手動パラメーター（名前）
+Parameter-Werte von VRChat empfangen	Receive parameter values from VRChat	Recevoir les valeurs des paramètres de VRChat	VRChatからパラメーター値を受信
+Senden an	Sending to	Envoi vers	送信先
+Senden an Port	Send to port	Envoyer au port	送信ポート
+Speichert die aktuellen Werte deines Avatars – später mit einem Tippen wiederherstellen.	Saves your avatar's current values – restore them later with one tap.	Enregistre les valeurs actuelles de ton avatar – à restaurer plus tard d’un geste.	アバターの現在の値を保存 – 後でワンタップで復元できます。
+Status, Avatar, Freunde und Instanzen laufen über die VRChat-API, OSC-Knöpfe über die eigene OSC-Verbindung des Handys (Menü → 📡 OSC).	Status, avatar, friends and instances run via the VRChat API, OSC buttons via the phone's own OSC connection (Menu → 📡 OSC).	Statut, avatar, amis et instances passent par l’API VRChat, les boutons OSC par la connexion OSC du téléphone (Menu → 📡 OSC).	ステータス・アバター・フレンド・インスタンスはVRChat API、OSCボタンはスマホ自身のOSC接続（メニュー → 📡 OSC）で動作します。
+Text für die Chatbox, auch mit {Variablen}	Chatbox text, variables like {zeit} allowed	Texte pour la chatbox, variables {…} possibles	チャットボックスのテキスト（{変数}可）
+Uhrzeit, Status, Wetter, Countdown …	Time, status, weather, countdown …	Heure, statut, météo, compte à rebours …	時刻・ステータス・天気・カウントダウン …
+VRChat antwortet	VRChat responds	VRChat répond	VRChatが応答
+VRChat nimmt OSC normalerweise nur vom eigenen PC an. Damit das Handy steuern und die Werte sehen kann, VRChat mit dieser Startoption starten (Steam → VRChat → Eigenschaften → Startoptionen):	VRChat normally only accepts OSC from its own PC. So the phone can control it and see the values, start VRChat with this launch option (Steam → VRChat → Properties → Launch options):	VRChat n’accepte normalement l’OSC que depuis son propre PC. Pour que le téléphone puisse le piloter et voir les valeurs, lance VRChat avec cette option (Steam → VRChat → Propriétés → Options de lancement) :	VRChatは通常、同じPCからのOSCのみ受け付けます。スマホで操作して値を見るには、この起動オプションでVRChatを起動してください（Steam → VRChat → プロパティ → 起動オプション）:
+Verbindung zu VRChat	Connection to VRChat	Connexion à VRChat	VRChatへの接続
+Wert (bei „Wert setzen“)	Value (for “set value”)	Valeur (pour « définir la valeur »)	値（「値を設定」時）
+empfängt	receiving	réception	受信中
+nichts empfangen	nothing received	rien reçu	受信なし
+noch nichts von VRChat empfangen	nothing received from VRChat yet	encore rien reçu de VRChat	VRChatからまだ何も受信していません

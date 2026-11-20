@@ -14,6 +14,8 @@ const { str, int, cut, UserError } = require('./util');
 const KINDS = {
     status: ['🟢', 'VRChat-Status', 'VRChat'], tab: ['📂', 'Bereich in der App öffnen', 'App'],
 };
+const ONOFF = [['', 'umschalten'], ['1', 'an'], ['0', 'aus']];
+const INPUTS = ['Jump', 'Voice', 'QuickMenuToggleLeft', 'QuickMenuToggleRight', 'Run', 'PanicButton', 'MoveForward', 'MoveBackward', 'LookLeft', 'LookRight', 'GrabRight', 'UseRight'];
 const FRIEND_OPS = [['invite_me', 'Selbst-Einladung zu ihm/ihr'], ['request', 'Einladung anfragen'], ['invite', 'in meine Instanz einladen']];
 /** API-Aktionen: Art → [Symbol, Name, Ort, Felder] */
 const NX = {
@@ -21,6 +23,16 @@ const NX = {
     friend: ['👤', 'Freund', 'VRChat', [['user', 'friend', ''], ['op', 'sel', FRIEND_OPS]]],
     instance_create: ['🌍', 'Instanz erstellen + einladen', 'VRChat', [['world', 'text', 'wrld_… oder Welt-Link'], ['type', 'sel', [['friends+', 'Freunde+'], ['friends', 'Freunde'], ['invite+', 'Einladung+'], ['invite', 'Einladung'], ['public', 'Öffentlich'], ['group', 'Gruppe']]],
         ['region', 'sel', [['eu', 'Europa'], ['us', 'USA West'], ['use', 'USA Ost'], ['jp', 'Japan']]], ['group', 'text', 'grp_… (nur bei Gruppe)']]],
+    // 3.2.5: OSC über die eigene Verbindung des Handys direkt zu VRChat (Seite „📡 OSC“)
+    param: ['🎚', 'Avatar-Parameter', 'OSC', [['name', 'text', 'Parameter-Name'], ['mode', 'sel', [['toggle', 'umschalten (an/aus)'], ['set', 'Wert setzen']]], ['ptype', 'sel', [['bool', 'Bool'], ['int', 'Int'], ['float', 'Float']]], ['value', 'text', 'Wert (bei „Wert setzen“)']]],
+    param_step: ['➕', 'Parameter-Schritt (+/−)', 'OSC', [['name', 'text', 'Parameter-Name'], ['ptype', 'sel', [['float', 'Float'], ['int', 'Int']]], ['step', 'num', 'Schritt, z. B. 0.1 oder -1']]],
+    input: ['🎮', 'OSC-Eingabe', 'OSC', [['name', 'sel', INPUTS.map(x => [x, x])]]],
+    chatbox: ['💬', 'Chatbox-Text', 'OSC', [['text', 'text', 'Text für die Chatbox, auch mit {Variablen}']]],
+    clear: ['🧹', 'Chatbox leeren', 'OSC', []],
+    typing: ['⌨', '„tippt …“ an/aus', 'OSC', [['on', 'sel', ONOFF]]],
+    scene: ['🎭', 'Parameter-Szene', 'OSC', [['scene', 'text', 'Name der Szene']]],
+    record: ['⏺', 'Aufnahme', 'OSC', [['op', 'sel', [['rec', 'Aufnahme starten/stoppen'], ['play', 'Abspielen/stoppen']]], ['rec', 'text', 'Aufnahme-Name (leer = letzte)']]],
+    chatmods: ['🧩', 'Chatbox-Module', 'OSC', [['on', 'sel', ONOFF]]],
     // Anzeige-Knöpfe: Live-Werte vom Handy, Antippen öffnet den passenden Bereich
     show_friends: ['👥', 'Freunde online (Anzeige)', 'Anzeige', []],
     show_notifs: ['🔔', 'Benachrichtigungen (Anzeige)', 'Anzeige', []],
@@ -48,6 +60,7 @@ function clean(b) {
     if (k === 'friend' && !b.user && /^usr_/.test(str(b.id))) b = Object.assign({}, b, { user: b.id, id: '' });
     const o = { id: /^[0-9a-f]{10}$/.test(str(b.id)) ? str(b.id) : id(), icon: cut(str(b.icon).trim(), 4) || KINDS[k][0], label: cut(str(b.label).trim(), 30), color: COLORS.includes(str(b.color)) ? str(b.color) : '', kind: k };
     if (k === 'status') { o.status = STATUSES.includes(str(b.status)) ? str(b.status) : 'active'; o.desc = cut(str(b.desc), 32); }
+    if ((k === 'param' || k === 'param_step') && b.name !== undefined) b = Object.assign({}, b, { name: str(b.name).replace(/[^\w/\-. ]/g, '').slice(0, 64) });
     if (k === 'tab') o.tab = str(b.tab).replace(/[^\w-]/g, '').slice(0, 20) || 'home';
     for (const [n, t, x] of FIELDS[k] || []) {
         if (t === 'sel') o[n] = x.some(e => e[0] === str(b[n])) ? str(b[n]) : x[0][0];
@@ -103,7 +116,51 @@ class Buttons {
                 return { msg: '✔ ' + (r.msg || 'Instanz erstellt.'), location: r.location };
             }
         }
+        if (KINDS[b.kind] && KINDS[b.kind][2] === 'OSC') return this.runOsc(b);
         if (SHOW_TAB[b.kind]) return { tab: SHOW_TAB[b.kind], msg: '' };
+        throw new UserError('Unbekannte Aktion.');
+    }
+    /** OSC-Knöpfe: über die eigene OSC-Verbindung des Handys (Spiel & OSC → Ziel-IP) */
+    async runOsc(b) {
+        const g = this.app.game, t = this.app.osctools, ok = m => ({ msg: '✔ ' + (m || b.label || KINDS[b.kind][1]) });
+        const onoff = (v, cur) => v === '1' ? true : v === '0' ? false : !cur;
+        switch (b.kind) {
+            case 'chatbox': if (!b.text) throw new UserError('Kein Text hinterlegt.'); await g.oscSend('chatbox', { text: b.text, split: '1', sound: '1' }); if (t) t.addHist(b.text); return ok();
+            case 'clear': await g.oscSend('chatbox', { clear: '1' }); return ok();
+            case 'typing': await g.oscSend('typing', { on: onoff(b.on, this.typing) ? '1' : '0' }); this.typing = onoff(b.on, this.typing); return ok();
+            case 'input': await g.oscSend('input', { name: b.name, value: '1', pulse: '1' }); return ok();
+            case 'param': {
+                if (!b.name) throw new UserError('Kein Parameter hinterlegt.');
+                if (b.mode === 'toggle') { const cur = !!(g.osc.params || {})[b.name]; await g.oscSend('param', { name: b.name, type: 'bool', value: cur ? '0' : '1' }); return ok(b.name + (cur ? ' aus' : ' an')); }
+                await g.oscSend('param', { name: b.name, type: b.ptype, value: b.value || (b.ptype === 'bool' ? '1' : '0') });
+                return ok(b.name + ' = ' + (b.value || '0'));
+            }
+            case 'param_step': {
+                if (!b.name) throw new UserError('Kein Parameter hinterlegt.');
+                const cur = Number((g.osc.params || {})[b.name]) || 0, step = Number(b.step) || 0;
+                let v = cur + step;
+                v = b.ptype === 'int' ? Math.max(0, Math.min(255, Math.round(v))) : Math.max(-1, Math.min(1, Math.round(v * 1000) / 1000));
+                await g.oscSend('param', { name: b.name, type: b.ptype || 'float', value: String(v) });
+                g.osc.params[b.name] = v;   // nächster Schritt baut darauf auf, auch ohne Rückmeldung von VRChat
+                return ok(b.name + ' = ' + v);
+            }
+            case 'scene': {
+                const s = t.scenes().find(x => x.name.toLowerCase() === str(b.scene).toLowerCase() || x.id === b.scene);
+                if (!s) throw new UserError('Szene „' + b.scene + '“ nicht gefunden.');
+                const r = await t.sceneApply(s.id); return ok(s.name + ' · ' + r.n + ' Parameter');
+            }
+            case 'record': {
+                if (b.op === 'play') {
+                    const l = t.recs(), r = b.rec ? l.find(x => x.name.toLowerCase() === b.rec.toLowerCase()) : l[l.length - 1];
+                    if (!r) throw new UserError('Keine Aufnahme gefunden.');
+                    if (t.playing && t.playing.id === r.id) { t.stopPlay(); return ok('Wiedergabe gestoppt'); }
+                    t.recPlay(r.id, 1); return ok('▶ ' + r.name);
+                }
+                if (t.rec) { const r = await t.recStop(); return ok('Aufnahme gespeichert (' + r.dur + ' s)'); }
+                t.recStart(b.rec, 60); return ok('⏺ Aufnahme läuft');
+            }
+            case 'chatmods': { const on = onoff(b.on, this.app.chatmods.cfg().on); this.app.chatmods.save({ on: on ? '1' : '0' }); return ok('Chatbox-Module ' + (on ? 'an' : 'aus')); }
+        }
         throw new UserError('Unbekannte Aktion.');
     }
     /** Knopf → Daten für die API-Aktion */

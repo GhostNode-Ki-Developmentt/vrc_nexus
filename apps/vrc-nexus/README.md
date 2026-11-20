@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.5 – OSC on the phone
+
+- 📡 **Own OSC connection from the phone straight to VRChat** (no PC app needed): enter the PC's IP under Menu → **OSC & parameters**, test the connection, and start VRChat with the launch option shown there (`--osc=9000:<phone IP>:9001`) so it accepts OSC from the network and reports parameter values to the phone. Uses a small built-in Android UDP module (local network addresses only).
+- 🎚 **Avatar parameters made for the phone:** every parameter of the current avatar as a big switch, slider or −/+ stepper, with search; ⭐ favourites stay on top and turn into a Nexus button with one tap. Parameters can also be added by name.
+- 🎛 **OSC buttons in the Stream Deck:** avatar parameter (toggle/set), parameter step (+/−), OSC input, chatbox text, clear chatbox, "typing…", parameter scene, recording (record/play) and chatbox modules on/off.
+- 🎭 **Scenes, recording and chatbox modules on the phone:** save and restore parameter scenes, record and replay parameter movements; chatbox modules without PC data (status, time, weather, Twitch, countdown, friends, marquee, animation).
+
 ### New in 3.2.4 – Simpler phone app
 
 - 📱 **Cleaner Android layout:** a fixed bottom bar (Home · Friends · Community · Buttons · Menu), a compact one-line header and sync line, and a slide-in menu with names and the same groups as the PC sidebar instead of the icon grid. Theme and language moved into the menu; the friend list shows just the search plus a "Filter" button.
