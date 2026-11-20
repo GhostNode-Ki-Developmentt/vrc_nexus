@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.4 – Simpler phone app
+
+- 📱 **Cleaner Android layout:** a fixed bottom bar (Home · Friends · Community · Buttons · Menu), a compact one-line header and sync line, and a slide-in menu with names and the same groups as the PC sidebar instead of the icon grid. Theme and language moved into the menu; the friend list shows just the search plus a "Filter" button.
+- 🎛 **Nexus buttons work without a PC:** only actions that run directly over the VRChat API remain – status, switch avatar, friend (self-invite / request invite / invite to my instance), create instance, open an app area, and live counters (friends online, notifications). Old PC buttons are removed automatically.
+- 🐛 **Fixes:** avatar and friend buttons no longer overwrite their own button ID; the example buttons keep stable IDs so live counters show up; messages appear above the bottom bar.
+
 ### New in 3.2.3 – Shared network, better feed and profile
 
 - 🕸 **Shared network (Community):** an interactive map of your social circle. Friends appear as profile pictures; lines show real mutual friendships (from VRChat's mutual-friends data), coloured rings and clouds show shared communities (VRChat groups you are in yourself). Search, zoom, drag, filters (minimum connections, direct friends only, only connected people, communities, hide people), optional non-friends you met in game several times, and a side panel with your friend list and communities. Blocked users never appear; data is fetched slowly in the background and cached.

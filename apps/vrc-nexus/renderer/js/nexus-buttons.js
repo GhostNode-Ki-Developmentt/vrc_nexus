@@ -6,7 +6,7 @@
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
     const T = s => (window.t ? window.t(s) : s);
     let box = null, d = null, page = 0, edit = false, sel = '', live = {}, liveT = null;
-    const TABS = [['home', '🏠 Start'], ['remote', '🎮 PC-Fernbedienung'], ['community', '🫂 Community'], ['notifs', '🔔 Benachrichtigungen'], ['friends', '👥 Freundesliste'], ['locations', '📍 Freunde-Orte'], ['calendar', '📅 Gruppen-Kalender']];
+    const TABS = [['home', '🏠 Start'], ['community', '🫂 Community'], ['notifs', '🔔 Benachrichtigungen'], ['friends', '👥 Freundesliste'], ['locations', '📍 Freunde-Orte'], ['calendar', '📅 Gruppen-Kalender']];
     const cur = () => d.cfg.pages[Math.min(page, d.cfg.pages.length - 1)];
     const save = (quiet) => api('btn_save', { cfg: JSON.stringify(d.cfg), quiet: quiet ? '1' : '' }).then(r => { d.cfg = r.cfg; if (r.msg) toast(r.msg); render(); if (!edit) poll(); }).catch(e => toast('⚠ ' + e.message, true));
 
@@ -14,11 +14,6 @@
         const k = d.kinds, tr = l => { const i = l.indexOf(' · '); return i < 0 ? T(l) : T(l.slice(0, i)) + l.slice(i); };
         const opt = (list, v) => list.map(([val, l]) => '<option value="' + esc(val) + '"' + (val === v ? ' selected' : '') + '>' + esc(tr(l)) + '</option>').join('');
         let f = '';
-        if (b.kind === 'chatbox') f = '<textarea name="text" rows="2" maxlength="500" placeholder="' + esc(T('Text für die Chatbox am PC')) + '">' + esc(b.text || '') + '</textarea>';
-        if (b.kind === 'typing') f = '<label class="check"><input type="checkbox" name="on"' + (b.on ? ' checked' : '') + '> ' + esc(T('einschalten (sonst aus)')) + '</label>';
-        if (b.kind === 'input') f = '<select name="name">' + opt(d.inputs.map(x => [x, x]), b.name) + '</select>';
-        if (b.kind === 'param') f = '<input type="text" name="name" placeholder="' + esc(T('Parameter-Name')) + '" value="' + esc(b.name || '') + '"><div class="nc-row"><select name="mode">' + opt([['toggle', 'umschalten (an/aus)'], ['set', 'Wert setzen']], b.mode) + '</select>'
-            + '<select name="ptype">' + opt([['bool', 'Bool'], ['int', 'Int'], ['float', 'Float']], b.ptype) + '</select><input type="text" name="value" placeholder="' + esc(T('Wert')) + '" value="' + esc(b.value || '') + '" style="width:80px"></div>';
         if (b.kind === 'status') f = '<select name="status">' + opt([['join me', '🔵 Join Me'], ['active', '🟢 Online'], ['ask me', '🟠 Ask Me'], ['busy', '🔴 Beschäftigt']], b.status) + '</select><input type="text" name="desc" maxlength="32" placeholder="' + esc(T('Status-Text (optional)')) + '" value="' + esc(b.desc || '') + '">';
         if (b.kind === 'tab') f = '<select name="tab">' + opt(TABS, b.tab) + '</select>';
         // Stream-Deck-Aktionen: Felder kommen vom Backend (buttons.js FIELDS)
@@ -29,7 +24,7 @@
             else if (t === 'friend') f += '<select name="' + n + '"><option value="">' + esc(T('Freund wählen …')) + '</option>' + opt(d.friends || [], String(v)) + '</select>';
             else f += '<input type="' + (t === 'num' ? 'number' : 'text') + '" step="any" name="' + n + '" placeholder="' + esc(T(x)) + '" value="' + esc(v) + '">';
         }
-        if (d.kinds[b.kind] && d.kinds[b.kind][2] === 'Anzeige') f += '<p class="nx-hint">' + esc(T('Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.')) + (b.kind === 'show_info' ? ' ' + esc(T('Variablen: {world} {players} {friends} {notifs} {avatar} {time}')) : '') + '</p>';
+        if (d.kinds[b.kind] && d.kinds[b.kind][2] === 'Anzeige') f += '<p class="nx-hint">' + esc(T('Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.')) +  '</p>';
         return '<form class="nc-card bt-form"><h4>✎ ' + esc(T('Knopf')) + '</h4>'
             + '<div class="nc-row"><input type="text" name="icon" maxlength="4" value="' + esc(b.icon) + '" style="width:64px;text-align:center"><input type="text" name="label" maxlength="30" placeholder="' + esc(T('Beschriftung')) + '" value="' + esc(b.label) + '" style="flex:1"></div>'
             + '<div class="bt-colors">' + d.colors.map(c => '<button type="button" class="bt-c bt-' + (c || 'none') + (c === b.color ? ' on' : '') + '" data-bcol="' + c + '" title="' + esc(c || T('Standard')) + '"></button>').join('') + '</div>'
@@ -52,7 +47,7 @@
                 + '<span class="bt-ic">' + esc(x.icon) + '</span>' + (live[x.id] !== undefined ? '<b class="bt-v">' + esc(live[x.id]) + '</b>' : '') + '<span class="bt-l">' + esc(x.label || T(d.kinds[x.kind][1])) + '</span>' + (edit ? '<i>✎</i>' : '') + '</button>').join('')
             + (!p.buttons.length ? '<p class="vx-empty">' + esc(T('Noch keine Knöpfe – „Bearbeiten“ → „＋ Knopf“.')) + '</p>' : '') + '</div>'
             + (edit && b ? form(b) : '')
-            + '<p class="vx-small">' + esc(T('PC-Knöpfe laufen über die Dashboard-Verbindung (wie die PC-Fernbedienung) – am PC muss VRC Nexus mit dem Dashboard verbunden sein. Kein Stream Deck nötig.')) + ' · ' + esc(T('Idee von Natsu')) + ' 💡</p>';
+            + '<p class="vx-small">' + esc(T('Alle Knöpfe laufen direkt über die VRChat-API – kein PC nötig.')) + ' · ' + esc(T('Idee von Natsu')) + ' 💡</p>';
     }
     function readForm(f, b) {
         const v = n => f.elements[n] ? (f.elements[n].type === 'checkbox' ? f.elements[n].checked : f.elements[n].value) : undefined;
@@ -74,7 +69,7 @@
                     .catch(x => toast('⚠ ' + x.message, true)).finally(() => setTimeout(() => key.classList.remove('run'), 250));
             }
             const p = cur();
-            if (t.closest('[data-badd]')) { const nb = { id: '', icon: '⭐', label: T('Neu'), color: '', kind: 'chatbox', text: '' }; p.buttons.push(nb); return api('btn_save', { cfg: JSON.stringify(d.cfg), quiet: '1' }).then(r => { d.cfg = r.cfg; sel = cur().buttons[cur().buttons.length - 1].id; render(); }); }
+            if (t.closest('[data-badd]')) { const nb = { id: '', icon: '🟢', label: T('Neu'), color: '', kind: 'status', status: 'active' }; p.buttons.push(nb); return api('btn_save', { cfg: JSON.stringify(d.cfg), quiet: '1' }).then(r => { d.cfg = r.cfg; sel = cur().buttons[cur().buttons.length - 1].id; render(); }); }
             if (t.closest('[data-bpadd]')) { const n = prompt(T('Name der neuen Seite'), T('Seite') + ' ' + (d.cfg.pages.length + 1)); if (!n) return; d.cfg.pages.push({ name: n, buttons: [] }); page = d.cfg.pages.length - 1; return save(true); }
             if (t.closest('[data-bpren]')) { const n = prompt(T('Neuer Name'), p.name); if (!n) return; p.name = n; return save(true); }
             if (t.closest('[data-bpdel]')) { if (!confirm(T('Seite mit allen Knöpfen löschen?'))) return; d.cfg.pages.splice(page, 1); page = 0; return save(true); }

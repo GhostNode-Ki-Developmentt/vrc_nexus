@@ -1996,86 +1996,53 @@ test('3.0.0: E2EE (X3DH + Double Ratchet) – Austausch, Reihenfolge, verlorene 
     assert.strictEqual(E.decrypt(E.accept(bob, old.pre).st, old).text, 'alt');
 });
 
-test('3.0.0: Nexus-Knöpfe (Android) – Seiten, Säubern, Ausführen über Dashboard-Verbindung und VRChat-Status', async () => {
+test('3.2.4: Nexus-Knöpfe (Android) – nur Aktionen ohne PC (VRChat-API), alte PC-Knöpfe fallen weg', async () => {
     const { NexusApp } = require('../backend/app');
+    const { KINDS } = require('../backend/buttons');
     const db = await openDatabase(null);
     const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
-    const sent = [], posts = [];
+    const sent = [], posts = [], api = [];
     app.link.remoteSend = async (kind, d) => { sent.push(Object.assign({ kind }, d)); return { ok: true }; };
-    app.link.remoteState = async () => ({ state: { params: { Ears: true } } });
     const realPost = app.post.bind(app);
-    app.post = async (input, files) => { if (input.act === 'status') { posts.push(input); return { ok: true }; } return realPost(input, files); };
+    app.post = async (input, files) => { if (['status', 'invite', 'instance_create'].includes(input.act)) { posts.push(input); return { ok: true, msg: 'ok' }; } return realPost(input, files); };
+    app.tools.apiAction = async (a, d) => { api.push([a, d]); return { ok: true, msg: 'ok' }; };
+    assert.deepStrictEqual(Object.keys(KINDS).sort(), ['avatar', 'friend', 'instance_create', 'show_friends', 'show_notifs', 'status', 'tab']);
     let r = await app.post({ act: 'btn_get' }, {});
-    assert.ok(r.cfg.pages[0].buttons.length >= 4, 'Beispiel-Knöpfe');
+    assert.ok(r.cfg.pages[0].buttons.length >= 4 && r.cfg.pages[0].buttons.every(b => KINDS[b.kind]), 'Beispiel-Knöpfe nur ohne PC');
+    const show = r.cfg.pages[0].buttons.find(b => b.kind === 'show_friends');
+    assert.ok(show && (await app.post({ act: 'btn_live', page: r.cfg.pages[0].id }, {})).values[show.id] !== undefined, 'Beispiel-Knöpfe behalten ihre IDs (Live-Werte)');
+    // alte PC-Knöpfe aus früheren Versionen werden beim Laden ausgeblendet
+    db.setSetting('nx_buttons', JSON.stringify({ v: 1, cols: 3, pages: [{ id: 'aaaaaaaaaa', name: 'Alt', buttons: [{ id: 'bbbbbbbbbb', kind: 'chatbox', text: 'x' }, { id: 'cccccccccc', kind: 'camera' }, { id: 'dddddddddd', kind: 'status', status: 'busy' }] }] }));
+    r = await app.post({ act: 'btn_get' }, {});
+    assert.deepStrictEqual(r.cfg.pages[0].buttons.map(b => b.kind), ['status']);
+    const W = 'wrld_00000000-0000-4000-8000-000000000101', A = 'avtr_00000000-0000-4000-8000-000000000001', U = 'usr_00000000-0000-4000-8000-000000000010';
     const cfg = { cols: 9, pages: [{ name: 'Test', buttons: [
-        { kind: 'chatbox', icon: '👋👋👋👋👋', label: 'Hi', text: 'Hallo\r\nWelt', color: 'evil' },
-        { kind: 'param', name: 'Ears<script>', mode: 'toggle' },
-        { kind: 'input', name: 'rm -rf' },
-        { kind: 'status', status: 'busy', desc: 'Stream' },
+        { kind: 'status', status: 'busy', desc: 'Stream', color: 'evil', icon: '👋👋👋👋👋' },
         { kind: 'tab', tab: 'community' },
-        { kind: 'gibtsnicht' },
+        { kind: 'avatar', avatar: A },
+        { kind: 'friend', user: U, op: 'request' },
+        { kind: 'friend', id: U, op: 'invite' },
+        { kind: 'instance_create', world: 'https://vrchat.com/home/world/' + W, type: 'friends', region: 'jp' },
+        { kind: 'chatbox', text: 'PC' },
+        { kind: 'show_friends' },
+        { kind: 'friend', id: U, op: 'rm -rf' },
     ] }] };
     r = await app.post({ act: 'btn_save', cfg: JSON.stringify(cfg) }, {});
     const b = r.cfg.pages[0].buttons;
-    assert.strictEqual(r.cfg.cols, 6); assert.strictEqual(b[0].color, ''); assert.strictEqual(Array.from(b[0].icon).length <= 4, true);
-    assert.strictEqual(b[0].text, 'Hallo\nWelt'); assert.strictEqual(b[1].name, 'Earsscript'); assert.strictEqual(b[2].name, 'Jump'); assert.strictEqual(b[5].kind, 'chatbox');
-    await app.post({ act: 'btn_run', id: b[0].id }, {});
-    assert.deepStrictEqual(sent.pop(), { kind: 'chatbox', text: 'Hallo\nWelt', split: '1' });
-    b[1].name = 'Ears'; r = await app.post({ act: 'btn_save', cfg: JSON.stringify(r.cfg) }, {});
-    await app.post({ act: 'btn_run', id: r.cfg.pages[0].buttons[1].id }, {});
-    assert.deepStrictEqual(sent.pop(), { kind: 'param', name: 'Ears', type: 'bool', value: '0' }, 'umschalten: war an → aus');
-    await app.post({ act: 'btn_run', id: b[2].id }, {});
-    assert.strictEqual(sent.pop().name, 'Jump');
-    await app.post({ act: 'btn_run', id: b[3].id }, {});
-    assert.strictEqual(posts.pop().status, 'busy');
-    r = await app.post({ act: 'btn_run', id: b[4].id }, {});
-    assert.strictEqual(r.tab, 'community');
+    assert.strictEqual(r.cfg.cols, 6); assert.strictEqual(b[0].color, ''); assert.ok(Array.from(b[0].icon).length <= 4);
+    assert.strictEqual(new Set(b.map(x => x.id)).size, b.length, 'Knopf-IDs eindeutig (alte „id“ = Freund wird übernommen)'); assert.strictEqual(b[4].user, U);
+    assert.strictEqual(b[6].kind, 'status', 'PC-Art → Status'); assert.strictEqual(b[8].op, 'invite_me', 'unbekannt → Selbst-Einladung');
+    for (const i of [0, 2, 3, 4, 5, 8]) await app.post({ act: 'btn_run', id: b[i].id }, {});
+    assert.strictEqual(sent.length, 0, 'nichts geht an den PC');
+    assert.deepStrictEqual(posts.map(x => x.act), ['status', 'invite', 'instance_create']);
+    assert.strictEqual(posts[2].world, W); assert.strictEqual(posts[2].region, 'jp'); assert.strictEqual(posts[2].invite_me, '1');
+    assert.deepStrictEqual(api, [['avatar', { id: A }], ['friend', { id: U, op: 'request' }], ['friend', { id: U, op: 'invite_me' }]]);
+    assert.strictEqual((await app.post({ act: 'btn_run', id: b[1].id }, {})).tab, 'community');
+    assert.strictEqual((await app.post({ act: 'btn_run', id: b[7].id }, {})).tab, 'friends');
+    assert.ok((await app.post({ act: 'btn_live', page: r.cfg.pages[0].id }, {})).values[b[7].id] !== undefined);
     await assert.rejects(app.post({ act: 'btn_run', id: 'ffffffffff' }, {}), /nicht gefunden/);
-    // Seite bleibt nach Neustart erhalten (Datenbank)
     const app2 = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
     assert.strictEqual((await app2.post({ act: 'btn_get' }, {})).cfg.pages[0].name, 'Test');
-});
-
-test('3.0.3: Nexus-Knöpfe – alle Stream-Deck-Aktionen über „Nexus-Aktion“ (Handy → Dashboard → PC) + Anzeige-Knöpfe', async () => {
-    const { NexusApp } = require('../backend/app');
-    const { NEXUS_ACTIONS } = require('../backend/dashlink');
-    const { KINDS, FIELDS } = require('../backend/buttons');
-    const db = await openDatabase(null);
-    const phone = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
-    const queue = [];
-    phone.link.remoteSend = async (kind, d) => { queue.push({ id: queue.length + 1, kind, payload: JSON.parse(JSON.stringify(d)) }); return { ok: true }; };
-    phone.link.remoteState = async () => ({ state: { running: true, world_name: 'Popcorn Palace', players: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] } });
-    // alle Plugin-Aktionen haben eine Knopf-Art
-    for (const k of ['param_step', 'rotator', 'launch', 'rejoin', 'pc_open', 'camera', 'macro', 'macro_stop', 'avatar', 'friend', 'overlay', 'speech', 'media', 'quicktext', 'scene', 'record', 'chatmods', 'tts', 'instance_create', 'show_friends', 'show_players', 'show_notifs', 'show_info']) assert.ok(KINDS[k], k);
-    const cfg = { pages: [{ name: 'Deck', buttons: [
-        { kind: 'rotator', on: '' }, { kind: 'media', cmd: 'next' }, { kind: 'camera', cmd: 'Zoom', value: '80' }, { kind: 'quicktext', index: '2' },
-        { kind: 'param_step', name: 'Hue', ptype: 'float', step: '0.1' }, { kind: 'tts', text: 'Hallo {puls}', chatbox: true }, { kind: 'overlay', on: '1' },
-        { kind: 'media', cmd: 'rm -rf' }, { kind: 'show_players' }, { kind: 'show_info', tpl: '{world}: {players}' }, { kind: 'macro', id: 'Böse' },
-    ] }] };
-    let r = await phone.post({ act: 'btn_save', cfg: JSON.stringify(cfg) }, {});
-    const b = r.cfg.pages[0].buttons;
-    assert.strictEqual(b[7].cmd, 'toggle', 'unbekannter Wert → Standard');
-    for (const i of [0, 1, 2, 3, 4, 5, 6, 10]) await phone.post({ act: 'btn_run', id: b[i].id }, {});
-    assert.ok(queue.every(c => c.kind === 'nexus' && NEXUS_ACTIONS.includes(c.payload.action)));
-    assert.deepStrictEqual(queue[0].payload, { action: 'rotator', data: {} }, 'leer = umschalten');
-    assert.deepStrictEqual(queue[2].payload.data, { cmd: 'Zoom', value: '80' });
-    assert.strictEqual(queue[3].payload.data.index, 1, 'Nr. 2 → Index 1');
-    assert.deepStrictEqual(queue[4].payload.data, { name: 'Hue', type: 'float', step: 0.1 });
-    assert.strictEqual(queue[6].payload.data.on, true);
-    // Anzeige-Knöpfe
-    r = await phone.post({ act: 'btn_live', page: r.cfg.pages[0].id }, {});
-    assert.strictEqual(r.values[b[8].id], '3'); assert.strictEqual(r.values[b[9].id], 'Popcorn Palace: 3');
-    assert.strictEqual((await phone.post({ act: 'btn_run', id: b[8].id }, {})).tab, 'remote');
-    // PC holt die Befehle ab und führt sie wie Stream-Deck-Tasten aus
-    const pc = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
-    const ran = [], acks = [];
-    pc.tools.apiAction = async (a, d) => { ran.push([a, d]); return { ok: true }; };
-    pc.link.req = async (m, path, body) => { if (path === 'osc') return { commands: queue.concat([{ id: 99, kind: 'nexus', payload: { action: 'plugin_update', data: {} } }]) }; if (path === 'osc_ack') acks.push(...body.results); return {}; };
-    await pc.link.pullOsc();
-    assert.deepStrictEqual(ran.map(x => x[0]), ['rotator', 'media', 'camera', 'quicktext', 'param_step', 'tts', 'overlay']);
-    assert.ok(acks.find(a => a.id === 8 && !a.ok && /Makro/.test(a.error)), 'nur am PC angelegte Makros');
-    assert.ok(acks.find(a => a.id === 99 && !a.ok), 'nicht erlaubte Aktion abgelehnt');
-    assert.ok(FIELDS.camera.length === 2);
 });
 
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
