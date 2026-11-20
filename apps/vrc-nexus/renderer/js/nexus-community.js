@@ -40,7 +40,7 @@
     }
     function composer(parent) {
         const nsfw = sub === 'nsfw';
-        return '<form class="cm-comp' + (parent ? ' small' : '') + '" data-parent="' + (parent || 0) + '"><textarea name="text" rows="' + (parent ? 2 : 3) + '" maxlength="2000" placeholder="' + esc(T(parent ? 'Antworten …' : nsfw ? 'Etwas für den NSFW-Feed …' : 'Was gibt’s Neues?')) + '"></textarea>'
+        return '<form class="cm-comp' + (parent ? ' small' : '') + '" data-parent="' + (parent || 0) + '">' + (window.NexusMD ? window.NexusMD.toolbar() : '') + '<textarea name="text" rows="' + (parent ? 2 : 3) + '" maxlength="2000" placeholder="' + esc(T(parent ? 'Antworten …' : nsfw ? 'Etwas für den NSFW-Feed …' : 'Was gibt’s Neues?')) + '"></textarea>'
             + (!parent ? '<div class="cm-att">' + attach.map(a => '<span class="vx-pill">🖼 ' + esc(a.name) + (a.status === 'pending' ? ' ⏳' : '') + '</span>').join('') + '</div>' : '')
             + '<div class="nc-row">' + (!parent ? '<label class="btn btn-sm">🖼 ' + esc(T('Bild')) + '<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-cup="1" hidden></label>' : '')
             + (nsfw && !parent ? '<span class="small muted">' + esc(T('NSFW-Bilder erscheinen nach Prüfung durch einen Moderator.')) + '</span>' : '')
@@ -93,7 +93,7 @@
             + (chat.showSafety ? '<div class="tts-help"><b>' + esc(T('Sicherheitsnummer')) + '</b><br><code class="ch-sn">' + esc(o.safety || '–') + '</code><br><span class="small">' + esc(T('Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.')) + '</span><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-chverify="1">✔ ' + esc(T('Stimmt überein')) + '</button></div></div>' : '')
             + (!o.ready ? '<p class="small bad">' + esc(T('Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).')) + '</p>' : '')
             + '<div class="ch-msgs">' + (o.messages || []).map(m => '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + '"><div class="md">' + md(m.text) + '</div><small>' + esc(new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</small></div>').join('') + '</div>'
-            + '<form class="ch-comp nc-row"><textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '></textarea><button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T('Senden')) + '</button></form></div></div>';
+            + '<form class="ch-comp nc-row">' + (window.NexusMD ? window.NexusMD.toolbar() : '') + '<textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '></textarea><button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T('Senden')) + '</button></form></div></div>';
     }
     function chatLoad(poll) { return api('chat_list', poll ? { poll: '1' } : {}).then(d => { chat.list = d.items; nav(); if (sub === 'chat') render(); }).catch(e => { toast('⚠ ' + e.message, true); }); }
     function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }

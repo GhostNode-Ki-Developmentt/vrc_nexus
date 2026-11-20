@@ -942,3 +942,11 @@ body.nav-side .vx-menu:hover::-webkit-scrollbar-thumb, #fsBody:hover::-webkit-sc
 .w-comm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 10px; border: 1px dashed var(--border-color); }
 .w-comm-t { font-weight: 700; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-gold); margin-right: 6px; }
 .w-nsfw .w-note { margin-bottom: 8px; } .w-nsfw textarea { width: 100%; }
+
+/* 3.2.1 Formatierungsleiste (Feed, Antworten, Privat-Chat) */
+.md-bar { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 4px; width: 100%; flex: 0 0 100%; }
+.md-tb { min-width: 30px; height: 26px; padding: 0 7px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--text-muted); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.md-tb:hover, .md-tb.on { color: var(--accent-cyan); border-color: var(--border-color); background: rgba(var(--accent-rgb), 0.08); }
+.md-tb.md-prev-btn { margin-left: auto; }
+.md-preview { flex: 0 0 100%; width: 100%; margin-top: 6px; padding: 8px 10px; border: 1px dashed var(--border-color); border-radius: 4px; font-size: 0.92rem; }
+.ch-comp { flex-wrap: wrap; }

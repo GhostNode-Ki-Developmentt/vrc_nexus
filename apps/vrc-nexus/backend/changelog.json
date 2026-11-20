@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.2.1",
+  "title": "Formatting toolbar",
+  "body": "- ✍ **Formatting toolbar in the feed, replies and private chat:** bold, italic, strikethrough, code, link, list, quote, spoiler and code block with one click (or Ctrl+B / Ctrl+I), plus a 👁 live preview – no need to know Markdown.\n- 🌐 **Your texts stay yours:** posts, chat messages, profiles and descriptions are no longer run through the app's automatic interface translation."
+ },
+ {
   "version": "3.2.0",
   "title": "One Community area, chat-style feed, Markdown",
   "body": "- 🫂 **Community and Social merged:** one menu area with Feed, Chat, My profile, Friend list, Friend log, Groups and Blocked & muted; the NSFW switch sits in the same bar. Warn list and the group mod centre moved to **Tools**.\n- 👤 **My profile shows everything:** tabs for your Community profile, **Status & VRChat** (status, VRChat bio/pronouns/links, notifications – formerly \"Account & status\") and your 18+ profile. \"Me\" in the friends bar opens it.\n- ⚙ **Connection & data** (connected as, sync info, CSV exports, shortcuts) moved to Settings → System; the extra log-out button there is gone (log out via the power button at the top).\n- 💬 **Feed as a chat:** oldest at the top, newest at the bottom, input at the bottom, your own posts on the right, refreshes every 10 seconds.\n- ✍ **Markdown in feed and chat:** **bold**, *italic*, ~~strike~~, `code`, code blocks, quotes, lists, headings, links and ||spoilers|| – safe, no HTML.\n- 🌍 **World window – Community:** share a world in the feed (with a comment), send it to a chat partner or copy the link; shared world links open the world right in the app.\n- 🔞 *** (only visible in the app when NSFW is unlocked)\n- 🖼 **Profile pictures:** missing pictures are now taken from VRChat's presence data or the last known picture instead of showing the placeholder.\n- 🎚 **Slim scrollbars:** thin and subtle everywhere, only a fine line in the side bars; the coloured bar is gone."

@@ -26,7 +26,7 @@
     const RX = () => ((window.NexusDict || {}).rx || {})[lang] || [];
     // Zeichen am Anfang/Ende, die nicht übersetzt werden (Emojis, Pfeile, Doppelpunkt …)
     const HEAD = /^[^\p{L}\p{N}„"(]+/u, TAIL = /[\s:…→←▾▸▶◀·.!?)"“]+$/u;
-    const SKIP = 'script, style, textarea, code, pre, .fmt, [contenteditable], [data-no-i18n], .vx-feed-txt i, .hm-pre, .sb-msg, .hm-log';
+    const SKIP = 'script, style, textarea, code, pre, .fmt, .md, .p18-bio, .cm-prof p, .cm-post header b, .w-note, .ch-name, [contenteditable], [data-no-i18n], .vx-feed-txt i, .hm-pre, .sb-msg, .hm-log';
 
     /** übersetzt einen Text (mit Emojis/Satzzeichen drumherum); null = unbekannt */
     function tr(text, depth = 0) {

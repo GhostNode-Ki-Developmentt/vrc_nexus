@@ -22,6 +22,11 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.1 – Formatting toolbar
+
+- ✍ **Formatting toolbar in the feed, replies and private chat:** bold, italic, strikethrough, code, link, list, quote, spoiler and code block with one click (or Ctrl+B / Ctrl+I), plus a 👁 live preview – no need to know Markdown.
+- 🌐 **Your texts stay yours:** posts, chat messages, profiles and descriptions are no longer run through the app's automatic interface translation.
+
 ### New in 3.2.0 – One Community area, chat-style feed, Markdown
 
 - 🫂 **Community and Social merged:** one menu area with Feed, Chat, My profile, Friend list, Friend log, Groups and Blocked & muted; the NSFW switch sits in the same bar. Warn list and the group mod centre moved to **Tools**.

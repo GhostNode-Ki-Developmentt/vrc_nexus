@@ -43,7 +43,47 @@
         });
         return out.join('').replace(/^(<br>)+/, '').replace(/(<br>)+$/, '').replace(/(<br>)+(<pre|<ul|<ol|<blockquote|<div class="md-h)/g, '$2').replace(/(<br>){3,}/g, '<br><br>');
     }
+    // ---------- Formatierungsleiste für Eingabefelder (Feed, Antworten, Privat-Chat) ----------
+    const T = s => (window.t ? window.t(s) : s);
+    const TOOLS = [['b', '𝐁', 'Fett (Strg+B)', '**', '**'], ['i', '𝐼', 'Kursiv (Strg+I)', '*', '*'], ['s', 'S̶', 'Durchgestrichen', '~~', '~~'], ['code', '</>', 'Code', '`', '`'],
+        ['link', '🔗', 'Link', '[', '](https://)'], ['ul', '•', 'Liste', '- ', ''], ['quote', '❝', 'Zitat', '> ', ''], ['spoiler', '▒', 'Spoiler', '||', '||'], ['block', '{ }', 'Code-Block', '```\n', '\n```']];
+    function toolbar() {
+        return '<div class="md-bar" role="toolbar">' + TOOLS.map(t => '<button type="button" class="md-tb" data-md="' + t[0] + '" title="' + esc(T(t[2])) + '">' + esc(t[1]) + '</button>').join('')
+            + '<button type="button" class="md-tb md-prev-btn" data-md="preview" title="' + esc(T('Vorschau')) + '">👁</button></div>';
+    }
+    function areaOf(el) { const f = el.closest('form'); return f && f.querySelector('textarea'); }
+    function wrap(ta, k) {
+        const t = TOOLS.find(x => x[0] === k); if (!t || !ta) return;
+        const a = ta.selectionStart, b = ta.selectionEnd, v = ta.value, sel = v.slice(a, b);
+        let before = t[3], after = t[4], text = sel;
+        if (k === 'ul' || k === 'quote') { text = (sel || '').split('\n').map(l => before + l).join('\n'); before = (a > 0 && v[a - 1] !== '\n') ? '\n' : ''; after = ''; }
+        else if (k === 'link') { text = sel || T('Text'); }
+        const ins = before + text + after;
+        ta.focus();
+        ta.setRangeText(ins, a, b, 'end');
+        if (!sel && k !== 'ul' && k !== 'quote') { const p = a + before.length; ta.setSelectionRange(p, p + text.length); }
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    document.addEventListener('click', e => {
+        const b = e.target.closest('.md-tb'); if (!b) return;
+        e.preventDefault();
+        const ta = areaOf(b);
+        if (b.dataset.md === 'preview') {
+            const f = b.closest('form'); let pv = f.querySelector('.md-preview');
+            if (pv) { pv.remove(); b.classList.remove('on'); return; }
+            pv = document.createElement('div'); pv.className = 'md md-preview'; pv.innerHTML = render(ta.value) || '<span class="muted">' + esc(T('Nichts zu zeigen.')) + '</span>';
+            ta.after(pv); b.classList.add('on'); return;
+        }
+        wrap(ta, b.dataset.md);
+    });
+    // Vorschau beim Tippen mitführen; Strg+B / Strg+I
+    document.addEventListener('input', e => { const ta = e.target; if (!ta.matches || !ta.matches('textarea')) return; const pv = ta.parentNode && ta.parentNode.querySelector && ta.parentNode.querySelector('.md-preview'); if (pv) pv.innerHTML = render(ta.value); });
+    document.addEventListener('keydown', e => {
+        const ta = e.target; if (!(e.ctrlKey || e.metaKey) || e.altKey || !ta.matches || !ta.matches('textarea') || !ta.closest('form') || !ta.closest('form').querySelector('.md-bar')) return;
+        const k = e.key.toLowerCase() === 'b' ? 'b' : e.key.toLowerCase() === 'i' ? 'i' : '';
+        if (k) { e.preventDefault(); wrap(ta, k); }
+    });
     // Spoiler aufdecken
     document.addEventListener('click', e => { const s = e.target.closest('.md-spoiler'); if (s) s.classList.add('open'); });
-    window.NexusMD = { render, esc };
+    window.NexusMD = { render, esc, toolbar };
 })();
