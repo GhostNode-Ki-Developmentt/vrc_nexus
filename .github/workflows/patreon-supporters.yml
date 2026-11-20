@@ -30,11 +30,13 @@ jobs:
           if [ -z "$PATREON_TOKEN" ]; then echo "::warning::Secret PATREON_TOKEN fehlt"; exit 0; fi
           echo '__unset__' > backend/supporters.json
           node scripts/patreon-supporters.js
-          if grep -q '__unset__' backend/supporters.json; then echo "::warning::Patreon nicht erreichbar – nichts geändert"; exit 0; fi
+          if grep -q '__unset__' backend/supporters.json; then git checkout -- backend/supporters.json; echo "::warning::Patreon nicht erreichbar – nichts geändert"; exit 0; fi
           cp backend/supporters.json "$RUNNER_TEMP/supporters.json"
+          git checkout -- backend/supporters.json
       - name: In den Branch supporters-data legen
         run: |
           [ -f "$RUNNER_TEMP/supporters.json" ] || exit 0
+          git reset -q --hard
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git fetch --depth 1 origin supporters-data 2>/dev/null; then git checkout -q -B supporters-data FETCH_HEAD; else git checkout -q --orphan supporters-data; git rm -rqf . ; fi
