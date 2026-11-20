@@ -1044,4 +1044,5 @@ body.own-frame.nav-side .vx-menu { padding-top: 44px; }
 
 /* 3.3.2: Admin nur noch als Symbol neben Design/Sprache (Besitzerin bzw. Mods), nicht mehr in der Menüliste */
 #tabs .vx-tabbtn[data-tab="admin"] { display: none !important; }
-.i18n-fab.i18n-admin { font-size: 1.05rem; }
+.i18n-fab.i18n-admin { font-size: 1rem; }
+body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte – Design und Sprache behalten ihre Breite */
