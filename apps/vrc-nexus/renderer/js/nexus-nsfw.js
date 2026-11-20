@@ -49,7 +49,10 @@
             const hp = headPanic(); if (hp) hp.hidden = !d.access.unlocked;
             const ad = document.querySelector('#tabs [data-tab="admin"]'); if (ad) ad.hidden = !d.access.owner;
             if (!d.access.owner) { document.querySelectorAll('#tabs [data-tab="admin"], [data-pane="admin"], [data-tab-go="admin"]').forEach(x => x.remove()); delete window.NexusAdmin; }
+            const roleKey = (d.access.owner ? 'o' : '') + (d.access.mod ? 'm' : '');
             document.body.classList.toggle('is-owner', !!d.access.owner);
+            document.body.classList.toggle('is-mod', !!d.access.mod && !d.access.owner);
+            if (roleKey !== refreshAccess.roles) { refreshAccess.roles = roleKey; if (window.NexusI18n && window.NexusI18n.corner) window.NexusI18n.corner(); }
             if (box && !box.closest('[hidden]')) render();
             return d;
         }).catch(() => {});

@@ -1041,3 +1041,7 @@ body.own-frame.nav-side .vx-menu { padding-top: 44px; }
 .vx-hbtn.vx-hpanic em { color: #ff8a8a; }
 .vx-hbtn.vx-hpanic:hover { background: rgba(220, 38, 38, 0.16); border-color: #ef4444; }
 .vx-hbtn.vx-hpanic:disabled { opacity: 0.6; }
+
+/* 3.3.2: Admin nur noch als Symbol neben Design/Sprache (Besitzerin bzw. Mods), nicht mehr in der Menüliste */
+#tabs .vx-tabbtn[data-tab="admin"] { display: none !important; }
+.i18n-fab.i18n-admin { font-size: 1.05rem; }

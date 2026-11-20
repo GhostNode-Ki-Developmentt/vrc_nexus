@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.3.2 – Admin as an icon
+
+- 👑 **Admin moved next to theme and language:** the owner gets a 👑 icon there (opens Admin), moderators a 🛡 icon (opens Community moderation). Everyone else sees nothing; the Admin entry is gone from the menu list.
+
 ### New in 3.3.1 – HypeRate in the chatbox, cleaner sidebar
 
 - 🔞 *** (only visible in the app when NSFW is unlocked)
