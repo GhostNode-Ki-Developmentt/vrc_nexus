@@ -62,6 +62,33 @@
         } else ['--accent-cyan', '--accent-rgb', '--border-color', '--accent-glow'].forEach(k => r.removeProperty(k));
         document.body.style.zoom = (Math.max(70, Math.min(150, +s['ui.zoom'] || 100)) / 100).toString();
         applyBg(s);
+        ownFrame();
+    }
+    /** 3.1.3: eigene Titelleiste (Windows) – Logo, Name, aktuelle Seite; Windows zeichnet die Fensterknöpfe in den Theme-Farben */
+    let frameSent = '';
+    function ownFrame() {
+        if (!(window.VRCX && window.VRCX.frame)) return;
+        const b = document.body, z = +b.style.zoom || 1;
+        b.classList.add('own-frame');
+        document.documentElement.style.setProperty('--tb', (34 / z) + 'px');   // gleich hoch wie die Windows-Knöpfe, auch bei Zoom
+        let t = document.getElementById('winTitle');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'winTitle'; t.className = 'vx-wintitle';
+            t.innerHTML = '<img src="icon.png" alt=""><b>VRC <i>Nexus</i></b><span class="wt-page"></span>';
+            b.prepend(t);
+            const page = () => { const a = document.querySelector('#tabs .vx-tabbtn.active em, #tabs .vx-mgroup.active > .vx-mtop em'); t.querySelector('.wt-page').textContent = a ? a.textContent : ''; };
+            new MutationObserver(page).observe(document.getElementById('tabs') || b, { subtree: true, attributes: true, attributeFilter: ['class'] });
+            page();
+        }
+        t.style.zoom = String(1 / z);
+        // Farben aus dem Theme an die Windows-Knöpfe geben (nur bei Änderung)
+        requestAnimationFrame(() => {
+            const cs = getComputedStyle(document.documentElement), hex = v => { v = String(v || '').trim(); if (/^#[0-9a-f]{6}$/i.test(v)) return v; const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(v); return m ? '#' + [m[1], m[2], m[3]].map(n => (+n).toString(16).padStart(2, '0')).join('') : ''; };
+            const color = hex(getComputedStyle(t).backgroundColor) || hex(cs.getPropertyValue('--surface')) || '#040609', symbol = hex(cs.getPropertyValue('--text-main')) || '#cbd5e1';
+            const k = color + symbol;
+            if (k !== frameSent) { frameSent = k; api('win_titlebar', { color, symbol }).catch(() => {}); }
+        });
     }
     /** Hintergrundbild hinter allem (Deckkraft, Weichzeichnen, Anpassen) */
     const BUILTIN_BG = [['neon-beach', 'Neon Beach'], ['synthwave', 'Synthwave'], ['polarlicht', 'Polarlicht'], ['sakura', 'Sakura-Nacht'], ['nexus-raster', 'Nexus-Raster'], ['galaxie', 'Galaxie']];

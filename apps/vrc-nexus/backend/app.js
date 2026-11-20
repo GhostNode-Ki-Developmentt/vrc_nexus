@@ -147,7 +147,7 @@ class NexusApp {
         html = block(html, '\\{\\{IF_CONNECTED\\}\\}', '\\{\\{END_CONNECTED\\}\\}', !!acc);
         if (!this.nsfw || !this.nsfw.isOwner()) html = html.replace(/^.*(data-tab="admin"|data-pane="admin"|nexus-admin\.js).*\n/gm, '');   // fremdes Konto: Admin gar nicht ausliefern
         const status = ['join me', 'active', 'ask me', 'busy'].map(s => '<label style="--sc: ' + U.VRC_STATUS[s][1] + ';"><input type="radio" name="status" value="' + esc(s) + '"><span>' + esc(U.VRC_STATUS[s][0]) + '</span></label>').join('\n');
-        const vrcx = { ui: this.settings.ui(), mobile: !!this.mobile, connected: !!acc, status: Object.fromEntries(Object.entries(U.VRC_STATUS).map(([k, v]) => [k, { label: v[0], color: v[1] }])), syncMin: SYNC_MIN, discord: false, app: true, version: VERSION };
+        const vrcx = { frame: !this.mobile && !!(this.tools && this.tools.host && this.tools.host.setTitleBar) && process.platform === 'win32', ui: this.settings.ui(), mobile: !!this.mobile, connected: !!acc, status: Object.fromEntries(Object.entries(U.VRC_STATUS).map(([k, v]) => [k, { label: v[0], color: v[1] }])), syncMin: SYNC_MIN, discord: false, app: true, version: VERSION };
         const map = { LOGIN_HIDDEN: p ? 'hidden' : '', TFA_HIDDEN: p ? '' : 'hidden', TFA_TYPES: esc((p || []).join(',')), STATUS_RADIOS: status, SYNC_MIN: SYNC_MIN, OFFLINE_MIN: OFFLINE_SYNC / 60,
             FEED_DAYS: FEED_KEEP_DAYS, UA: esc(this.db.setting('vrc_user_agent', '')), UA_DEFAULT: esc(this.vrc.userAgent()), VRCX_JSON: JSON.stringify(vrcx).replace(/</g, '\\u003c') };
         return html.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in map ? String(map[k]) : m));
@@ -202,6 +202,7 @@ class NexusApp {
             if (act.startsWith('comm_')) return await this.comm.action(act, input, files);
             if (act.startsWith('btn_')) return await this.buttons.action(act, input);
             if (act.startsWith('deco_')) return await this.deco.action(act, input);
+            if (act === 'win_titlebar') { if (this.tools.host.setTitleBar) this.tools.host.setTitleBar({ color: str(input.color), symbol: str(input.symbol) }); return { ok: true }; }
             if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }

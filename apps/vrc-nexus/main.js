@@ -4,6 +4,7 @@
  * Die Oberfläche läuft unter app://nexus/, alle Anfragen an „nexus.php“ beantwortet das eingebaute Backend (backend/app.js).
  * Läuft im Infobereich weiter (Verlauf, Statistik, Spiel-Log & OSC zeichnen dann weiter auf).
  */
+const TITLEBAR_H = 34;   // Höhe der eigenen Titelleiste (Windows)
 const { app, BrowserWindow, Menu, Tray, Notification, protocol, shell, safeStorage, nativeImage, dialog, globalShortcut, session, desktopCapturer, clipboard } = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -55,6 +56,12 @@ const host = {
     showUser: id => { if (!win) return; win.show(); win.focus(); win.webContents.executeJavaScript('window.NexusUI && NexusUI.openUser(' + JSON.stringify(id) + ')').catch(() => {}); },
     showTab: tab => { if (!win) return; win.show(); win.focus(); if (tab) win.webContents.executeJavaScript('window.NexusUI && NexusUI.tab(' + JSON.stringify(tab) + ')').catch(() => {}); },
     setTray: text => { if (tray) tray.setToolTip(text); },
+    /** Farben der Fensterknöpfe ans Theme anpassen (nur Windows) */
+    setTitleBar: o => {
+        const hex = c => /^#[0-9a-f]{6}$/i.test(String(c || '')) ? String(c) : null;
+        if (!win || process.platform !== 'win32' || !win.setTitleBarOverlay || !hex(o && o.color)) return;
+        try { win.setTitleBarOverlay({ color: hex(o.color), symbolColor: hex(o.symbol) || '#cbd5e1', height: TITLEBAR_H }); } catch (e) { /* ältere Windows-Versionen */ }
+    },
     /** gleichmäßig weißen Rand rundherum abschneiden (Prints) */
     trimWhite: async buf => {
         const im = nativeImage.createFromBuffer(buf);
@@ -130,6 +137,8 @@ function createWindow() {
     win = new BrowserWindow({
         width: 1380, height: 900, minWidth: 900, minHeight: 600, backgroundColor: '#040609', title: 'VRC Nexus', icon: path.join(RENDERER, 'icon.png'),
         autoHideMenuBar: true, show: !(process.argv.includes('--minimized') && prefs['sys.start_minimized'] !== false),
+        // 3.1.3: Titelleiste im App-Design – Windows zeichnet nur noch die Fensterknöpfe (in den Theme-Farben), den Rest macht die Oberfläche
+        ...(process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { color: '#040609', symbolColor: '#cbd5e1', height: TITLEBAR_H } } : {}),
         webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false, spellcheck: false },
     });
     win.loadURL('app://nexus/');

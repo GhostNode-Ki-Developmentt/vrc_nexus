@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.1.3 – Title bar in the app design
+
+- 🪟 **Windows title bar in the app design:** the grey Windows title bar is gone – VRC Nexus draws its own (logo, name, current page) in the colours of your theme, and the minimise / maximise / close buttons take on the theme colours too (snap layouts keep working).
+
 ### New in 3.1.2 – Community & NSFW overhaul completed
 
 - 🔞 *** (only visible in the app when NSFW is unlocked)
