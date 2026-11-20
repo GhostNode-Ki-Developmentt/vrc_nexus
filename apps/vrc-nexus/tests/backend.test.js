@@ -2160,6 +2160,35 @@ test('3.2.2: Avatar-Suche – NSVR und VRCDB als Standard, bestehende Listen ein
     app.tools.stop();
 });
 
+test('3.2.3: Gemeinsames Netzwerk – Kanten nur aus gemeinsamen Freunden, Communities nur gemeinsame Gruppen, Blockierte nie', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const u = n => 'usr_00000000-0000-4000-8000-0000000000' + n;
+    const fr = (n, name) => ({ id: u(n), name, image: '', state: 'online', status: 'active', status_desc: '', trust: ['User', '#2bcf5c'], favorite: false });
+    app.vrc.account = () => ({ vrc_id: u('01'), display_name: 'Ich', me: { status: 'active' } });
+    app.vrc.friendList = () => [fr('10', 'A'), fr('11', 'B'), fr('12', 'C'), fr('13', 'Blockiert')];
+    const calls = [];
+    app.tools.call = async (m, p) => {
+        calls.push(p);
+        if (p === '/auth/user/playermoderations') return [{ type: 'block', targetUserId: u('13') }, { type: 'mute', targetUserId: u('12') }];
+        if (p === '/users/' + u('01') + '/groups') return [{ groupId: 'grp_a', name: 'Furry Club', memberCount: 50 }, { groupId: 'grp_b', name: 'Allein', memberCount: 3 }];
+        return [];
+    };
+    const put = (t, id, data) => db.prepare('INSERT OR REPLACE INTO ' + t + ' (vrc_id, data, fetched) VALUES (?, ?, ?)').run(id, JSON.stringify(data), Math.floor(Date.now() / 1000));
+    put('mutual_cache', u('10'), [u('11'), u('13'), u('99')]);   // 13 blockiert, 99 kein Freund → keine Kanten dorthin
+    put('mutual_cache', u('11'), [u('10')]);
+    put('group_cache', u('10'), ['grp_a', 'grp_x']); put('group_cache', u('11'), ['grp_a']); put('group_cache', u('12'), ['grp_b']);
+    const g = await app.post({ act: 'net_graph' }, {});
+    assert.ok(!g.nodes.some(n => n.id === u('13')), 'blockiert erscheint nicht');
+    assert.deepStrictEqual(g.edges, [[u('10'), u('11')]], 'nur echte gemeinsame Freundschaft');
+    assert.deepStrictEqual(g.groups.map(x => [x.id, x.count]), [['grp_a', 2]], 'Community nur mit ≥2 gemeinsamen Mitgliedern und nur eigene Gruppen');
+    assert.deepStrictEqual(g.nodes.find(n => n.id === u('10')).groups, ['grp_a'], 'fremde Gruppe grp_x nicht sichtbar');
+    assert.strictEqual(g.stats.blocked, 1);
+    app.tools.stop();
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

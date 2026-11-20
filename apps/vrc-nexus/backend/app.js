@@ -67,6 +67,7 @@ class NexusApp {
         this.comm = new (require('./community').Community)(this);
         this.buttons = new (require('./buttons').Buttons)(this);
         this.deco = new (require('./deco').Deco)(this);                    // 3.1: Profil-Dekorationen
+        this.netgraph = new (require('./netgraph').NetGraph)(this);        // 3.2.3: Gemeinsames Netzwerk
         this.vrc.onUserData = (id, u) => this.deco.remember(id, u);
         this.chat = opts.mobile ? null : new (require('./chat').Chat)(this, opts.crypt);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
@@ -202,6 +203,7 @@ class NexusApp {
             if (act.startsWith('comm_')) return await this.comm.action(act, input, files);
             if (act.startsWith('btn_')) return await this.buttons.action(act, input);
             if (act.startsWith('deco_')) return await this.deco.action(act, input);
+            if (act.startsWith('net_')) { if (!this.vrc.account()) throw new UserError('Erst bei VRChat anmelden.'); return await this.netgraph.action(act, input); }
             if (act === 'win_titlebar') { if (this.tools.host.setTitleBar) this.tools.host.setTitleBar({ color: str(input.color), symbol: str(input.symbol) }); return { ok: true }; }
             if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);

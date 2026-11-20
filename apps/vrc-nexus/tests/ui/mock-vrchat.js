@@ -52,6 +52,13 @@ function route(req, url, body) {
         const x = extra[u.id] || {};
         return [200, Object.assign({}, u, x.bio !== undefined ? { bio: x.bio } : {}, x.age !== undefined ? { ageVerificationStatus: x.age, ageVerified: x.age === '18+' } : {})];
     }
+    // Netzwerk-Testdaten (3.2.3): feste gemeinsame Freunde und Gruppen
+    if ((m0 = /^\/users\/(usr_[\w-]+)\/mutuals\/friends$/.exec(p))) { const i = friends.findIndex(f => f.id === m0[1]); return [200, i < 0 ? [] : friends.filter((f, j) => j !== i && (Math.abs(i - j) <= 2 || (i + j) % 3 === 0)).map(f => ({ id: f.id, displayName: f.displayName }))]; }
+    if ((m0 = /^\/users\/(usr_[\w-]+)\/groups$/.exec(p))) {
+        const G = [{ groupId: 'grp_00000000-0000-4000-8000-0000000000a1', name: 'Furry Lounge', memberCount: 120 }, { groupId: 'grp_00000000-0000-4000-8000-0000000000a2', name: 'Night Club', memberCount: 80 }, { groupId: 'grp_00000000-0000-4000-8000-0000000000a3', name: 'Chill Zone', memberCount: 40 }];
+        if (m0[1] === ME) return [200, G];
+        const i = friends.findIndex(f => f.id === m0[1]); return [200, i < 0 ? [] : G.filter((g, j) => (i + j) % 3 !== 1)];
+    }
     if (/^\/users\/[\w-]+\/groups/.test(p)) return [200, []];
     if (/^\/worlds\/wrld_/.test(p)) return [200, { id: WORLD, name: 'Testwelt', authorName: 'Mock', capacity: 32, imageUrl: '', thumbnailImageUrl: '' }];
     if (p === '/visits') return [200, 1234];

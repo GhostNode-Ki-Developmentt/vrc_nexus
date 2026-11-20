@@ -60,13 +60,14 @@
         <button type="button" class="vx-tabbtn" data-tab="players"><span>👥</span><em>Spielerliste</em></button>
         <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>🫂</span><em>Community</em><i>▾</i></button>
             <div class="vx-mdrop" role="menu">
+                <button type="button" class="vx-tabbtn" data-tab="community" data-msub="profile"><span>👤</span><em>Mein Profil</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="friends"><span>👥</span><em>Freundesliste</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="groups"><span>🛡️</span><em>Gruppen</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="community" data-msub="feed"><span>📰</span><em>Feed</em></button>
                 <button type="button" class="vx-tabbtn cm-nsfw-only" data-tab="community" data-msub="nsfw" hidden><span>🔞</span><em>NSFW-Feed</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="community" data-msub="chat"><span>💬</span><em>Chat</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="community" data-msub="profile"><span>👤</span><em>Mein Profil</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="friends"><span>👥</span><em>Freundesliste</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="netgraph"><span>🕸</span><em>Gemeinsames Netzwerk</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="feed" data-msub="friendlog"><span>📜</span><em>Freundes-Log</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="groups"><span>🛡️</span><em>Gruppen</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="moderation"><span>🚫</span><em>Blockiert &amp; stumm</em></button>
                 <button type="button" class="vx-tabbtn cm-mod-only" data-tab="community" data-msub="mod" hidden><span>🛡</span><em>Community-Moderation</em></button>
             </div></div>
@@ -323,6 +324,7 @@
     <section class="vx-tab" data-pane="players" hidden><div id="plBox"><div class="vx-loading">Lade Spielerliste …</div></div></section>
     <section class="vx-tab" data-pane="activity" hidden><div id="actBox"></div></section>
     <section class="vx-tab" data-pane="network" hidden><div id="netBox"></div></section>
+    <section class="vx-tab" data-pane="netgraph" hidden><div id="ngBox"></div></section>
     <section class="vx-tab" data-pane="tools" hidden><div id="toolsBox"></div></section>
     <section class="vx-tab" data-pane="settings" hidden><div id="setBox"></div></section>
     <section class="vx-tab" data-pane="remote" hidden><div id="remBox"></div></section>
@@ -418,6 +420,7 @@
 <script src="js/nexus-chatmods.js"></script>
 <script src="js/nexus-osctools.js"></script>
 <script src="js/nexus-side.js"></script>
+<script src="js/nexus-net.js"></script>
 <script src="js/nexus-deco.js"></script>
 <script src="js/nexus-subs.js"></script>
 <script src="js/nexus-oscdebug.js"></script>

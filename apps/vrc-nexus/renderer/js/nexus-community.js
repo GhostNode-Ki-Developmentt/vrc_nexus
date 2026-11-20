@@ -64,6 +64,7 @@
                 + (me.sanction && (me.sanction.banned || me.sanction.mute_until > Date.now() / 1000) ? '<p class="small bad">⚠ ' + esc(T(me.sanction.banned ? 'Du bist in der Community gesperrt.' : 'Du bist gerade stummgeschaltet.')) + '</p>' : card('', composer(0), 'cm-dock'))
                 + '</div>';
             const flow = box.querySelector('.cm-flow');
+            fitFeed();
             if (flow) flow.scrollTop = atEnd ? flow.scrollHeight : flow.scrollHeight - keep;
             feedTimer();
             return;
@@ -98,6 +99,13 @@
     function chatLoad(poll) { return api('chat_list', poll ? { poll: '1' } : {}).then(d => { chat.list = d.items; nav(); if (sub === 'chat') render(); }).catch(e => { toast('⚠ ' + e.message, true); }); }
     function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }
     /** Feed alle 10 s auffrischen (neue Beiträge, Reaktionen) – nicht beim Tippen */
+    /** Chat-Feed füllt genau den sichtbaren Bereich (Eingabe immer unten sichtbar) */
+    function fitFeed() {
+        const f = box && box.querySelector('.cm-feed.chatlike');
+        if (!f || !f.offsetParent) return;
+        f.style.height = Math.max(360, window.innerHeight - f.getBoundingClientRect().top - 18) + 'px';
+    }
+    window.addEventListener('resize', () => fitFeed());
     function feedTimer() {
         clearInterval(feedTimer.t);
         feedTimer.t = setInterval(() => {
@@ -138,7 +146,7 @@
         const bar = '<div class="u-tabs cm-ptabs">' + tabs.map(([k, l]) => '<button type="button" data-cptab="' + k + '" class="' + (k === profTab ? 'on' : '') + '">' + esc(l) + '</button>').join('') + '</div>';
         if (profTab === 'acct') return bar + '<div id="cmAcctSlot"></div>';
         if (profTab === 'p18') return bar + p18Html(p);
-        return bar + '<div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
+        return bar + '<div class="cm-pgrid' + (p.own ? ' two' : '') + '"><div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
             + card('', '<div class="cm-phead">' + (p.avatar ? '<img class="cm-pav" src="nexus.php?cimg=' + esc(p.avatar) + '" alt="">' : '<span class="cm-pav">👤</span>') + '<div><h3>' + esc(p.name) + '</h3>'
                 + '<div class="small muted">' + [p.pronouns, p.languages].filter(Boolean).map(esc).join(' · ') + '</div>'
                 + (window.NexusProfile18 ? window.NexusProfile18.factsView(p.facts) : '')
@@ -147,7 +155,27 @@
                 + (p.bio ? '<p>' + esc(p.bio).replace(/\n/g, '<br>') + '</p>' : '') + (p.interests ? '<p class="small">✨ ' + esc(p.interests) + '</p>' : '')
                 + ((p.links || []).length ? '<p class="small">' + p.links.map(l => '<a href="' + esc(l) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(l.replace(/^https:\/\//, '')) + '</a>').join(' · ') + '</p>' : '')
 )
-            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>';
+            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>' + (p.own ? vrcCard() : '') + '</div>';
+    }
+    /** 3.2.3: eigenes VRChat-Profil (alles aus dem Profil) neben dem Community-Profil */
+    let vrcMe = null, vrcBusy = false;
+    function vrcCard() {
+        if (!vrcMe) {
+            if (!vrcBusy && me && me.vrc_id) { vrcBusy = true; api('user', { id: me.vrc_id }).then(d => { vrcMe = d.user; }).catch(() => { vrcMe = { error: true }; }).finally(() => { vrcBusy = false; if (sub === 'profile' && profTab === 'main') render(); }); }
+            return card('🎮 ' + esc(T('VRChat-Profil')), '<div class="vx-loading">…</div>', 'cm-vrc');
+        }
+        if (vrcMe.error) return card('🎮 ' + esc(T('VRChat-Profil')), '<p class="small muted">' + esc(T('VRChat-Profil gerade nicht abrufbar.')) + '</p>', 'cm-vrc');
+        const u = vrcMe, l = u.loc || {};
+        const facts = [[T('Status'), UI.statusDot(u.status) + ' ' + esc(u.status_desc || u.status || '')], [T('Pronomen'), esc(u.pronouns || '–')], [T('Plattform'), esc(u.platform || '–')],
+            [T('Dabei seit'), esc(u.joined || '–')], [T('Ort'), esc(l.world_info ? l.world_info.name : (l.label || l.kind || '–'))]];
+        return card('🎮 ' + esc(T('VRChat-Profil')) + '<button type="button" class="btn btn-sm" data-cptab="acct" style="margin-left:auto">✎ ' + esc(T('Bearbeiten')) + '</button>',
+            '<div class="cm-phead">' + UI.img(u.image, 'cm-pav', u.name) + '<div><h3 data-no-i18n>' + esc(u.name) + '</h3><div><span class="vx-pill" style="--pc:' + esc(u.trust[1]) + '">' + esc(u.trust[0]) + '</span>'
+                + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill">👑 Nexus Admin</span>' : '') + '</div></div></div>'
+            + '<dl class="vx-u-facts">' + facts.map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + v + '</dd>').join('') + '</dl>'
+            + (u.bio_html ? '<div class="fmt cm-vbio">' + u.bio_html + '</div>' : '')
+            + ((u.links || []).length ? '<p class="small">' + u.links.map(x => '<a href="' + esc(x) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(x.replace(/^https?:\/\//, '')) + '</a>').join(' · ') + '</p>' : '')
+            + ((u.groups || []).length ? '<h4 class="ng-h">🛡 ' + esc(T('Gruppen')) + ' (' + u.groups.length + ')</h4><div class="vx-u-tags">' + u.groups.slice(0, 40).map(g => '<span class="vx-pill' + (g.rep ? ' rep' : '') + '" data-opengroup="' + esc(g.id) + '">' + (g.rep ? '★ ' : '') + esc(g.name) + '</span>').join('') + '</div>' : ''),
+            'cm-vrc');
     }
     /** 3.1.1: 🔞 18+-Profil rechts neben dem Profil */
     function p18Html(p) {
@@ -231,7 +259,7 @@
             if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
             if (t.closest('[data-p18e]')) { p18Edit = true; return render(); }
-            const pt = t.closest('[data-cptab]'); if (pt) { profTab = pt.dataset.cptab; return render(); }
+            const pt = t.closest('[data-cptab]'); if (pt) { profTab = pt.dataset.cptab; if (profTab === 'main') vrcMe = null; return render(); }
             if (t.closest('[data-p18cancel]')) { p18Edit = false; return render(); }
             const md = t.closest('[data-cmod]');
             if (md) {

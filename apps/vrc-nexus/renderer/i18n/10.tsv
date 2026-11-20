@@ -1003,3 +1003,29 @@ Spoiler	Spoiler	Spoiler	ネタバレ
 Code-Block	Code block	Bloc de code	コードブロック
 Nichts zu zeigen.	Nothing to show.	Rien à afficher.	表示するものはありません。
 Text	Text	Texte	テキスト
+Gemeinsames Netzwerk	Shared network	Réseau commun	共通ネットワーク
+Abgefragt	Fetched	Récupérés	取得済み
+Als Filter umschalten	Toggle as filter	Basculer comme filtre	フィルターとして切り替え
+Communities	Communities	Communautés	コミュニティ
+Fokus	Focus	Focus	フォーカス
+Freunde suchen …	Search friends …	Rechercher des amis …	フレンドを検索 …
+Mausrad: Zoom · Ziehen: verschieben · Klick: auswählen · Doppelklick: Profil · Rechtsklick: Menü	Wheel: zoom · Drag: pan · Click: select · Double-click: profile · Right-click: menu	Molette : zoom · Glisser : déplacer · Clic : sélectionner · Double-clic : profil · Clic droit : menu	ホイール: ズーム · ドラッグ: 移動 · クリック: 選択 · ダブルクリック: プロフィール · 右クリック: メニュー
+Mindestanzahl gemeinsamer Verbindungen	Minimum shared connections	Nombre minimal de connexions communes	共通のつながりの最小数
+Netzwerkdaten bei VRChat neu abrufen	Fetch network data from VRChat again	Récupérer à nouveau les données réseau depuis VRChat	VRChatからネットワークデータを再取得
+Nicht im Netzwerk gefunden.	Not found in the network.	Introuvable dans le réseau.	ネットワーク内に見つかりません。
+Nicht-Freunde	Non-friends	Non-amis	フレンド以外
+Noch keine gemeinsamen Communities – „Fetch“ fragt die Gruppen deiner Freunde ab.	No shared communities yet – “Fetch” queries your friends' groups.	Pas encore de communautés communes – « Fetch » interroge les groupes de tes amis.	共通のコミュニティはまだありません – 「Fetch」でフレンドのグループを取得します。
+Nur direkte Freunde	Direct friends only	Amis directs uniquement	直接のフレンドのみ
+Nur mit Verbindungen	Only with connections	Uniquement avec connexions	つながりがある人のみ
+Person suchen (Name oder usr_…)	Search person (name or usr_…)	Chercher une personne (nom ou usr_…)	人を検索（名前または usr_…）
+VRChat-Profil	VRChat profile	Profil VRChat	VRChatプロフィール
+VRChat-Profil gerade nicht abrufbar.	VRChat profile currently unavailable.	Profil VRChat indisponible pour le moment.	VRChatプロフィールを現在取得できません。
+Verbindungen	Connections	Connexions	つながり
+Verbindungsfilter	Connection filter	Filtre de connexions	つながりフィルター
+Visualisierung neu laden	Reload visualisation	Recharger la visualisation	表示を再読み込み
+Zurücksetzen	Reset	Réinitialiser	リセット
+gemeinsam	shared	en commun	共通
+gemeinsame Verbindungen	shared connections	connexions communes	共通のつながり
+im Spiel getroffen	met in game	rencontré en jeu	ゲーム内で会った
+kein Freund	not a friend	pas un ami	フレンドではない
+min.	min.	min.	最小

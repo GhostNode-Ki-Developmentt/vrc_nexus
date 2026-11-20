@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.3 – Shared network, better feed and profile
+
+- 🕸 **Shared network (Community):** an interactive map of your social circle. Friends appear as profile pictures; lines show real mutual friendships (from VRChat's mutual-friends data), coloured rings and clouds show shared communities (VRChat groups you are in yourself). Search, zoom, drag, filters (minimum connections, direct friends only, only connected people, communities, hide people), optional non-friends you met in game several times, and a side panel with your friend list and communities. Blocked users never appear; data is fetched slowly in the background and cached.
+- 💬 **Feed as a real chat window:** messages fill the whole area, the input box always stays visible at the bottom.
+- 👤 **My profile shows your VRChat profile too:** status, trust rank, pronouns, platform, member since, location, bio, links and groups right next to your Community profile.
+- 🧭 **Community menu order:** My profile · Friend list · Groups · Feed · Chat · Shared network · Friend log · Blocked & muted.
+
 ### New in 3.2.2 – More avatar search providers
 
 - 🔍 **Avatar search:** NSVR (NekoSune Community) and VRCDB are now built in, with readable provider names. Existing custom provider lists get them added once; providers you remove afterwards stay removed.

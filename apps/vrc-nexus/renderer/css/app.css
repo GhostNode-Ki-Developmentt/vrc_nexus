@@ -950,3 +950,44 @@ body.nav-side .vx-menu:hover::-webkit-scrollbar-thumb, #fsBody:hover::-webkit-sc
 .md-tb.md-prev-btn { margin-left: auto; }
 .md-preview { flex: 0 0 100%; width: 100%; margin-top: 6px; padding: 8px 10px; border: 1px dashed var(--border-color); border-radius: 4px; font-size: 0.92rem; }
 .ch-comp { flex-wrap: wrap; }
+
+/* 3.2.3 Gemeinsames Netzwerk */
+.ng { display: flex; flex-direction: column; gap: 8px; height: calc(100vh - 250px); min-height: 520px; }
+.ng-bar { flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border: 1px solid var(--border-color); background: var(--panel-bg); }
+.ng-bar #ngQ { flex: 1; min-width: 180px; }
+.ng-tg, .ng-sl { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted); }
+.ng-sl input { width: 110px; } .ng-info { margin-left: auto; }
+.ng-body { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 8px; min-height: 0; }
+.ng-main { position: relative; border: 1px solid var(--border-color); background: radial-gradient(circle at 50% 45%, rgba(var(--accent-rgb), 0.06), transparent 70%), rgba(var(--shade-rgb), calc(0.25 * var(--shade-k))); overflow: hidden; min-height: 0; }
+.ng-main canvas { display: block; cursor: grab; }
+.ng-hint { position: absolute; left: 10px; bottom: 6px; pointer-events: none; }
+.ng-tip { position: absolute; z-index: 5; min-width: 180px; max-width: 240px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(var(--shade-rgb), calc(0.5 * var(--shade-k))); pointer-events: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 3px; }
+.ng-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.ng-side { border: 1px solid var(--border-color); background: var(--panel-bg); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ng-me { display: flex; gap: 10px; align-items: center; } .ng-me .fs-img { width: 46px; height: 46px; } .ng-me small { display: block; color: var(--text-muted); }
+.ng-h { margin: 6px 0 0; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-gold); display: flex; gap: 6px; align-items: center; }
+.ng-groups { display: flex; flex-direction: column; gap: 2px; }
+.ng-g { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 6px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--text-main); font: inherit; font-size: 0.85rem; text-align: left; cursor: pointer; }
+.ng-g i { width: 12px; height: 12px; border-radius: 50%; flex: none; } .ng-g span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ng-g small { color: var(--text-muted); }
+.ng-g:hover { background: rgba(var(--accent-rgb), 0.08); } .ng-g.on { border-color: var(--accent-cyan); background: rgba(var(--accent-rgb), 0.12); }
+.ng-list { display: flex; flex-direction: column; } .ng-f.sel { background: rgba(var(--accent-rgb), 0.16); } .ng-f.off { opacity: 0.5; }
+@media (max-width: 1000px) { .ng-body { grid-template-columns: 1fr; } .ng-side { max-height: 320px; } .ng { height: auto; } .ng-main { height: 60vh; } }
+.ng-bar select, .ng-side select { width: auto; flex: none; }
+.ng-bar { flex-wrap: wrap; } .ng-bar #ngQ { flex: 1 1 260px; }
+
+/* 3.2.3 Feed als Chat-Fenster (volle Breite, Verlauf + Eingabe in einem Rahmen) */
+.cm-feed.chatlike { max-width: none; height: calc(100vh - 250px); min-height: 440px; display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border-color); background: var(--panel-bg); }
+.cm-feed.chatlike > .tts-help { margin: 8px 8px 0; }
+.cm-feed.chatlike .cm-flow { flex: 1; height: auto; min-height: 0; padding: 12px 14px; }
+.cm-feed.chatlike .cm-flow > .cm-post { max-width: 70%; }
+.cm-feed.chatlike .cm-dock { border: 0; border-top: 1px solid var(--border-color); background: rgba(var(--shade-rgb), calc(0.15 * var(--shade-k))); padding: 8px 12px; box-shadow: none; }
+.cm-feed.chatlike .cm-dock textarea { min-height: 46px; }
+.cm-vrc .vx-u-facts { margin: 8px 0; } .cm-vbio { margin: 8px 0; max-height: 320px; overflow-y: auto; }
+
+/* 3.2.3 Feed-Chat: kompakte Eingabe, Höhe setzt fitFeed() */
+.cm-feed.chatlike .cm-dock .cm-comp { gap: 6px; }
+.cm-feed.chatlike .cm-dock textarea { min-height: 40px; height: 52px; max-height: 180px; resize: vertical; }
+.cm-feed.chatlike .cm-dock .cm-att:empty { display: none; }
+.cm-feed.chatlike .cm-dock { display: block; flex: none; }
+.cm-feed.chatlike .cm-dock .cm-comp { display: flex; flex-direction: column; }
+.cm-feed.chatlike .cm-dock .md-bar { flex: none; height: auto; }
