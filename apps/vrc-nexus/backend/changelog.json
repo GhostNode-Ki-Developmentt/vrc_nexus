@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.3.1",
+  "title": "Panic button in the header, HypeRate in the chatbox",
+  "body": "- 🚨 **Panic button moved to the top:** while NSFW is switched on, a red **Panic** button sits in the header next to your profile. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured) and switches NSFW off again.\n- 💓 **Heart rate source right in the chatbox module:** choose Pulsoid, HypeRate (ID + API key) or OSC/smartwatch directly in Chatbox modules → Heart rate; an invalid Pulsoid token now suggests switching to HypeRate.\n- 🪟 With the custom title bar, the sidebar no longer shows a second \"VRC Nexus\" logo."
+ },
+ {
   "version": "3.3.0",
   "title": "VR movement (Space Flight · Space Turn · Space Walk)",
   "body": "In-game movement for VR, under **Game & OSC → 🚀 VR movement** and in the **SteamVR overlay** (new \"🚀 Movement\" tab). Own implementation in the existing SteamVR helper: it moves and rotates the playspace (SteamVR standing zero pose) – no extra driver needed.\n\n- 🚀 **Space Flight:** hold the button and grab the world to move yourself; drag multiplier, grab with left/right/both hands, gravity (fall back to the floor, with strength), X/Y/Z axis lock, live X/Y/Z offset.\n- 🔄 **Space Turn:** rotate the playspace around you by moving your hand around your head; turn multiplier, smoothing, comfort mode (smooth or 15°/30°/45° steps), invert direction.\n- 🧭 **Space Walk:** change pitch/roll/yaw by rotating your hand; rotation multiplier, smoothing, momentum, invert direction, pitch/roll/yaw lock.\n- 🎮 **Controls:** status with Connect/Disconnect, \"start when VRChat starts in VR\", button mapping **Standard** (SteamVR input, rebindable in SteamVR → Controller bindings → VRC Nexus) or **Legacy** (fixed buttons), with a controller graphic of the assigned button for Index, Quest/Rift, Vive and WMR. Reset returns to the original playspace; the original is remembered and restored when the helper quits.\n- Works without the SteamVR overlay being enabled (the helper then runs without a dashboard tab)."

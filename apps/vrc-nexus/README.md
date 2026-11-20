@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.3.1 – Panic button in the header, HypeRate in the chatbox
+
+- 🚨 **Panic button moved to the top:** while NSFW is switched on, a red **Panic** button sits in the header next to your profile. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured) and switches NSFW off again.
+- 💓 **Heart rate source right in the chatbox module:** choose Pulsoid, HypeRate (ID + API key) or OSC/smartwatch directly in Chatbox modules → Heart rate; an invalid Pulsoid token now suggests switching to HypeRate.
+- 🪟 With the custom title bar, the sidebar no longer shows a second "VRC Nexus" logo.
+
 ### New in 3.3.0 – VR movement (Space Flight · Space Turn · Space Walk)
 
 In-game movement for VR, under **Game & OSC → 🚀 VR movement** and in the **SteamVR overlay** (new "🚀 Movement" tab). Own implementation in the existing SteamVR helper: it moves and rotates the playspace (SteamVR standing zero pose) – no extra driver needed.

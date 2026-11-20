@@ -134,7 +134,7 @@ class Heart {
         try {
             const r = await fetch(base('NEXUS_PULSOID_BASE', 'https://dev.pulsoid.net') + '/api/v1/data/heart_rate/latest', { headers: { Authorization: 'Bearer ' + tok }, signal: AbortSignal.timeout(8000) });
             if (r.status === 412 || r.status === 204) { this.error = 'Pulsoid: noch kein Messwert'; return; }
-            if (!r.ok) { this.error = r.status === 401 || r.status === 403 ? 'Pulsoid-Token ungültig' : 'Pulsoid: HTTP ' + r.status; return; }
+            if (!r.ok) { this.error = r.status === 401 || r.status === 403 ? 'Pulsoid-Token ungültig – neues Token eintragen oder HypeRate als Quelle wählen' : 'Pulsoid: HTTP ' + r.status; return; }
             const j = await r.json();
             const at = int(j.measured_at);
             if (at && Date.now() - at > 60000) { this.error = 'Pulsoid: kein aktueller Messwert'; return; }

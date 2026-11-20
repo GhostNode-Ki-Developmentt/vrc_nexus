@@ -5,6 +5,7 @@
     const UI = window.NexusUI;
     if (!UI) return;
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
+    const T = s => (window.t ? window.t(s) : s);
     let st = null, box = null, lastToken = '', tPoll = null, busy = false;
     const ls = (k, d) => { try { const v = localStorage.getItem('nx_nsfw_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
     const lsSet = (k, v) => { try { localStorage.setItem('nx_nsfw_' + k, JSON.stringify(v)); } catch (e) { /* egal */ } };
@@ -18,6 +19,26 @@
     const D_ACT = ['💋 küssen', '🤗 kuscheln', '✋ streicheln', '😬 anknabbern', '🗣 flüstern', '🫂 umarmen', '👃 schnuppern', '🪶 kitzeln'];
     const D_SPOT = ['Hals', 'Ohr', 'Hand', 'Wange', 'Nacken', 'Rücken', 'Stirn', 'Schulter'];
     const btn = () => document.querySelector('#tabs [data-tab="nsfw"]');
+    /** 3.3.1: Panik-Knopf oben in der Kopfzeile, solange NSFW an ist – Panik-Aktionen + NSFW wieder aus */
+    function headPanic() {
+        let p = document.getElementById('hdPanic');
+        if (!p) {
+            const head = document.querySelector('.vx-head-r');
+            if (!head) return null;
+            p = document.createElement('button');
+            p.type = 'button'; p.id = 'hdPanic'; p.className = 'vx-hpanic'; p.hidden = true;
+            p.title = T('Panik: sicherer Avatar, Chatbox leer, Spielzeug stopp – und NSFW wieder aus');
+            p.textContent = '🚨 ' + T('Panik');
+            head.insertBefore(p, document.getElementById('me'));
+            p.addEventListener('click', () => {
+                p.disabled = true;
+                api('nsfw_panic').then(d => toast(d.msg)).catch(x => toast(x.message, true))
+                    .then(() => api('acct_nsfw', { on: '0' })).then(d => { if (d && d.msg) toast(d.msg); }).catch(x => toast(x.message, true))
+                    .finally(() => { p.disabled = false; refreshAccess(); if (window.NexusAccount) window.NexusAccount.refresh(); const a = document.querySelector('#tabs .vx-tabbtn.active'); if (a && a.dataset.tab === 'nsfw') UI.tab('home'); });
+            });
+        }
+        return p;
+    }
 
     /** Menüpunkt zeigen/verstecken – beim Start und nach dem Freischalten */
     function refreshAccess() {
@@ -25,6 +46,7 @@
             st = d;
             const b = btn();
             if (b) b.hidden = !d.access.unlocked;
+            const hp = headPanic(); if (hp) hp.hidden = !d.access.unlocked;
             const ad = document.querySelector('#tabs [data-tab="admin"]'); if (ad) ad.hidden = !d.access.owner;
             if (!d.access.owner) { document.querySelectorAll('#tabs [data-tab="admin"], [data-pane="admin"], [data-tab-go="admin"]').forEach(x => x.remove()); delete window.NexusAdmin; }
             document.body.classList.toggle('is-owner', !!d.access.owner);
@@ -41,7 +63,7 @@
         const a = st.access;
         if (!a.unlocked) { box.innerHTML = '<div class="nc-grid"><div class="nc-card"><h4>🔞 NSFW ist gesperrt</h4><p class="small">' + esc(a.reason || '') + '</p><p class="small muted">NSFW gibt es nur mit „Verified 18+“: VRChat-Altersverifizierung (18+) abgeschlossen – Nexus fragt das direkt bei VRChat ab. Danach NSFW bewusst einschalten – jederzeit wieder ausschaltbar.</p><div id="nsAcct"></div></div></div>'; if (window.NexusAccount) window.NexusAccount.render(box.querySelector('#nsAcct')); return; }
         const c = st.cfg || {}, t = st.toys, r = st.remote, has = f => a.features.includes(f);
-        let h = '<div class="ns-top"><button type="button" class="btn ns-panic" data-ns="panic">🚨 PANIK</button>'
+        let h = '<div class="ns-top"><span class="muted small">🚨 ' + esc(T('Panik-Knopf: oben in der Kopfzeile')) + '</span>'
             + '<button type="button" class="btn ' + (st.private ? 'btn-gold' : '') + '" data-ns="private">🕶 Privat-Modus ' + (st.private ? 'AN' : 'aus') + '</button>'
             + '<span class="muted small">' + (a.owner ? '👑 Besitzer' : '🔓 freigeschaltet' + (a.exp ? ' bis ' + esc(new Date(a.exp * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) : '')) + '</span></div>';
         const tabs = [['main', '🏠 Übersicht'], ['toys', '🎮 Spielzeug', has('toys') && t], ['fun', '🎲 Spielereien'], ['net', '🌐 Fernsteuerung', has('toys') && st.tremote], ['phone', '📱 Handy', has('remote') && r]].filter(x => x.length < 3 || x[2]);

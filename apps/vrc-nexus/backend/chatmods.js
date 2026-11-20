@@ -398,6 +398,7 @@ class ChatMods {
                 await this.refresh(c, input.refresh === '1');
                 const prev = this.compose(c, false);
                 return { cfg: c, modules: this.app.mobile ? Object.fromEntries(MOBILE_MODS.map(k => [k, MODULES[k]])) : MODULES, mobile: !!this.app.mobile, values: this.vars(), preview: prev, vr: this.vr, gpu: !this.gpuMissing, gpu_win: !!this.gpuWin, battery: this.v.akku !== undefined, has_hr: this.hrSource() !== 'off', hr_source: this.hrSource(), hr_error: this.hrError || '',
+                    hr: this.app.heart ? (() => { const s = this.app.heart.status(); return { source: s.cfg.source, hyperate_id: s.cfg.hyperate_id || '', has_pulsoid: s.has_pulsoid, has_hyperate: s.has_hyperate, bpm: s.bpm }; })() : null,
                     twitch_default: this.twitchChannel(), windows: process.platform === 'win32', rotator_on: !!this.app.game.cfg().rotator_enabled };
             }
             case 'cm_save': { const c = this.save(input); return { cfg: c, msg: input.quiet ? '' : 'Gespeichert.' }; }

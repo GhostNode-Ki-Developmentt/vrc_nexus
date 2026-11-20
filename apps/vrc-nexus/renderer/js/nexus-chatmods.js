@@ -32,7 +32,7 @@
     }
     function row(k, i) {
         const m = d.modules[k], s = d.cfg.mods[k], open = openMod === k;
-        const note = { weather: d.cfg.place ? '📍 ' + d.cfg.place : 'Ort fehlt', twitch: d.cfg.twitch || d.twitch_default ? '📺 ' + (d.cfg.twitch || d.twitch_default) : 'Kanal fehlt', heart: d.has_hr ? (d.hr_error ? '⚠ ' + d.hr_error : 'verbunden') : 'keine Quelle', system: d.gpu ? (d.gpu_win ? 'GPU über Windows-Leistungsdaten' : '') : 'keine GPU-Werte gefunden', window: d.windows ? '' : 'nur unter Windows',
+        const note = { weather: d.cfg.place ? '📍 ' + d.cfg.place : 'Ort fehlt', twitch: d.cfg.twitch || d.twitch_default ? '📺 ' + (d.cfg.twitch || d.twitch_default) : 'Kanal fehlt', heart: d.has_hr ? (d.hr_error ? '⚠ ' + d.hr_error : 'verbunden' + (d.hr && d.hr.source !== 'off' ? ' (' + ({ pulsoid: 'Pulsoid', hyperate: 'HypeRate', osc: 'OSC' }[d.hr.source] || '') + ')' : '')) : 'keine Quelle', system: d.gpu ? (d.gpu_win ? 'GPU über Windows-Leistungsdaten' : '') : 'keine GPU-Werte gefunden', window: d.windows ? '' : 'nur unter Windows',
             battery: d.battery ? '' : 'kein Akku gefunden', fps: d.values && d.values.fps ? '' : 'nur in VR mit SteamVR-Overlay', countdown: d.cfg.cd_at ? '📅 ' + new Date(d.cfg.cd_at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Termin fehlt', marquee: d.cfg.mq_text ? '' : 'Text fehlt' }[k] || '';
         return '<section class="cm-row' + (s.on ? ' on' : '') + '" data-k="' + k + '"><span class="cm-ic">' + m[0] + '</span>'
             + '<div class="cm-txt"><b>' + esc(m[1]) + '</b>' + (note ? ' <small class="cm-note">' + esc(note) + '</small>' : '') + '<p>' + esc(m[2]) + '</p>'
@@ -49,7 +49,14 @@
         if (k === 'weather') extra = '<form class="cm-f" data-f="place"><label>Ort</label><input name="city" value="' + esc(c.city) + '" placeholder="z. B. Leipzig"><button class="btn btn-sm">📍 Suchen</button></form>';
         if (k === 'window') extra = '<form class="cm-f" data-f="private"><label>Privat (nur Name zeigen)</label><input name="private" value="' + esc(c.private) + '" placeholder="discord, chrome, …"><button class="btn btn-sm">Speichern</button></form>';
         if (k === 'twitch') extra = '<form class="cm-f" data-f="twitch"><label>Kanal</label><input name="twitch" value="' + esc(c.twitch) + '" placeholder="' + esc(d.twitch_default || 'deinkanal') + '"><button class="btn btn-sm">Speichern</button></form><div class="muted small">Ohne Eintrag wird der Kanal vom Stream-Bot genommen. Ist der Kanal offline, fällt das Modul weg.</div>';
-        if (k === 'heart') extra = '<div class="muted small">Die Puls-Quelle (Pulsoid, HypeRate oder OSC/Smartwatch) und die Avatar-Parameter stellst du an einer Stelle ein.</div><button type="button" class="btn btn-sm" data-goheart="1">💓 Puls einrichten →</button>';
+        if (k === 'heart') {
+            // 3.3.1: Quelle direkt hier wählen – Pulsoid oder HypeRate (gleiche Einstellung wie unter 💓 Puls)
+            const h = d.hr || { source: 'off' };
+            extra = '<form class="cm-f" data-f="hrsrc"><label>Quelle</label><select name="source">' + [['off', 'aus'], ['pulsoid', 'Pulsoid'], ['hyperate', 'HypeRate'], ['osc', 'OSC / Smartwatch']].map(([v, l]) => '<option value="' + v + '"' + (h.source === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select><button class="btn btn-sm">Übernehmen</button></form>'
+                + (h.source === 'pulsoid' ? '<form class="cm-f" data-f="hr"><label>Pulsoid-Token</label><input name="token" type="password" autocomplete="off" placeholder="' + (h.has_pulsoid ? '•••• gespeichert – neu eintragen' : 'Token von pulsoid.net') + '"><button class="btn btn-sm">Speichern</button></form>' : '')
+                + (h.source === 'hyperate' ? '<form class="cm-f" data-f="hrhype"><label>HypeRate-ID</label><input name="hyperate_id" value="' + esc(h.hyperate_id) + '" placeholder="z. B. a1b2c3 oder app.hyperate.io/a1b2c3" style="width:200px"><label>API-Schlüssel</label><input name="key" type="password" autocomplete="off" placeholder="' + (h.has_hyperate ? '•••• gespeichert' : 'von HypeRate') + '"><button class="btn btn-sm">Speichern</button></form>' : '')
+                + '<div class="muted small">Gilt für die ganze App (Chatbox, Avatar-Parameter, Overlay). Weitere Einstellungen unter 💓 Puls.</div><button type="button" class="btn btn-sm" data-goheart="1">💓 Puls einrichten →</button>';
+        }
         if (k === 'countdown') extra = '<form class="cm-f" data-f="cd"><label>Termin</label><input name="cd_name" value="' + esc(c.cd_name) + '" placeholder="Name, z. B. Stream" maxlength="40"><input name="cd_at" type="datetime-local" value="' + esc(c.cd_at) + '"><button class="btn btn-sm">Speichern</button></form>';
         if (k === 'marquee') extra = '<form class="cm-f" data-f="mq"><label>Text</label><input name="mq_text" value="' + esc(c.mq_text) + '" maxlength="500" placeholder="Langer Text, der durchläuft …"><label>Breite</label><input name="mq_width" type="number" min="10" max="120" value="' + c.mq_width + '" style="width:70px"><button class="btn btn-sm">Speichern</button></form>';
         if (k === 'anim') extra = '<form class="cm-f cm-col" data-f="an"><label>Bilder (eine Zeile = ein Bild)</label><textarea name="an_frames" rows="5">' + esc(c.an_frames) + '</textarea><button class="btn btn-sm">Speichern</button></form><div class="muted small">Mit jeder gesendeten Nachricht kommt das nächste Bild – bei „alle 10 s“ also alle 10 s.</div>';
@@ -100,6 +107,9 @@
             if (f.dataset.f === 'private') return save({ private: f.private.value });
             if (f.dataset.f === 'twitch') return save({ twitch: f.twitch.value });
             if (f.dataset.f === 'hr') return api('cm_hr_key', { token: f.token.value }).then(r => { toast(r.msg); f.token.value = ''; load(true); }).catch(er => toast('⚠ ' + er.message, true));
+            if (f.dataset.f === 'hrsrc') return api('hr_save', { source: f.source.value, quiet: '1' }).then(() => { toast('Puls-Quelle: ' + f.source.options[f.source.selectedIndex].text); load(true); }).catch(er => toast('⚠ ' + er.message, true));
+            if (f.dataset.f === 'hrhype') return api('hr_save', { source: 'hyperate', hyperate_id: f.hyperate_id.value, quiet: '1' })
+                .then(() => f.key.value.trim() ? api('hr_hyperate_key', { token: f.key.value.trim() }) : null).then(() => { toast('HypeRate gespeichert.'); load(true); }).catch(er => toast('⚠ ' + er.message, true));
             if (f.dataset.f === 'hrosc') return save({ hr_param: f.hr_param.value, hr_osc: f.hr_osc.checked ? '1' : '0' });
             if (f.dataset.f === 'cd') return save({ cd_name: f.cd_name.value, cd_at: f.cd_at.value });
             if (f.dataset.f === 'mq') return save({ mq_text: f.mq_text.value, mq_width: f.mq_width.value });
