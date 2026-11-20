@@ -1,6 +1,7 @@
 'use strict';
 /*
- * Test-Server für die Android-Version im Desktop-Browser:  node tests/server.js 8120 http://127.0.0.1:8792/api/1
+ * Test-Server für die Android-Version im Desktop-Browser:  node tests/server.js 8120 http://127.0.0.1:8792/api/1  [http://127.0.0.1:8902 = GhostNode-Testkopie]
+ * Sicherheit: leitet nur an localhost weiter – die echte Webseite (privat.sylvanclub.eu) wird auf die Testkopie umgebogen.
  * Liefert www/ aus und spielt „natives HTTP“ nach: Anfragen an VRChat laufen über /__proxy, Cookies verwaltet der Server
  * (wie der Android-CookieManager) – JavaScript sieht keine Set-Cookie-Kopfzeilen, genau wie in der App.
  */
@@ -10,6 +11,7 @@ const path = require('path');
 
 const port = +(process.argv[2] || 8120);
 const API = process.argv[3] || 'http://127.0.0.1:8792/api/1';
+const SITE = (process.argv[4] || 'http://127.0.0.1:8902').replace(/\/+$/, '');   // GhostNode-Testkopie (nexusacct/nexuscomm/…)
 const WWW = path.join(__dirname, '..', 'www');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.wasm': 'application/wasm' };
 const jar = {};
@@ -32,7 +34,11 @@ http.createServer(async (req, res) => {
         let raw = '';
         for await (const c of req) raw += c;
         const p = JSON.parse(raw);
+        // Nur Testziele: die GhostNode-Webseite → lokale Testkopie (4. Argument, Standard 127.0.0.1:8902), sonst nur localhost.
+        // Niemals echte Server – sonst landen Testkonten/-profile auf der Live-Seite.
+        if (/^https:\/\/privat\.sylvanclub\.eu\//.test(p.url)) p.url = p.url.replace(/^https:\/\/privat\.sylvanclub\.eu/, SITE);
         const u = new URL(p.url);
+        if (!['127.0.0.1', 'localhost'].includes(u.hostname)) { res.writeHead(403, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Test-Server: nur lokale Ziele (' + u.hostname + ' blockiert).' })); }
         const h = Object.assign({}, p.headers);
         delete h.cookie;
         const ck = Object.entries(jar[u.host] || {}).map(([k, v]) => k + '=' + v).join('; ');

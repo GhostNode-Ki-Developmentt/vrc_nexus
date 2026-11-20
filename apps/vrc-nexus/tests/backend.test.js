@@ -2109,7 +2109,7 @@ test('3.1: Profil-Dekorationen – Felder lesen (auch presence), Katalog-ID / Na
     let calls = 0;
     app.tools.call = async (m, p) => {
         calls++;
-        if (p === '/cosmetics/index/iconFrame') return [{ id: 'invt_f1', name: 'Sonne', imageUrl: 'https://x.test/f.png', metadata: {} }, { id: 'invt_f2', name: 'Neon Ring', metadata: { gradientStart: 'ff4fa3', gradientEnd: '3fe0c5' } }];
+        if (p === '/cosmetics/index/iconFrame') return [{ id: 'invt_f1', name: 'Sonne', imageUrl: 'https://x.test/f.png', metadata: {} }, { id: 'invt_f3', name: 'Mit Asset', imageUrl: 'https://x.test/preview.png', metadata: { imageUrl: 'https://x.test/preview.png', assets: [{ url: 'https://x.test/frame-only.png', type: 'image' }] } }, { id: 'invt_f2', name: 'Neon Ring', metadata: { gradientStart: 'ff4fa3', gradientEnd: '3fe0c5' } }];
         if (p === '/cosmetics/index/nameplateEffect') return [{ id: 'invt_n1', name: 'Sunset', metadata: { gradientStart: '#FFAE5C', gradientEnd: 'ff4fa3' } }];
         return [];
     };
@@ -2120,12 +2120,15 @@ test('3.1: Profil-Dekorationen – Felder lesen (auch presence), Katalog-ID / Na
     app.deco.remember('usr_b', { iconFrame: 'Neon Ring', nameplateEffect: 'invt_n1' });
     app.deco.remember('usr_c', { iconFrame: 'https://x.test/own.png', bannerUrl: 'https://x.test/b.png' });
     app.deco.remember('usr_d', { displayName: 'ohne' });
+    app.deco.remember('usr_e', { iconFrame: 'invt_f3', bannerType: 'avatarBanner', bannerColor: '112233', currentAvatarImageUrl: 'https://x.test/avatar.png' });
     const m = (await app.post({ act: 'deco_map' }, {})).deco;
     assert.strictEqual(m.usr_a.frame, 'https://x.test/f.png'); assert.strictEqual(m.usr_a.color, '#3fe0c5');
     assert.deepStrictEqual(m.usr_b.ring, ['#ff4fa3', '#3fe0c5'], 'per Name gefunden, Verlauf als Ring');
     assert.deepStrictEqual(m.usr_b.name_grad, ['#ffae5c', '#ff4fa3']);
     assert.strictEqual(m.usr_c.frame, 'https://x.test/own.png'); assert.strictEqual(m.usr_c.banner, 'https://x.test/b.png');
     assert.ok(!m.usr_d);
+    assert.strictEqual(m.usr_e.frame, 'https://x.test/frame-only.png', 'Rahmen-Asset statt Vorschau mit Platzhalter');
+    assert.strictEqual(m.usr_e.banner, 'https://x.test/avatar.png', 'avatarBanner = Bild des aktuellen Avatars');
     const n = calls; await app.post({ act: 'deco_map' }, {}); assert.strictEqual(calls, n, 'Katalog zwischengespeichert');
     // entfernt → gelöscht
     app.deco.remember('usr_a', { iconFrame: '' });

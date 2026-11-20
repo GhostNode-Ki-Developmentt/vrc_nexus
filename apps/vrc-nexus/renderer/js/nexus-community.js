@@ -6,7 +6,7 @@
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
     const T = s => (window.t ? window.t(s) : s);
     const when = ts => UI.ago ? UI.ago(ts) : new Date(ts * 1000).toLocaleString();
-    let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false;
+    let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false, acct = null, p18Edit = false;
     const card = (t, html, cls) => '<div class="nc-card ' + (cls || '') + '">' + (t ? '<h4>' + t + '</h4>' : '') + html + '</div>';
     const MOBILE = document.body.classList.contains('mobile');
     let chat = { list: null, uid: '', open: null, timer: null };
@@ -14,7 +14,9 @@
 
     function nav() {
         const n = document.getElementById('cmtSub');
-        if (n) n.innerHTML = subs().map(([k, l]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-csub="' + k + '">' + esc(l) + '</button>').join('');
+        if (n) n.innerHTML = subs().map(([k, l]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-csub="' + k + '">' + esc(l) + '</button>').join('')
+            // 3.1.1: NSFW direkt hier ein-/ausschalten (nur mit Verified 18+)
+            + (acct && acct.age && acct.age.verified ? '<label class="cm-nsfwsw" title="' + esc(T('NSFW-Inhalte und -Werkzeuge anzeigen (freiwillig, jederzeit abschaltbar)')) + '"><input type="checkbox" data-cnsfw="1"' + (acct.age.nsfw_on ? ' checked' : '') + '><span></span>🔞 NSFW</label>' : '');
     }
     const imgs = media => (media || []).length ? '<div class="cm-imgs">' + media.map(id => '<img loading="lazy" src="nexus.php?cimg=' + esc(id) + '" alt="" data-cimg="' + esc(id) + '">').join('') + '</div>' : '';
     function post(p, reply) {
@@ -97,19 +99,31 @@
             + '<div class="nc-row"><input type="text" name="pronouns" maxlength="40" placeholder="' + esc(T('Pronomen')) + '" value="' + esc(p.pronouns) + '"><input type="text" name="languages" maxlength="100" placeholder="' + esc(T('Sprachen')) + '" value="' + esc(p.languages) + '"></div>'
             + '<input type="text" name="interests" maxlength="300" placeholder="' + esc(T('Interessen (mit Komma)')) + '" value="' + esc(p.interests) + '">'
             + '<input type="text" name="links" maxlength="800" placeholder="' + esc(T('Links (https://…, mit Komma)')) + '" value="' + esc((p.links || []).join(', ')) + '">'
-            + (me.nsfw ? '<textarea name="nsfw_bio" rows="3" maxlength="1000" placeholder="🔞 ' + esc(T('18+-Profilteil (nur für Verified 18+ mit NSFW an sichtbar)')) + '">' + esc(p.nsfw_bio || '') + '</textarea>' : '')
+            + (window.NexusProfile18 ? window.NexusProfile18.factsForm(p.facts) : '')
             + '<div class="nc-row"><label class="btn btn-sm">🖼 ' + esc(T('Profilbild')) + '<input type="file" accept="image/*" data-cav="avatar" hidden></label><label class="btn btn-sm">🖼 ' + esc(T('Banner')) + '<input type="file" accept="image/*" data-cav="banner" hidden></label>'
             + '<button class="btn btn-sm btn-gold" style="margin-left:auto">' + esc(T('Speichern')) + '</button><button type="button" class="btn btn-sm" data-cpedit="0">' + esc(T('Abbrechen')) + '</button></div></form>';
-        return '<div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
+        return '<div class="cm-pgrid' + (p.nsfw_facts !== undefined || (p.own && acct && acct.age && acct.age.verified) ? ' two' : '') + '"><div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
             + card('', '<div class="cm-phead">' + (p.avatar ? '<img class="cm-pav" src="nexus.php?cimg=' + esc(p.avatar) + '" alt="">' : '<span class="cm-pav">👤</span>') + '<div><h3>' + esc(p.name) + '</h3>'
                 + '<div class="small muted">' + [p.pronouns, p.languages].filter(Boolean).map(esc).join(' · ') + '</div>'
+                + (window.NexusProfile18 ? window.NexusProfile18.factsView(p.facts) : '')
                 + '<div>' + (p.verified18 ? '<span class="vx-pill" style="--pc:#51e57e">✔ Verified 18+</span>' : '') + '<span class="vx-pill">' + p.posts + ' ' + esc(T('Beiträge')) + '</span></div></div>'
                 + (p.own ? '<button type="button" class="btn btn-sm" data-cpedit="1" style="margin-left:auto">✎ ' + esc(T('Bearbeiten')) + '</button>' : '<button type="button" class="btn btn-sm" data-user="' + esc(p.vrc_id) + '" style="margin-left:auto">VRChat-' + esc(T('Profil')) + '</button>') + '</div>'
                 + (p.bio ? '<p>' + esc(p.bio).replace(/\n/g, '<br>') + '</p>' : '') + (p.interests ? '<p class="small">✨ ' + esc(p.interests) + '</p>' : '')
                 + ((p.links || []).length ? '<p class="small">' + p.links.map(l => '<a href="' + esc(l) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(l.replace(/^https:\/\//, '')) + '</a>').join(' · ') + '</p>' : '')
-                + (p.nsfw_bio ? '<div class="tts-help">🔞 ' + esc(p.nsfw_bio).replace(/\n/g, '<br>') + '</div>' : ''))
-            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>';
+)
+            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>' + p18Html(p) + '</div>';
     }
+    /** 3.1.1: 🔞 18+-Profil rechts neben dem Profil */
+    function p18Html(p) {
+        const P = window.NexusProfile18;
+        if (!P) return '';
+        if (p.nsfw_facts === undefined) return p.own && acct && acct.age && acct.age.verified ? card('🔞 ' + esc(T('18+-Profil')), '<p class="small">' + esc(T('Schalte oben rechts NSFW ein, um dein 18+-Profil zu bearbeiten.')) + '</p>', 'cm-p18') : '';
+        const canEdit = p.own && me && me.nsfw;   // ohne eingeschaltetes NSFW speichert der Server den 18+-Teil nicht
+        if (canEdit && p18Edit) return card('🔞 ' + esc(T('18+-Profil bearbeiten')), P.nsfwEditor(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
+        if (p.own && !canEdit) return card('🔞 ' + esc(T('18+-Profil')), '<p class="small">' + esc(T('Schalte oben rechts NSFW ein, um dein 18+-Profil zu bearbeiten.')) + '</p>' + P.nsfwView(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
+        return card('🔞 ' + esc(T('18+-Profil')) + (canEdit ? '<button type="button" class="btn btn-sm" data-p18e="1" style="margin-left:auto">✎ ' + esc(T('Bearbeiten')) + '</button>' : ''), P.nsfwView(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
+    }
+    const profBody = p => ({ bio: p.bio, pronouns: p.pronouns, languages: p.languages, interests: p.interests, links: p.links || [], nsfw_bio: p.nsfw_bio || '', avatar: p.avatar || '', banner: p.banner || '' });
     function modHtml() {
         if (!modData) return '<div class="vx-loading">…</div>';
         const d = modData;
@@ -130,7 +144,7 @@
     }
 
     // ---------- Daten ----------
-    function loadMe() { return api('comm_me').then(d => { me = d; }).catch(e => { me = { error: e.message }; }); }
+    function loadMe() { return Promise.all([api('comm_me').then(d => { me = d; }).catch(e => { me = { error: e.message }; }), api('acct_get').then(d => { acct = d; }).catch(() => {})]); }
     function loadFeed(more) {
         const before = more && items.length ? items[items.length - 1].id : 0;
         return api('comm_feed', { rating: sub === 'nsfw' ? 'nsfw' : 'sfw', before }).then(d => { items = more ? items.concat(d.items) : d.items; render(); }).catch(e => toast('⚠ ' + e.message, true));
@@ -142,7 +156,7 @@
         if (s === 'nsfw' && !(me && me.nsfw)) sub = 'feed';
         if (window.NexusUI.store) window.NexusUI.store.set('cmtSub', sub);   // 3.1: letzte Unterseite merken
         if (sub === 'feed' || sub === 'nsfw') { items = []; render(); loadFeed(); }
-        else if (sub === 'profile') { profEdit = false; loadProfile(arg); }
+        else if (sub === 'profile') { profEdit = false; p18Edit = false; loadProfile(arg); }
         else if (sub === 'mod') { modData = null; render(); loadMod(); }
         else if (sub === 'chat') { render(); chatLoad(true).then(() => { if (arg) chatOpen(arg); }); chatTimer(); }
         else render();
@@ -156,6 +170,14 @@
     function bind() {
         const top = document.getElementById('cmtSub');
         if (top) top.addEventListener('click', e => { const b = e.target.closest('[data-csub]'); if (b) go(b.dataset.csub); });
+        if (top) top.addEventListener('change', e => {
+            const c = e.target.closest('[data-cnsfw]');
+            if (!c) return;
+            if (c.checked && !confirm(T('NSFW einschalten? Damit bestätigst du, volljährig zu sein. Inhalte bleiben getrennt und lassen sich jederzeit wieder ausschalten.'))) { c.checked = false; return; }
+            c.disabled = true;
+            api('acct_nsfw', { on: c.checked ? '1' : '0' }).then(d => { acct = d; if (d.msg) toast(d.msg); if (window.NexusNsfw) window.NexusNsfw.refresh(); return loadMe(); })
+                .then(() => { if (sub === 'nsfw' && !(me && me.nsfw)) sub = 'feed'; go(sub); }).catch(x => { toast('⚠ ' + x.message, true); c.checked = !c.checked; c.disabled = false; });
+        });
         box.addEventListener('click', e => {
             const t = e.target;
             const pf = t.closest('[data-cprof]'); if (pf) { e.preventDefault(); return go('profile', pf.dataset.cprof); }
@@ -170,6 +192,8 @@
             if (t.closest('[data-chsafety]')) { chat.showSafety = !chat.showSafety; return render(); }
             if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
+            if (t.closest('[data-p18e]')) { p18Edit = true; return render(); }
+            if (t.closest('[data-p18cancel]')) { p18Edit = false; return render(); }
             const md = t.closest('[data-cmod]');
             if (md) {
                 const k = md.dataset.cmod;
@@ -196,7 +220,10 @@
                     .then(d => { toast(T(d.msg)); f.reset(); if (!parent) { attach = []; items.unshift(d.post); } else if (openThread[parent]) { openThread[parent].replies.push(d.post); const p = items.find(x => x.id === parent); if (p) p.replies++; } })
                     .catch(x => toast(x.message, true)).finally(() => { busy = false; render(); });
             }
-            if (f.matches('.cm-pform')) return api('comm_profile_save', { bio: f.bio.value, pronouns: f.pronouns.value, languages: f.languages.value, interests: f.interests.value, links: f.links.value.split(',').map(x => x.trim()).filter(Boolean), nsfw_bio: f.nsfw_bio ? f.nsfw_bio.value : '', avatar: prof.avatar || '', banner: prof.banner || '' })
+            if (f.matches('.p18-edit')) return api('comm_profile_save', Object.assign(profBody(prof), { nsfw_bio: f.nsfw_bio.value, nsfw_facts: JSON.stringify(window.NexusProfile18.readNsfw(f)) }))
+                .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; p18Edit = false; render(); }).catch(x => toast(x.message, true));
+            if (f.matches('.cm-pform')) return api('comm_profile_save', Object.assign(profBody(prof), { bio: f.bio.value, pronouns: f.pronouns.value, languages: f.languages.value, interests: f.interests.value, links: f.links.value.split(',').map(x => x.trim()).filter(Boolean) },
+                window.NexusProfile18 ? { facts: JSON.stringify(window.NexusProfile18.readFacts(f)) } : {}))
                 .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; profEdit = false; render(); }).catch(x => toast(x.message, true));
             if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
             if (f.matches('.ch-comp')) { const text = f.text.value; if (!text.trim()) return; busy = true; return api('chat_send', { uid: chat.uid, text }).then(d => { chat.open = d; f.reset(); }).catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); }); }

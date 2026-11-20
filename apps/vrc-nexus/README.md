@@ -22,6 +22,14 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.1.1 – Profile facts, tidier menus
+
+- 🪪 **Community profile facts:** gender (several possible plus your own), sexual orientation, relationship status and whether you are looking for a partner – shown on your Community profile.
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+- 🧭 **Left menu:** groups like Social or Favourites no longer expand in the sidebar – their sub-pages are already shown as tabs at the top; clicking the group opens the page you used last.
+- ⚙ **Settings:** the settings tabs (System, Interface, Social …) now sit in the top bar instead of the "More" group.
+- 🎀 **Profile decorations fixed:** frames no longer cover the profile picture, "avatar banners" now show the current avatar picture, and name effects stay readable.
+
 ### New in 3.1.0 – Profile decorations
 
 - 🎀 **Profile decorations everywhere:** the frame around the profile picture, the banner colour/image and the name effect that people set in VRChat now appear wherever profiles are shown – friend cards, the friends bar, profile window, player list, home, locations and more. Can be switched off under Settings → Appearance.

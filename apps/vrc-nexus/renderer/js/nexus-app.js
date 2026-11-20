@@ -681,7 +681,7 @@
                 + '<a class="btn btn-sm" href="nexus.php?tools_export=settings">⬇ Einstellungen exportieren</a><label class="btn btn-sm">⬆ Importieren<input type="file" accept=".json" id="setImport" hidden></label>'
                 + '<button type="button" class="btn btn-sm btn-danger" data-act="reset">↺ Alles zurücksetzen</button></div></div>',
         }[setTab] || '';
-        box.innerHTML = '<div class="nx-panel"><h2>⚙ Einstellungen</h2><div class="set-tabs">' + Object.entries(d.schema.tabs).filter(([k]) => tabsShown.includes(k)).map(([k, l]) => '<button type="button" data-st="' + k + '" class="' + (k === setTab ? 'on' : '') + '">' + esc(l) + '</button>').join('') + '</div>'
+        box.innerHTML = '<div class="nx-panel"><h2>⚙ Einstellungen</h2><div class="set-tabs" id="setTabs">' + Object.entries(d.schema.tabs).filter(([k]) => tabsShown.includes(k)).map(([k, l]) => '<button type="button" data-st="' + k + '" class="' + (k === setTab ? 'on' : '') + '">' + esc(l) + '</button>').join('') + '</div>'
             + (setTab === 'tr' ? '<div id="trPanel"></div>' : '') + (setTab === 'tr' ? [] : secs).map(sec => '<div class="set-sec"><h3>' + esc(sec) + '</h3>' + fields.filter(f => f.section === sec).map(f => '<div class="set-row"><div><b>' + esc(f.label) + '</b>' + (f.hint ? '<div class="nx-hint">' + esc(f.hint) + '</div>' : '') + '</div>' + field(f, d.settings[f.key]) + '</div>').join('') + '</div>').join('')
             + (setTab === 'link' && !MOBILE ? '<div class="set-sec"><h3>☁ Cloud-Sicherung ins Dashboard</h3><div id="bkBox"><div class="vx-loading">…</div></div></div>' : '')
             + (setTab === 'int' && !MOBILE ? obsHtml(d.settings) : '')
@@ -695,6 +695,7 @@
         if (setTab === 'adv' && window.NexusAccount && $('#acctBox')) window.NexusAccount.render($('#acctBox'));
         if (setTab === 'about' && window.NexusAbout) window.NexusAbout.open();
         if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
+        if (UI.subnav) UI.subnav();     // 3.1.1: Menü links → Reiter der Einstellungen oben in der Leiste
     }
     // Datenbank: Größe, Einträge je Bereich, ältester Eintrag, Aufbewahrung, jetzt aufräumen
     function dbRender(d) {
@@ -708,6 +709,8 @@
             + '</tbody></table><div class="nx-row" style="margin-top:8px"><button type="button" class="btn btn-sm" data-act="cleanup">🧹 Jetzt aufräumen</button><span class="vx-small">Zeiträume oben unter „Aufräumen“ einstellen – „für immer“ löscht nichts. Läuft sonst automatisch einmal am Tag.</span></div>';
     }
     function dbPanel() { api('tools_dbinfo').then(dbRender).catch(e => { const b = $('#dbBox'); if (b) b.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; }); }
+    // Reiter oben in der Leiste (Menü links) – gleiche Wirkung wie in der Seite
+    if ($('#subNav')) $('#subNav').addEventListener('click', e => { const t = e.target.closest('#setTabs [data-st]'); if (t) { setTab = t.dataset.st; UI.store.set('setTab', setTab); renderSettings(); } });
     $('#setBox').addEventListener('click', e => {
         const t = e.target.closest('[data-st]');
         if (t) { setTab = t.dataset.st; UI.store.set('setTab', setTab); renderSettings(); return; }
@@ -897,6 +900,16 @@
             { icon: '⛔', label: 'Blockieren', bad: true, fn: () => { const b = body.querySelector('[data-mod=block]'); if (b) b.click(); } },
         ]));
         bar.addEventListener('click', e => { const b = e.target.closest('[data-ut]'); if (b) uTab(u, b.dataset.ut); });
+        // 3.1.1: 🔞 18+-Profil aus der Nexus Community – Reiter direkt nach „Info“, nur wenn der Server es für mich freigibt
+        if (window.NexusProfile18 && window.VRCX && !window.VRCX.mobile_lite) api('comm_profile', { id: u.id }).then(d => {
+            const p = d.profile, P = window.NexusProfile18;
+            if (!p || p.nsfw_facts === undefined || (!P.hasNsfw(p.nsfw_facts) && !p.nsfw_bio) || !document.contains(bar)) return;
+            u._p18 = p;
+            const b = document.createElement('button');
+            b.type = 'button'; b.dataset.ut = 'p18'; b.className = 'u-tab18'; b.textContent = '🔞 ' + (window.t ? window.t('18+-Profil') : '18+-Profil');
+            const first = bar.querySelector('[data-ut="info"]');
+            first.after(b);
+        }).catch(() => { /* kein Nexus-Konto / keine Freigabe → kein Reiter */ });
     }
     function uTab(u, t) {
         const body = $('#userBody');
@@ -910,6 +923,11 @@
             + esc(o.author ? 'von ' + o.author : '') + '</small><span class="vx-card-meta">' + (o.occupants ? '<span>🟢 ' + UI.num(o.occupants) + '</span>' : '') + (o.favorites ? '<span>⭐ ' + UI.num(o.favorites) + '</span>' : '')
             + (o.status && o.status !== 'public' ? '<span>' + esc(o.status) + '</span>' : '') + '</span></span></button>';
         const err = d => d.error ? '<div class="vx-error">⚠ ' + esc(d.error) + '</div>' : '';
+        if (t === 'p18') {
+            const p = u._p18 || {}, P = window.NexusProfile18;
+            pane.innerHTML = '<div class="nc-card cm-p18">' + P.factsView(p.facts) + P.nsfwView(p.nsfw_facts, p.nsfw_bio) + '</div>';
+            return;
+        }
         if (t === 'groups') {
             pane.innerHTML = (u.groups || []).length ? '<div class="u-glist">' + u.groups.map(g => '<button type="button" class="loc-p" data-opengroup="' + esc(g.id) + '">' + img(g.icon, 'vx-av', g.name) + '<b>' + esc(g.name) + '</b>'
                 + (g.rep ? ' <span class="vx-pill rep">★</span>' : '') + '<small class="vx-small">' + g.members + ' Mitgl.</small></button>').join('') + '</div>' : '<div class="vx-empty">Keine (öffentlichen) Gruppen.</div>';

@@ -2,6 +2,12 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.1.1 – 18+ profile
+
+- 🔞 **18+ profile in the Community:** next to your profile there is now an 18+ section – role, behaviour, open to contact, safer-sex policy, “can host” and a kink list with separate ratings for *receive* and *give* (♥ love it · 👍 like it · 〜 maybe · 👎 no). Only Verified 18+ people with NSFW switched on can see it; the website enforces this.
+- 🎚 **NSFW switch right in the Community bar** (top right) – no detour via the settings.
+- 👤 **18+ tab in VRChat profiles:** if someone has an 18+ profile and you are allowed to see it, their profile window gets a “🔞 18+ profile” tab right after “Info”.
+
 ### New in 3.0.1 – Age check directly with VRChat
 
 - 🔞 **Verified 18+ is now checked directly with VRChat:** the app asks VRChat for your own account’s age verification (`/ageVerification/status`) with your own login – it no longer has to be visible on your profile, and the website no longer needs a separate checking account. Re-checked at start, every 6 hours and one day before it expires; if VRChat is unreachable, nothing changes. If VRChat stops reporting 18+, NSFW is locked and you get one notice.

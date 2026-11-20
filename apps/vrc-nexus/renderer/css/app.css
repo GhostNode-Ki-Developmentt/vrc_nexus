@@ -520,9 +520,11 @@ body.nav-side .vx-mgroup { display: flex; flex-direction: column; }
 body.nav-side .vx-mtop i { margin-left: auto; transition: transform 0.15s; }
 body.nav-side .vx-mgroup.open > .vx-mtop i, body.nav-side .vx-mgroup.active > .vx-mtop i { transform: rotate(180deg); }
 body.nav-side .vx-mdrop { position: static; display: none; min-width: 0; padding: 0 0 4px 14px; background: transparent; border: 0; box-shadow: none; }
-body.nav-side .vx-mgroup.open .vx-mdrop, body.nav-side .vx-mgroup.active .vx-mdrop { display: flex; }
+/* 3.1.1: Unterpunkte stehen oben als Reiter – in der Leiste nicht mehr aufklappen */
+body.nav-side .vx-mgroup .vx-mdrop { display: none !important; }
+body.nav-side .vx-mtop i { display: none; }
+body.nav-side .vx-mgroup.active > .vx-mtop { color: var(--text-strong); border-color: var(--accent-cyan); background: rgba(var(--accent-rgb), 0.12); }
 body.nav-side .vx-mdrop .vx-tabbtn { padding: 6px 10px; font-size: 0.8rem; border-left: 1px solid var(--border-color); }
-body.nav-side .vx-mgroup.active > .vx-mtop { background: transparent; border-color: transparent; color: var(--accent-cyan); }
 body.nav-side .vx-mright .vx-mdrop { left: 0; right: auto; }
 /* Abschnitte der linken Leiste (Übersicht · Leute · Spiel · Inhalte) – nur in der Seitenleiste */
 .vx-msec { display: none; }
@@ -840,9 +842,48 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .dc-av > img, .dc-av > span { position: relative; z-index: 0; }
 .dc-ring { padding: 2px; background: conic-gradient(from 210deg, var(--dc-r1), var(--dc-r2), var(--dc-r1)); box-shadow: 0 0 10px color-mix(in srgb, var(--dc-r1) 55%, transparent); }
 .dc-ring > img, .dc-ring > span { border-color: transparent !important; }
-.dc-frame { position: absolute; inset: -22%; background: center / contain no-repeat; pointer-events: none; z-index: 1; }
+.dc-frame { position: absolute; inset: -22%; background: center / contain no-repeat; pointer-events: none; z-index: -1; }
+.dc-av { isolation: isolate; } .dc-framed > img, .dc-framed > span { border-radius: 50%; }
 .dc-card { background-image: linear-gradient(100deg, transparent 30%, var(--dc-c, transparent) 135%); }
 .dc-card.dc-has-bg { background-image: linear-gradient(100deg, rgba(var(--panel-rgb), 0.94) 38%, rgba(var(--panel-rgb), 0.55) 75%, rgba(var(--panel-rgb), 0.25)), linear-gradient(100deg, transparent 30%, var(--dc-c, transparent) 135%), var(--dc-img); background-size: cover; background-position: right center; }
 .vx-u-head.dc-card { padding: 10px; border-radius: 6px; }
-.dc-name { background: linear-gradient(90deg, var(--dc-n1), var(--dc-n2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent !important; }
+.dc-name { background: linear-gradient(90deg, color-mix(in srgb, var(--dc-n1) 55%, transparent), color-mix(in srgb, var(--dc-n2) 25%, transparent)); border-radius: 3px; padding: 0 6px; box-shadow: inset 2px 0 0 var(--dc-n1); }
 body.no-anim .dc-ring { box-shadow: none; }
+
+/* 3.1.1 Community-Profil: Steckbrief, 🔞 18+-Profil rechts, NSFW-Schalter in der Reiterleiste */
+.cm-pgrid.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1100px) { .cm-pgrid.two { grid-template-columns: 1fr; } }
+.cm-p18 h4 { display: flex; align-items: center; gap: 8px; }
+.p18-facts { display: flex; flex-direction: column; gap: 2px; margin: 8px 0; }
+.p18-facts > div { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; background: rgba(var(--ink-rgb), 0.03); border-radius: 4px; }
+.p18-facts i { font-style: normal; text-align: center; } .p18-facts span { color: var(--text-muted); font-size: 0.82rem; } .p18-facts b { font-size: 0.86rem; text-align: right; }
+.p18-bio { white-space: normal; }
+.p18-legend { margin: 10px 0 4px; }
+.p18-cat { border-top: 1px solid var(--line); padding: 4px 0; }
+.p18-cat > summary { cursor: pointer; font-weight: 700; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-gold); padding: 6px 2px; }
+.p18-cat > summary small { color: var(--text-muted); font-weight: 400; }
+.p18-k { display: grid; grid-template-columns: minmax(0, 1fr) 76px 76px; align-items: center; gap: 4px; padding: 3px 4px; font-size: 0.86rem; }
+.p18-k:nth-child(odd) { background: rgba(var(--ink-rgb), 0.025); }
+.p18-kh b { font-size: 0.66rem; text-transform: uppercase; color: var(--text-muted); text-align: center; letter-spacing: 0.5px; }
+.p18-r { display: inline-grid; place-items: center; width: 30px; height: 26px; justify-self: center; border-radius: 4px; font-size: 0.95rem; }
+.r-love { color: #ff4f8a; } .r-like { color: #4ade80; } .r-maybe { color: var(--accent-gold); } .r-no { color: #ff6b6b; } .r-none { color: var(--text-muted); opacity: 0.5; }
+.p18-rb { background: rgba(var(--ink-rgb), 0.04); border: 1px solid var(--line); border-radius: 4px; padding: 0; cursor: pointer; justify-self: center; }
+.p18-rb:hover { border-color: var(--accent-cyan); }
+.p18-box { border: 1px solid var(--line); padding: 8px 10px 10px; margin: 8px 0; display: flex; flex-direction: column; gap: 8px; }
+.p18-box legend { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-gold); padding: 0 6px; }
+.p18-f { display: flex; flex-direction: column; gap: 4px; } .p18-f > span { font-size: 0.8rem; color: var(--text-muted); }
+.p18-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.cm-nsfwsw { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 4px 10px; border: 1px solid rgba(255, 92, 138, 0.5); border-radius: 4px; }
+.cm-nsfwsw input { display: none; }
+.cm-nsfwsw span { width: 32px; height: 18px; border-radius: 9px; background: rgba(var(--ink-rgb), 0.15); position: relative; transition: background 0.15s; }
+.cm-nsfwsw span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+.cm-nsfwsw input:checked + span { background: #ff5c8a; } .cm-nsfwsw input:checked + span::after { transform: translateX(14px); }
+.u-tabs .u-tab18 { color: #ff5c8a; }
+#cmtSub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.vx-subnav > #cmtSub { display: contents; }
+
+/* 3.1.1: Reiter der Einstellungen oben in der Leiste (Menü links) */
+.vx-subnav > #setTabs { display: contents; }
+.vx-subnav > #setTabs > button { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; font: inherit; font-size: 0.82rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); cursor: pointer; }
+.vx-subnav > #setTabs > button.on { color: var(--text-strong); border-color: var(--accent-cyan); background: rgba(var(--accent-rgb), 0.12); }
+.vx-subnav > #setTabs > button:hover { color: var(--accent-cyan); }

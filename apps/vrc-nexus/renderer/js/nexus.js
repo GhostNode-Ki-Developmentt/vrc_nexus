@@ -197,7 +197,7 @@
         syncSubNav(name);
     }
     // ---------- Unterpunkte oben (bei Menü links): Gruppen-Einträge oder die eigenen Reiter der Seite ----------
-    const SUBNAV = { client: '#ncSub', notifs: '#nfView', community: '#cmtSub' };   // Seiten mit eigenen Unterreitern
+    const SUBNAV = { client: '#ncSub', notifs: '#nfView', community: '#cmtSub', settings: '#setTabs' };   // Seiten mit eigenen Unterreitern
     const subHomes = new Map();                                // verschobenes Element → ursprünglicher Platz
     function syncSubNav(name) {
         const bar = $('#subNav');
@@ -237,6 +237,8 @@
     $('#subNav') && $('#subNav').addEventListener('click', e => { const b = e.target.closest('.chip[data-tab]'); if (b) tab(b.dataset.tab, b.dataset.msub); });
     $('#tabs').addEventListener('click', e => {
         const top = e.target.closest('.vx-mtop');
+        // Menü links: Unterpunkte stehen oben als Reiter → Gruppe direkt öffnen (zuletzt benutzte Unterseite), nicht aufklappen
+        if (top && document.body.classList.contains('nav-side')) return groupGo(top.parentNode);
         if (top) { const g = top.parentNode, was = g.classList.contains('open'); $$('#tabs .vx-mgroup').forEach(x => x.classList.remove('open')); g.classList.toggle('open', !was); return; }
         const b = e.target.closest('[data-tab]'); if (b) tab(b.dataset.tab, b.dataset.msub);
     });
@@ -256,6 +258,9 @@
         const x = topItems()[n];
         if (!x) return;
         if (x.matches('.vx-tabbtn')) return tab(x.dataset.tab, x.dataset.msub);
+        groupGo(x);
+    }
+    function groupGo(x) {
         const last = store.get('grpLast:' + x.querySelector('.vx-mtop em').textContent, null);
         const ok = last && x.querySelector('[data-tab="' + last.tab + '"]' + (last.sub ? '[data-msub="' + last.sub + '"]' : ':not([data-msub])') + ':not([hidden])');
         const b = ok || x.querySelector('.vx-mdrop [data-tab]:not([hidden])');

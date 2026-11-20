@@ -20,8 +20,12 @@ function extract(u) {
     const p = u.presence && typeof u.presence === 'object' ? u.presence : {};
     const pick = k => { const v = u[k] !== undefined && u[k] !== null && u[k] !== '' ? u[k] : p[k]; return cut(str(v === undefined || v === null ? '' : v).trim(), 300); };
     const d = { frame: pick('iconFrame'), nameplate: pick('nameplateEffect'), effect: pick('profileEffect'), banner_color: color(pick('bannerColor')), banner_type: pick('bannerType'), banner_url: url(pick('bannerUrl')) };
+    // „avatarBanner“: VRChat nimmt das Bild des aktuellen Avatars als Banner (meist ohne eigene bannerUrl)
+    const av = url(u.currentAvatarImageUrl || p.avatarImageUrl || u.currentAvatarThumbnailImageUrl || p.avatarThumbnail);
     for (const k of Object.keys(d)) if (['', 'none', 'null', 'default'].includes(d[k].toLowerCase())) d[k] = '';
-    return Object.values(d).some(Boolean) ? d : null;
+    if (!Object.values(d).some(Boolean)) return null;
+    if (/avatar/i.test(d.banner_type) && !d.banner_url && av) d.banner_avatar = av;
+    return d;
 }
 
 class Deco {
@@ -46,7 +50,7 @@ class Deco {
     /** Katalog laden (öffentlich, mit eigener Sitzung) → Map ID/Name → Eintrag */
     async catalog(force) {
         if (this.cat && !force && now() - this.catAt < CAT_TTL) return this.cat;
-        if (!this.cat) { try { const c = JSON.parse(this.app.db.setting('deco_catalog', '') || 'null'); if (c && c.at && c.items) { this.cat = c.items; this.catAt = c.at; if (!force && now() - c.at < CAT_TTL) return this.cat; } } catch (e) { /* neu laden */ } }
+        if (!this.cat) { try { const c = JSON.parse(this.app.db.setting('deco_catalog2', '') || 'null'); if (c && c.at && c.items) { this.cat = c.items; this.catAt = c.at; if (!force && now() - c.at < CAT_TTL) return this.cat; } } catch (e) { /* neu laden */ } }
         if (this.busy) return this.busy;
         this.busy = (async () => {
             const items = {};
@@ -55,12 +59,14 @@ class Deco {
                 try { list = await this.app.tools.call('GET', '/cosmetics/index/' + t); } catch (e) { continue; }
                 for (const x of Array.isArray(list) ? list : (list && Array.isArray(list.data) ? list.data : [])) {
                     const m = x.metadata || {};
-                    const e = { type: t, name: cut(str(x.name), 60), img: url(x.imageUrl) || url(m.imageUrl) || url(((m.assets || [])[0] || {}).url), g1: color(m.gradientStart), g2: color(m.gradientEnd), anim: !!m.animated };
+                    // Bild: zuerst das eigentliche Asset (nur Rahmen), dann die Vorschau (die kann einen Platzhalter-Avatar in der Mitte haben)
+                    const asset = (m.assets || []).find(a => a && url(a.url) && !/sheet|anim/i.test(str(a.type))) || {};
+                    const e = { type: t, name: cut(str(x.name), 60), img: url(asset.url) || url(m.imageUrl) || url(x.imageUrl), g1: color(m.gradientStart), g2: color(m.gradientEnd), anim: !!m.animated };
                     if (str(x.id)) items[str(x.id)] = e;
                     if (e.name) items['n:' + t + ':' + e.name.toLowerCase()] = e;
                 }
             }
-            if (Object.keys(items).length) { this.cat = items; this.catAt = now(); this.app.db.setSetting('deco_catalog', JSON.stringify({ at: this.catAt, items })); }
+            if (Object.keys(items).length) { this.cat = items; this.catAt = now(); this.app.db.setSetting('deco_catalog2', JSON.stringify({ at: this.catAt, items })); }
             else if (!this.cat) { this.cat = {}; this.catAt = now() - CAT_TTL + 3600; }   // nicht erreichbar: in 1 h erneut
             return this.cat;
         })().finally(() => { this.busy = null; });
@@ -83,7 +89,7 @@ class Deco {
             ring: f && f.g1 ? [f.g1, f.g2 || f.g1] : null,
             name_grad: n && n.g1 ? [n.g1, n.g2 || n.g1] : null,
             effect: e ? e.img : '', effect_grad: e && e.g1 ? [e.g1, e.g2 || e.g1] : null,
-            color: d.banner_color, banner: d.banner_url || (bg ? bg.img : ''),
+            color: d.banner_color, banner: d.banner_url || (bg ? bg.img : '') || d.banner_avatar || '',
         };
         // ohne Bild, aber mit Rahmen-Wert: Ring in der Banner-Farbe (damit „Rahmen gesetzt“ trotzdem sichtbar ist)
         if (!r.frame && !r.ring && d.frame && d.banner_color) r.ring = [d.banner_color, d.banner_color];

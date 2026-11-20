@@ -84,7 +84,7 @@ html[data-theme="beach"] h1, html[data-theme="beach"] .vx-sidebrand, html[data-t
 }
 html[data-theme="beach"] .panel-title, html[data-theme="beach"] .nc-card h4, html[data-theme="beach"] .vx-msec { color: var(--accent-gold); }
 /* Menü: aktiver Eintrag mit Sonnenuntergangs-Kante */
-html[data-theme="beach"] .vx-menu .vx-tabbtn.active { background: linear-gradient(90deg, rgba(255, 79, 163, 0.28), rgba(255, 138, 92, 0.12) 70%, transparent); border-color: transparent; box-shadow: inset 3px 0 0 #ff4fa3; color: #fff; }
+html[data-theme="beach"] .vx-menu .vx-tabbtn.active, html[data-theme="beach"] body.nav-side .vx-mgroup.active > .vx-mtop { background: linear-gradient(90deg, rgba(255, 79, 163, 0.28), rgba(255, 138, 92, 0.12) 70%, transparent); border-color: transparent; box-shadow: inset 3px 0 0 #ff4fa3; color: #fff; }
 html[data-theme="beach"] .vx-menu .vx-tabbtn:hover, html[data-theme="beach"] .vx-mtop:hover { color: var(--accent-green); }
 /* Knöpfe */
 html[data-theme="beach"] .btn-gold { background: linear-gradient(100deg, rgba(255, 79, 163, 0.25), rgba(255, 174, 92, 0.25)); border-color: #ff8a5c; color: #ffd0a8; }

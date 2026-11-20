@@ -36,7 +36,9 @@
             if (d.frame && src(d.frame)) { const f = document.createElement('i'); f.className = 'dc-frame'; f.style.backgroundImage = src(d.frame); if (d.frame_name) w.title = d.frame_name; w.appendChild(f); }
         }
         // Name: Verlauf des Namens-Effekts
-        const nm = d.name_grad && [...el.querySelectorAll(NAME)].find(x => x.closest('[data-user], .vx-u-head') === el);
+        // genauester Treffer zuerst (Reihenfolge in NAME), damit z. B. der Status-Punkt nicht mit eingefärbt wird
+        let nm = null;
+        if (d.name_grad) for (const q of NAME.split(', ')) { nm = [...el.querySelectorAll(q)].find(x => x.closest('[data-user], .vx-u-head') === el); if (nm) break; }
         if (nm) { nm.classList.add('dc-name'); nm.style.setProperty('--dc-n1', d.name_grad[0]); nm.style.setProperty('--dc-n2', d.name_grad[1]); }
     }
     function apply(root) {
