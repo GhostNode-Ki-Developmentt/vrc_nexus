@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.2.2",
+  "title": "More avatar search providers",
+  "body": "- 🔍 **Avatar search:** NSVR (NekoSune Community) and VRCDB are now built in, with readable provider names. Existing custom provider lists get them added once; providers you remove afterwards stay removed."
+ },
+ {
   "version": "3.2.1",
   "title": "Formatting toolbar",
   "body": "- ✍ **Formatting toolbar in the feed, replies and private chat:** bold, italic, strikethrough, code, link, list, quote, spoiler and code block with one click (or Ctrl+B / Ctrl+I), plus a 👁 live preview – no need to know Markdown.\n- 🌐 **Your texts stay yours:** posts, chat messages, profiles and descriptions are no longer run through the app's automatic interface translation."

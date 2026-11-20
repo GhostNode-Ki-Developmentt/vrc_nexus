@@ -2144,6 +2144,22 @@ test('3.2: Profilbild – auch aus presence, sonst leer', () => {
     assert.strictEqual(U.userImage(null), '');
 });
 
+test('3.2.2: Avatar-Suche – NSVR und VRCDB als Standard, bestehende Listen einmalig ergänzt', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const x = app.extra || app.x;
+    assert.ok(x.avatarProviders().includes('https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search'));
+    db.setSetting('vrc_avatar_providers', JSON.stringify(['https://meine.example/vrcx']));
+    db.setSetting('vrc_avatar_providers_v322', '');
+    const l = x.avatarProviders();
+    assert.deepStrictEqual(l, ['https://meine.example/vrcx', 'https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'], 'eigene Liste bleibt, neue dazu');
+    x.avatarProvidersSave('https://meine.example/vrcx');
+    assert.deepStrictEqual(x.avatarProviders(), ['https://meine.example/vrcx'], 'entfernte Anbieter kommen nicht wieder');
+    app.tools.stop();
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

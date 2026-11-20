@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.2.2 – More avatar search providers
+
+- 🔍 **Avatar search:** NSVR (NekoSune Community) and VRCDB are now built in, with readable provider names. Existing custom provider lists get them added once; providers you remove afterwards stay removed.
+
 ### New in 3.2.1 – Formatting toolbar
 
 - ✍ **Formatting toolbar in the feed, replies and private chat:** bold, italic, strikethrough, code, link, list, quote, spoiler and code block with one click (or Ctrl+B / Ctrl+I), plus a 👁 live preview – no need to know Markdown.

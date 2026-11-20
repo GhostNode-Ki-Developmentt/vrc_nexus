@@ -725,7 +725,8 @@
     }
     let avProviders = null, avCanEdit = false;
     function fillProviders() {
-        $('#avDbProv').innerHTML = avProviders.map((u, i) => { let h = u; try { h = new URL(u).hostname; } catch (e) { /* egal */ } return '<option value="' + i + '">' + esc(h) + '</option>'; }).join('');
+        const NAMES = { 'api.avtrdb.com': 'avtrDB', 'paw-api.amelia.fun': 'PAW – Puppy\'s Avatar World', 'vrcavatarsearch.nekosunevr.co.uk': 'NSVR – NekoSune Community', 'vrcx.vrcdb.com': 'VRCDB', 'vrcx.avtr.zip': 'avtr.zip', 'avtr.icu': 'CuteDB', 'avatarwbvrcxsearch.worldbalancer.com': 'VRCWB – World Balancer', 'avtr.fumikoecho.net': 'KitsuneDB' };
+        $('#avDbProv').innerHTML = avProviders.map((u, i) => { let h = u; try { h = new URL(u).hostname; } catch (e) { /* egal */ } return '<option value="' + i + '">' + esc(NAMES[h] || h) + '</option>'; }).join('');
         $('#avDbEdit').hidden = !avCanEdit;
     }
     $('#avDbForm').addEventListener('submit', e => {

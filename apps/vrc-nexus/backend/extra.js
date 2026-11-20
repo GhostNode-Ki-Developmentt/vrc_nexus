@@ -23,7 +23,11 @@ const NOTIF_TYPES = {
     'moderation.contentrestriction': ['🚫', 'Inhaltsbeschränkung'], 'invite.instance.contentGated': ['🔒', 'Einladung (eingeschränkt)'], 'text.adventure': ['📖', 'Textabenteuer'],
 };
 const NOTIF_RESPONSES = { accept: '✓ Annehmen', decline: '✕ Ablehnen', block: '⛔ Blockieren', unsubscribe: '🔕 Abbestellen', delete: '🗑 Löschen', boop: '👃 Zurück-Boopen' };
-const AVATAR_PROVIDERS_DEFAULT = ['https://api.avtrdb.com/v3/avatar/search/vrcx', 'https://paw-api.amelia.fun/vrcx_search'];
+const AVATAR_PROVIDERS_DEFAULT = ['https://api.avtrdb.com/v3/avatar/search/vrcx', 'https://paw-api.amelia.fun/vrcx_search',
+    'https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search',        // 3.2.2: NSVR – NekoSune Community
+    'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'];                 // 3.2.2: VRCDB
+/** neue Standard-Anbieter, die bestehenden Listen einmalig hinzugefügt werden */
+const AVATAR_PROVIDERS_ADDED = { 'v322': ['https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'] };
 
 class Extra {
     constructor(vrc) { this.vrc = vrc; this.db = vrc.db; }
@@ -400,7 +404,15 @@ class Extra {
     avatarProviders() {
         let list = null;
         try { list = JSON.parse(this.db.setting('vrc_avatar_providers', '')); } catch (e) { list = null; }
-        return Array.isArray(list) && list.length ? list : AVATAR_PROVIDERS_DEFAULT;
+        if (!Array.isArray(list) || !list.length) return AVATAR_PROVIDERS_DEFAULT;
+        // eigene Liste: neue Standard-Anbieter einmalig ergänzen (danach entscheidet die Person selbst)
+        for (const [k, add] of Object.entries(AVATAR_PROVIDERS_ADDED)) {
+            if (this.db.setting('vrc_avatar_providers_' + k, '')) continue;
+            list = [...new Set(list.concat(add))].slice(0, 8);
+            this.db.setSetting('vrc_avatar_providers', JSON.stringify(list));
+            this.db.setSetting('vrc_avatar_providers_' + k, '1');
+        }
+        return list;
     }
     avatarProvidersSave(text) {
         const out = [];
