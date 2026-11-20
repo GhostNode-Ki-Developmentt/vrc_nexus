@@ -7,6 +7,7 @@
     const T = s => (window.t ? window.t(s) : s);
     const when = ts => UI.ago ? UI.ago(ts) : new Date(ts * 1000).toLocaleString();
     let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false, acct = null, p18Edit = false, profTab = 'main';
+    const md = t => (window.NexusMD ? window.NexusMD.render(t) : esc(t).replace(/\n/g, '<br>'));   // 3.2: Markdown (sicher, ohne HTML)
     const card = (t, html, cls) => '<div class="nc-card ' + (cls || '') + '">' + (t ? '<h4>' + t + '</h4>' : '') + html + '</div>';
     const MOBILE = document.body.classList.contains('mobile');
     let chat = { list: null, uid: '', open: null, timer: null };
@@ -26,10 +27,10 @@
     const imgs = media => (media || []).length ? '<div class="cm-imgs">' + media.map(id => '<img loading="lazy" src="nexus.php?cimg=' + esc(id) + '" alt="" data-cimg="' + esc(id) + '">').join('') + '</div>' : '';
     function post(p, reply) {
         const reacts = (me ? me.reactions : []).map(e => { const n = (p.reactions || {})[e] || 0, on = (p.mine || []).includes(e); return n || !reply ? '<button type="button" class="cm-re' + (on ? ' on' : '') + '" data-cre="' + esc(e) + '" data-id="' + p.id + '">' + e + (n ? ' <b>' + n + '</b>' : '') + '</button>' : ''; }).join('');
-        return '<article class="cm-post' + (reply ? ' reply' : '') + (p.status !== 'visible' ? ' st-' + esc(p.status) : '') + '" data-pid="' + p.id + '">'
+        return '<article class="cm-post' + (reply ? ' reply' : '') + (p.own ? ' mine' : '') + (p.status !== 'visible' ? ' st-' + esc(p.status) : '') + '" data-pid="' + p.id + '">'
             + '<header><a href="#" data-cprof="' + esc(p.author) + '"><b>' + esc(p.name || p.author) + '</b></a> <span class="muted small">' + esc(when(p.created)) + (p.edited ? ' · ' + esc(T('bearbeitet')) : '') + '</span>'
             + (p.rating === 'nsfw' ? ' <span class="vx-pill" style="--pc:#ff5c8a">🔞</span>' : '') + (p.status === 'pending' ? ' <span class="vx-pill rep">⏳ ' + esc(T('wartet auf Freigabe')) + '</span>' : p.status === 'hidden' ? ' <span class="vx-pill">' + esc(T('ausgeblendet')) + '</span>' : '') + '</header>'
-            + (p.text ? '<div class="cm-text">' + esc(p.text).replace(/\n/g, '<br>') + '</div>' : '') + imgs(p.media)
+            + (p.text ? '<div class="cm-text md">' + md(p.text) + '</div>' : '') + imgs(p.media)
             + '<footer><span class="cm-reacts">' + reacts + '</span>'
             + (!reply ? '<button type="button" class="nc-link" data-cthread="' + p.id + '">💬 ' + (p.replies || 0) + '</button>' : '')
             + (p.own ? '<button type="button" class="nc-link" data-cedit="' + p.id + '">✎</button><button type="button" class="nc-link" data-cdel="' + p.id + '">🗑</button>' : '<button type="button" class="nc-link" data-crep="' + p.id + '" title="' + esc(T('Melden')) + '">⚑</button>')
@@ -55,10 +56,16 @@
         if (!me) { box.innerHTML = '<div class="vx-loading">' + esc(T('Lade …')) + '</div>'; return; }
         if (me.error) { box.innerHTML = card('🫂 Community', '<p class="small">' + esc(T(me.error)) + '</p><div id="cmtAcct"></div>'); if (window.NexusAccount) window.NexusAccount.render(box.querySelector('#cmtAcct')); return; }
         if (sub === 'feed' || sub === 'nsfw') {
-            box.innerHTML = '<div class="cm-feed">' + (sub === 'nsfw' ? '<div class="tts-help">🔞 ' + esc(T('Getrennter NSFW-Feed – nur für Verified 18+ mit eingeschaltetem NSFW. Nichts davon erscheint in der normalen Timeline.')) + '</div>' : '')
-                + (me.sanction && (me.sanction.banned || me.sanction.mute_until > Date.now() / 1000) ? '<p class="small bad">⚠ ' + esc(T(me.sanction.banned ? 'Du bist in der Community gesperrt.' : 'Du bist gerade stummgeschaltet.')) + '</p>' : card('', composer(0)))
-                + (items.length ? items.map(p => post(p)).join('') : '<p class="vx-empty">' + esc(T('Noch keine Beiträge.')) + '</p>')
-                + (items.length >= 30 ? '<button type="button" class="btn btn-sm" data-cmore="1">' + esc(T('Ältere laden')) + '</button>' : '') + '</div>';
+            // 3.2: Feed wie ein Chat – älteste oben, neueste unten, Eingabe unten, eigener Bereich mit Scrollen
+            const old = box.querySelector('.cm-flow'), atEnd = !old || old.scrollHeight - old.scrollTop - old.clientHeight < 80, keep = old ? old.scrollHeight - old.scrollTop : 0;
+            box.innerHTML = '<div class="cm-feed chatlike">' + (sub === 'nsfw' ? '<div class="tts-help">🔞 ' + esc(T('Getrennter NSFW-Feed – nur für Verified 18+ mit eingeschaltetem NSFW. Nichts davon erscheint in der normalen Timeline.')) + '</div>' : '')
+                + '<div class="cm-flow">' + (items.length >= 30 ? '<button type="button" class="btn btn-sm cm-older" data-cmore="1">↑ ' + esc(T('Ältere laden')) + '</button>' : '')
+                + (items.length ? items.slice().reverse().map(p => post(p)).join('') : '<p class="vx-empty">' + esc(T('Noch keine Beiträge.')) + '</p>') + '</div>'
+                + (me.sanction && (me.sanction.banned || me.sanction.mute_until > Date.now() / 1000) ? '<p class="small bad">⚠ ' + esc(T(me.sanction.banned ? 'Du bist in der Community gesperrt.' : 'Du bist gerade stummgeschaltet.')) + '</p>' : card('', composer(0), 'cm-dock'))
+                + '</div>';
+            const flow = box.querySelector('.cm-flow');
+            if (flow) flow.scrollTop = atEnd ? flow.scrollHeight : flow.scrollHeight - keep;
+            feedTimer();
             return;
         }
         if (sub === 'profile') { box.innerHTML = profileHtml(); const slot = box.querySelector('#cmAcctSlot'), c = document.getElementById('acctCards'); if (slot && c) slot.appendChild(c); return; }
@@ -85,11 +92,25 @@
             + (o.changed ? '<div class="tts-help">⚠ ' + esc(T('Die Schlüssel dieser Person haben sich geändert (neues Gerät oder neu eingerichtet). Vergleiche die Sicherheitsnummer, bevor du Vertrauliches schreibst.')) + '</div>' : '')
             + (chat.showSafety ? '<div class="tts-help"><b>' + esc(T('Sicherheitsnummer')) + '</b><br><code class="ch-sn">' + esc(o.safety || '–') + '</code><br><span class="small">' + esc(T('Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.')) + '</span><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-chverify="1">✔ ' + esc(T('Stimmt überein')) + '</button></div></div>' : '')
             + (!o.ready ? '<p class="small bad">' + esc(T('Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).')) + '</p>' : '')
-            + '<div class="ch-msgs">' + (o.messages || []).map(m => '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + '"><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div><small>' + esc(new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</small></div>').join('') + '</div>'
+            + '<div class="ch-msgs">' + (o.messages || []).map(m => '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + '"><div class="md">' + md(m.text) + '</div><small>' + esc(new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</small></div>').join('') + '</div>'
             + '<form class="ch-comp nc-row"><textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '></textarea><button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T('Senden')) + '</button></form></div></div>';
     }
     function chatLoad(poll) { return api('chat_list', poll ? { poll: '1' } : {}).then(d => { chat.list = d.items; nav(); if (sub === 'chat') render(); }).catch(e => { toast('⚠ ' + e.message, true); }); }
     function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }
+    /** Feed alle 10 s auffrischen (neue Beiträge, Reaktionen) – nicht beim Tippen */
+    function feedTimer() {
+        clearInterval(feedTimer.t);
+        feedTimer.t = setInterval(() => {
+            if (!box || !box.offsetParent || (sub !== 'feed' && sub !== 'nsfw')) { clearInterval(feedTimer.t); return; }
+            if (document.hidden || busy || (box.contains(document.activeElement) && document.activeElement.matches('textarea, input'))) return;
+            api('comm_feed', { rating: sub === 'nsfw' ? 'nsfw' : 'sfw' }).then(d => {
+                const before = JSON.stringify(items.slice(0, d.items.length));
+                const ids = new Set(d.items.map(x => x.id));
+                items = d.items.concat(items.filter(x => !ids.has(x.id) && x.id < (d.items.length ? d.items[d.items.length - 1].id : 0)));
+                if (JSON.stringify(items.slice(0, d.items.length)) !== before) render();
+            }).catch(() => {});
+        }, 10000);
+    }
     function chatTimer() {
         clearInterval(chat.timer);
         chat.timer = setInterval(() => {
