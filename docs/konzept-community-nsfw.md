@@ -3,6 +3,7 @@
 Stand 20.11.2026 · Grundlage: `docs/spec-community-nsfw-overhaul.md` · Status: **Schritte 1–5 umgesetzt (3.0.0–3.1.2)** – offen nur noch: Discord-Verknüpfung als Identitätsbestätigung (Spez. 4.2, braucht Discord-Anbindung der Webseite – Entscheidung der Besitzerin), E2EE-Chat in der Android-App, Gruppenchats
 
 **Entscheidungen der Besitzerin (20.11.2026):** E2EE = eigene Umsetzung der Signal-Spezifikationen · NSFW nur im eigenen Feed · 18+-Prüfung alle 7 Tage · sofort umstellen (NXK1 schaltet ab sofort kein NSFW mehr frei, auch nicht für die Besitzerin – ihre Admin-Rechte bleiben) · allgemeines Recht „🛡 Moderator“ (NXK1 `mod`).
+Chat (20.11.2026, ~20:10): **„Nexus Protocol“** – eigene Umsetzung, eng an Signal angelehnt (X3DH + Double Ratchet, ab 3.2 zusätzlich PQXDH und Sealed Sender), **kein libsignal** (AGPL).
 Weitere Entscheidungen (20.11.2026): Navigation = **ein Menüpunkt „Community“** mit Unterpunkten (Feed, Profil, Chat, Gruppen; „🔞 NSFW-Feed“ nur bei Verified 18+ mit NSFW an) · Info bei Verlust = **Vorwarnung**: 1 Tag vor Ablauf automatisch neu prüfen, nur bei Problemen warnen · Moderation = **alle Werkzeuge**: Melden + Warteschlange, als NSFW umstufen, stummschalten/sperren, NSFW-Medien vorab freigeben · Webseite: direkt in `main`.
 Noch einzurichten: Dienst-Konto auf der Webseite (Admin → Nexus-Konten).
 
