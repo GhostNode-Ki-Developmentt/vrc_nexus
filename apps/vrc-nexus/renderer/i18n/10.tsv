@@ -888,3 +888,4 @@ grp_… (nur bei Gruppe)	grp_… (group only)	grp_… (groupe uniquement)	grp_�
 Freund wählen …	Choose a friend …	Choisir un ami …	フレンドを選択 …
 Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.	Shows the current value and opens the matching section when tapped.	Affiche la valeur actuelle et ouvre la section correspondante d’un toucher.	現在の値を表示し、タップで該当する画面を開きます。
 Variablen: {world} {players} {friends} {notifs} {avatar} {time}	Variables: {world} {players} {friends} {notifs} {avatar} {time}	Variables : {world} {players} {friends} {notifs} {avatar} {time}	変数: {world} {players} {friends} {notifs} {avatar} {time}
+Inhalte	Content	Contenus	コンテンツ

@@ -524,13 +524,23 @@ body.nav-side .vx-mgroup.open .vx-mdrop, body.nav-side .vx-mgroup.active .vx-mdr
 body.nav-side .vx-mdrop .vx-tabbtn { padding: 6px 10px; font-size: 0.8rem; border-left: 1px solid var(--border-color); }
 body.nav-side .vx-mgroup.active > .vx-mtop { background: transparent; border-color: transparent; color: var(--accent-cyan); }
 body.nav-side .vx-mright .vx-mdrop { left: 0; right: auto; }
+/* Abschnitte der linken Leiste (Übersicht · Leute · Spiel · Inhalte) – nur in der Seitenleiste */
+.vx-msec { display: none; }
+body.nav-side .vx-msec { display: block; flex: 0 0 auto; margin: 12px 12px 4px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 0.66rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); opacity: 0.8; }
+body.nav-side .vx-msec:empty { padding-top: 0; margin-bottom: 8px; }
+body.nav-mini .vx-msec { font-size: 0; margin: 8px 10px 6px; padding-top: 0; }
+body.mobile .vx-msec { display: none !important; }
+/* Gruppen (Sozial, Favoriten, Diagramme, Mehr) gleich groß wie normale Einträge, Symbole bündig */
+body.nav-side .vx-menu .vx-tabbtn > span:first-child, body.nav-side .vx-mtop > span { font-size: 1rem; width: 22px; text-align: center; flex: 0 0 22px; }
+body.nav-side .vx-mtop { min-height: 38px; }
+body.nav-side .vx-mdrop .vx-tabbtn > span:first-child { font-size: 0.9rem; }
 .vx-subnav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--border-color); background: rgba(var(--panel-rgb), 0.92); backdrop-filter: blur(10px); position: relative; z-index: 30; }
 body.sticky-menu .vx-subnav { position: sticky; top: 0; }
 .vx-subnav .vx-subhead { font-weight: 700; color: var(--accent-cyan); margin-right: 6px; display: inline-flex; gap: 6px; align-items: center; }
 .vx-subnav .chip { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; font-size: 0.82rem; }
 .vx-subnav .chip em { font-style: normal; }
 .vx-subnav > .nc-sub, .vx-subnav > #nfView { display: contents; }
-@media (max-width: 900px) { body.nav-side { padding-left: 76px; } body.nav-side .vx-menu { width: 64px; } body.nav-side .vx-menu em, body.nav-side .vx-sidebrand, body.nav-side .vx-mtop i { display: none !important; } body.nav-side .vx-mdrop { padding-left: 0; } }
+@media (max-width: 900px) { body.nav-side .vx-msec { font-size: 0; margin: 8px 10px 6px; padding-top: 0; } body.nav-side { padding-left: 76px; } body.nav-side .vx-menu { width: 64px; } body.nav-side .vx-menu em, body.nav-side .vx-sidebrand, body.nav-side .vx-mtop i { display: none !important; } body.nav-side .vx-mdrop { padding-left: 0; } }
 .vx-subnav .vx-subhead em { font-style: normal; }
 
 /* ---------- Fuß der linken Leiste: Direkt-Zugriff, Einstellungen, Theme & Sprache ---------- */

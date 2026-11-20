@@ -27,6 +27,7 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 - 🎛 **Nexus buttons (Android):** all Stream Deck plugin actions are now available as buttons – avatar parameter steps, chatbox rotator, launch VRChat, rejoin, open VRC Nexus, camera, macros, switch avatar, friends (join/invite/request), SteamVR overlay, voice input, media, quick texts, parameter scenes, recording, chatbox modules, read aloud and create instance + invite. They run on your PC through the dashboard connection, just like a Stream Deck key.
 - 📊 **Display buttons:** friends online, players in the instance, notifications and a free info display (`{world}`, `{players}`, `{friends}`, `{notifs}`, `{avatar}`, `{time}`) show live values; tapping opens the matching section.
 - 🔒 Only actions on an allowlist are accepted, and macros must already exist on the PC.
+- 🧭 **Tidier sidebar (Windows):** the left menu is now grouped into sections – overview, people, game and content – with matching sizes for all entries.
 
 ### New in 3.0.2 – Connect in one click
 
