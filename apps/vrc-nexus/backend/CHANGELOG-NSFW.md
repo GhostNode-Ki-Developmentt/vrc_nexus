@@ -2,6 +2,10 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.3.1 – Panic button in the header
+
+- 🚨 **Panic button moved to the top:** while NSFW is switched on, a **Panic** button sits in the header next to Quick access and Settings. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured under NSFW / ERP) and switches NSFW off again.
+
 ### New in 3.2.0 – NSFW world descriptions
 
 - 🔞 **NSFW world descriptions:** in the world window there is a new “🔞 NSFW description” tab next to “Info”. Verified 18+ people with NSFW on can write their own description of a world (Markdown allowed) and read the others'; everyone else only sees that descriptions exist – the website enforces this. Moderators can remove descriptions.

@@ -26,9 +26,9 @@
             const head = document.querySelector('.vx-head-r');
             if (!head) return null;
             p = document.createElement('button');
-            p.type = 'button'; p.id = 'hdPanic'; p.className = 'vx-hpanic'; p.hidden = true;
+            p.type = 'button'; p.id = 'hdPanic'; p.className = 'vx-hbtn vx-hpanic'; p.hidden = true;
             p.title = T('Panik: sicherer Avatar, Chatbox leer, Spielzeug stopp – und NSFW wieder aus');
-            p.textContent = '🚨 ' + T('Panik');
+            p.innerHTML = '<span>🚨</span><em>' + esc(T('Panik')) + '</em>';   // gleiche Form wie Direkt-Zugriff / Einstellungen
             head.insertBefore(p, document.getElementById('me'));
             p.addEventListener('click', () => {
                 p.disabled = true;

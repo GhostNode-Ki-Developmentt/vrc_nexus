@@ -1037,5 +1037,7 @@ body.mobile .nc-pc-only { display: none !important; }
 body.own-frame.nav-side .vx-sidebrand { display: none; }
 body.own-frame.nav-side .vx-menu { padding-top: 44px; }
 /* 3.3.1: Panik-Knopf oben (nur mit NSFW an) */
-.vx-hpanic { align-self: center; padding: 8px 14px; border: 1px solid #dc2626; background: #dc2626; color: #fff; font: inherit; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.78rem; cursor: pointer; box-shadow: 0 0 14px rgba(220, 38, 38, 0.45); }
-.vx-hpanic:hover { background: #ef4444; } .vx-hpanic:disabled { opacity: 0.6; }
+.vx-hbtn.vx-hpanic { border-color: rgba(220, 38, 38, 0.75); color: #ff6b6b; }
+.vx-hbtn.vx-hpanic em { color: #ff8a8a; }
+.vx-hbtn.vx-hpanic:hover { background: rgba(220, 38, 38, 0.16); border-color: #ef4444; }
+.vx-hbtn.vx-hpanic:disabled { opacity: 0.6; }

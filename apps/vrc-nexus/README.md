@@ -22,9 +22,9 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
-### New in 3.3.1 – Panic button in the header, HypeRate in the chatbox
+### New in 3.3.1 – HypeRate in the chatbox, cleaner sidebar
 
-- 🚨 **Panic button moved to the top:** while NSFW is switched on, a red **Panic** button sits in the header next to your profile. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured) and switches NSFW off again.
+- 🔞 *** (only visible in the app when NSFW is unlocked)
 - 💓 **Heart rate source right in the chatbox module:** choose Pulsoid, HypeRate (ID + API key) or OSC/smartwatch directly in Chatbox modules → Heart rate; an invalid Pulsoid token now suggests switching to HypeRate.
 - 🪟 With the custom title bar, the sidebar no longer shows a second "VRC Nexus" logo.
 

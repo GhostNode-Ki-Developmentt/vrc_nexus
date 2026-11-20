@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.3.1",
+  "title": "Panic button in the header",
+  "body": "- 🚨 **Panic button moved to the top:** while NSFW is switched on, a **Panic** button sits in the header next to Quick access and Settings. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured under NSFW / ERP) and switches NSFW off again."
+ },
+ {
   "version": "3.2.0",
   "title": "NSFW world descriptions",
   "body": "- 🔞 **NSFW world descriptions:** in the world window there is a new “🔞 NSFW description” tab next to “Info”. Verified 18+ people with NSFW on can write their own description of a world (Markdown allowed) and read the others'; everyone else only sees that descriptions exist – the website enforces this. Moderators can remove descriptions.\n- 🔞 **Share in the NSFW feed** directly from the world window."
