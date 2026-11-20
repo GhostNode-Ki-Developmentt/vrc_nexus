@@ -6,7 +6,7 @@
 'use strict';
 const { build, buildNsfw } = require('./changelog-build');
 // Bilder für die Webhooks (öffentliches Repository, Standard-Branch)
-const RAW = 'https://raw.githubusercontent.com/' + (process.env.GITHUB_REPOSITORY || 'xxloonaxx/vrc_nexus') + '/' + (process.env.BRAND_REF || 'claude/friendly-gates-kzgsll') + '/apps/vrc-nexus/';
+const RAW = 'https://raw.githubusercontent.com/' + (process.env.GITHUB_REPOSITORY || 'ghostnode-labs/vrc_nexus') + '/' + (process.env.BRAND_REF || 'claude/friendly-gates-kzgsll') + '/apps/vrc-nexus/';
 const ICON = RAW + 'renderer/icon.png', AD_ICON = RAW + 'brand/afterdark-icon.png', AD_LOGO = RAW + 'brand/afterdark-logo.png';
 function invite() { const v = String(process.env.DISCORD_INVITE || '').trim(); if (/^https:\/\/(discord\.gg|(www\.)?discord\.com\/invite)\//.test(v)) return v; try { return require('../backend/links.json').discord || ''; } catch (e) { return ''; } }
 function section(ver) { return build().find(e => e.version === ver) || null; }

@@ -339,7 +339,7 @@ test('Auto-Update: neueste Version finden, Windows installieren, Android öffnen
           published_at: '2026-11-13T10:00:00Z', assets: [asset('VRC-Nexus-9.1.0-Setup.exe', 10), asset('VRC-Nexus-9.1.0-portable.exe', 11), asset('VRC-Nexus-9.1.0-android.apk', 12)] },
         { tag_name: 'vrc-nexus-v9.0.9', draft: false, prerelease: false, assets: [] },
     ];
-    const srv = http.createServer((req, res) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(req.url.startsWith('/repos/xxloonaxx/vrc_nexus/releases') ? releases : [])); });
+    const srv = http.createServer((req, res) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(req.url.startsWith('/repos/ghostnode-labs/vrc_nexus/releases') ? releases : [])); });
     await new Promise(r => srv.listen(0, '127.0.0.1', r));
     process.env.NEXUS_UPDATE_API = 'http://127.0.0.1:' + srv.address().port;
     const { NexusApp } = require('../backend/app');

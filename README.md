@@ -3,7 +3,7 @@
 **Your all-in-one companion app for VRChat** – Windows, Android and Stream Deck.
 No server, no account with us: everything stays on your own device.
 
-[![Latest release](https://img.shields.io/github/v/release/xxloonaxx/vrc_nexus?label=download&color=f5c242)](https://github.com/xxloonaxx/vrc_nexus/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/ghostnode-labs/vrc_nexus?label=download&color=f5c242)](https://github.com/ghostnode-labs/vrc_nexus/releases/latest)
 [![Discord](https://img.shields.io/badge/Discord-join-5865f2)](https://discord.gg/YaktdxVr2C)
 [![Patreon](https://img.shields.io/badge/Patreon-support-ff424d)](https://www.patreon.com/cw/VRCNexusTools)
 
@@ -36,7 +36,7 @@ No server, no account with us: everything stays on your own device.
 
 ## ⬇️ Download
 
-Get the latest version from **[Releases](https://github.com/xxloonaxx/vrc_nexus/releases/latest)**:
+Get the latest version from **[Releases](https://github.com/ghostnode-labs/vrc_nexus/releases/latest)**:
 
 | File | What for |
 |---|---|

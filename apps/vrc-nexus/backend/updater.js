@@ -7,7 +7,7 @@
 const { str, now, cut, UserError } = require('./util');
 const { VERSION } = require('./vrchat');
 
-const REPO = 'xxloonaxx/vrc_nexus';
+const REPO = 'ghostnode-labs/vrc_nexus';
 const TAG_PREFIX = 'vrc-nexus-v';
 
 /** „1.2.10“ > „1.2.9“ */

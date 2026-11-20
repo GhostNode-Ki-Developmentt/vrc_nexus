@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 2.15.3 – New repository location
+
+- 🏠 **New home:** the repository moved to **ghostnode-labs/vrc_nexus**. Updater, links in “About”, the supporters list and Discord images now point there directly (older versions still work via GitHub’s redirect).
+
 ### New in 2.15.2 – Log out button
 
 - 🚪 **Log out:** new ⏻ button right on your profile card (next to your name) and a clear “🚪 Log out” button under More → Account. Friends, history and notes stay saved on the device.
