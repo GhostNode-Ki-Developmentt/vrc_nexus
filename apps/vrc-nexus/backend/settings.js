@@ -38,6 +38,7 @@ const FIELDS = [
     ['ui.zoom', 'ui', 'Aussehen', 'number', 100, 'Zoom (%)', '70–150 %', [70, 150]],
     ['ui.font', 'ui', 'Aussehen', 'select', 'default', 'Schrift', '', [['default', 'Standard'], ['system', 'Windows-Systemschrift'], ['mono', 'Monospace']]],
     ['ui.animations', 'ui', 'Aussehen', 'bool', true, 'Animationen', ''],
+    ['ui.decorations', 'ui', 'Aussehen', 'bool', true, 'Profil-Dekorationen', 'Rahmen ums Profilbild, Banner-Farbe und Namens-Effekt aus VRChat – überall, wo Profile angezeigt werden.'],
     ['ui.background', 'ui', 'Aussehen', 'bool', true, 'Hintergrund-Raster & Leuchten', ''],
     ['ui.bg_image', 'ui', 'Hintergrundbild', 'bgimg', '', 'Bild', 'Aus deiner VRChat-Galerie, als Datei vom PC oder als https-Adresse.'],
     ['ui.bg_opacity', 'ui', 'Hintergrundbild', 'range', 35, 'Deckkraft (%)', '0 = unsichtbar, 100 = voll sichtbar', [0, 100]],

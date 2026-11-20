@@ -14,7 +14,7 @@ const SYNC_MIN = 45;
 const OFFLINE_SYNC = 900;
 const FEED_KEEP_DAYS = 180;
 const UID = 1;   // die App hat genau ein Konto
-const VERSION = '3.0.6';
+const VERSION = '3.1.0';
 
 class Vrc {
     /**
@@ -254,6 +254,7 @@ class Vrc {
                     log('friend_add', id, row.name);
                 }
                 if (state === 'online') { const l = U.location(loc); if (l.world) worlds.push(l.world); }
+                if (this.onUserData) try { this.onUserData(id, f); } catch (e) { /* Dekoration egal */ }
                 up.run(UID, id, row.name, row.state, row.status, row.sd, row.loc, row.pf, row.img, row.av, row.tags, row.bio, row.ll, since, t,
                     o ? o.fav_group : '', o ? int(o.friend_since) : (first ? 0 : t), cut(f.pronouns || (o && o.pronouns) || '', 32));
             }

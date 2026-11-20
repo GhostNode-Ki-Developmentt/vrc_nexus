@@ -30,6 +30,7 @@
     function applyUi(s) {
         const b = document.body;
         b.classList.toggle('no-anim', s['ui.animations'] === false);
+        if (window.NexusDeco) window.NexusDeco.enable(s['ui.decorations'] !== false);
         b.classList.toggle('no-bg', s['ui.background'] === false);
         b.classList.toggle('no-img', s['ui.show_images'] === false);
         b.classList.toggle('sticky-menu', s['ui.sticky_menu'] !== false);

@@ -16,12 +16,23 @@ const friends = names.map((name, i) => ({
     tags: ['system_trust_basic', 'system_trust_known'], currentAvatarThumbnailImageUrl: '', userIcon: '', profilePicOverride: '', bio: 'Testprofil', bioLinks: [],
     last_login: new Date().toISOString(), last_activity: new Date().toISOString(), date_joined: '2021-01-01', isFriend: true,
 }));
+// Profil-Dekorationen (3.1): Katalog-ID, Name oder URL – wie bei VRChat nicht dokumentiert, darum alle drei Fälle
+Object.assign(friends[0], { iconFrame: 'invt_00000000-0000-4000-8000-0000000f0001', bannerColor: '3fe0c5' });
+Object.assign(friends[1], { iconFrame: 'Neon Ring', nameplateEffect: 'invt_00000000-0000-4000-8000-0000000f0003' });
+Object.assign(friends[2], { bannerColor: 'ff4fa3', bannerUrl: 'https://deco.test/banner.svg', nameplateEffect: 'invt_00000000-0000-4000-8000-0000000f0003', iconFrame: 'https://deco.test/frame.svg' });
+const COSMETICS = {
+    iconFrame: [{ id: 'invt_00000000-0000-4000-8000-0000000f0001', name: 'Sonnenrahmen', imageUrl: 'https://deco.test/frame.svg', metadata: {} },
+        { id: 'invt_00000000-0000-4000-8000-0000000f0002', name: 'Neon Ring', imageUrl: '', metadata: { gradientStart: 'ff4fa3', gradientEnd: '3fe0c5' } }],
+    nameplateEffect: [{ id: 'invt_00000000-0000-4000-8000-0000000f0003', name: 'Sunset', metadata: { gradientStart: 'ffae5c', gradientEnd: 'ff4fa3' } }],
+    profileEffect: [], profileBackground: [],
+};
 const me = { id: ME, displayName: 'Test Nutzerin', username: 'test', status: 'active', statusDescription: 'Testdaten', currentAvatarThumbnailImageUrl: '', userIcon: '', tags: ['system_trust_veteran', 'system_trust_trusted'],
     friends: friends.map(f => f.id), onlineFriends: friends.slice(0, 3).map(f => f.id), activeFriends: [], offlineFriends: friends.slice(3).map(f => f.id), bio: '', bioLinks: [], location: 'offline', presence: {} };
 
 /** Testzustand: POST /__mock/set {"id","bio","age"} setzt Bio und ageVerificationStatus eines Profils */
 const extra = {};
 function route(req, url, body) {
+    let m0;
     const p = url.pathname.replace(/^\/api\/1/, '');
     if (p === '/__mock/set') { const j = JSON.parse(body || '{}'); extra[j.id] = Object.assign(extra[j.id] || {}, j); return [200, { ok: true }]; }
     if (p === '/auth/user') {
@@ -31,6 +42,7 @@ function route(req, url, body) {
     }
     // Altersstatus des angemeldeten Kontos (wie VRChat: nur das eigene)
     if (p === '/ageVerification/status') return /auth=mock/.test(req.headers.cookie || '') ? [200, { status: (extra[ME] || {}).age || '' }] : [401, { error: { message: 'Missing Credentials' } }];
+    if ((m0 = /^\/cosmetics\/index\/(\w+)$/.exec(p))) return [200, COSMETICS[m0[1]] || []];
     if (p === '/auth/user/friends') return [200, url.searchParams.get('offline') === 'true' ? friends.filter(f => f.location === 'offline') : friends.filter(f => f.location !== 'offline')];
     let m;
     if ((m = /^\/users\/(usr_[\w-]+)$/.exec(p))) {

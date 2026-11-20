@@ -66,6 +66,8 @@ class NexusApp {
         this.warn = new (require('./warnlist').WarnList)(this);
         this.comm = new (require('./community').Community)(this);
         this.buttons = new (require('./buttons').Buttons)(this);
+        this.deco = new (require('./deco').Deco)(this);                    // 3.1: Profil-Dekorationen
+        this.vrc.onUserData = (id, u) => this.deco.remember(id, u);
         this.chat = opts.mobile ? null : new (require('./chat').Chat)(this, opts.crypt);
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
@@ -199,6 +201,7 @@ class NexusApp {
             if (act.startsWith('acct_')) return await this.account.action(act, input);
             if (act.startsWith('comm_')) return await this.comm.action(act, input, files);
             if (act.startsWith('btn_')) return await this.buttons.action(act, input);
+            if (act.startsWith('deco_')) return await this.deco.action(act, input);
             if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
@@ -412,7 +415,9 @@ class NexusApp {
                 if (loc.world) { await v.fetchWorlds(acc, [loc.world], 1); loc.world_info = v.worlds([loc.world])[loc.world] || null; }
                 const groups = (await quiet(() => call('GET', '/users/' + enc(id) + '/groups'))) || [];
                 const n = v.note(id);
-                return { user: { nexus_admin: !!(this.nsfw && this.nsfw.isOwner(str(u.id))), id: u.id, name: str(u.displayName), image: U.userImage(u), status: str(u.status), status_desc: str(u.statusDescription), bio_html: U.formatText(u.bio),
+                const deco = this.deco ? this.deco.resolve(this.deco.remember(u.id, u)) : null;
+                if (deco) await this.deco.catalog().catch(() => null);
+                return { user: { deco: deco ? this.deco.resolve(this.deco.remember(u.id, u)) : null, nexus_admin: !!(this.nsfw && this.nsfw.isOwner(str(u.id))), id: u.id, name: str(u.displayName), image: U.userImage(u), status: str(u.status), status_desc: str(u.statusDescription), bio_html: U.formatText(u.bio),
                     links: arr(u.bioLinks).filter(l => /^https?:\/\//.test(str(l))), pronouns: str(u.pronouns), trust: U.trust(u.tags), platform: U.VRC_PLATFORM[u.last_platform] || str(u.last_platform),
                     is_friend: !!u.isFriend, joined: str(u.date_joined), last_login: str(u.last_login), last_activity: str(u.last_activity), loc, note: n.note, favorite: !!n.favorite,
                     stats: v.friendStats(id), lists: str(n.tags), watch: !!n.watch, warn: this.warn ? this.warn.get(id) : null,

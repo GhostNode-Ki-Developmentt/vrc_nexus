@@ -280,6 +280,7 @@
             renderFavChips();
             renderFriends();
             if (window.NexusSide) window.NexusSide.update(d);
+            if (window.NexusDeco) window.NexusDeco.reload();   // 3.1: Profil-Dekorationen (höchstens 1×/min)
             notifyChanges();
             showErr($('#globalErr'), d.error || '');
             const s = d.sync || {};
@@ -490,7 +491,8 @@
     }
     function renderUser(u) {
         const l = u.loc || {}, w = l.world_info || {}, s = u.stats || {}, myLoc = state.me.location;
-        let h = '<div class="vx-u-head">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
+        if (window.NexusDeco) window.NexusDeco.set(u.id, u.deco);
+        let h = '<div class="vx-u-head" data-uid="' + esc(u.id) + '">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
             + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + (u.pronouns ? ' · ' + esc(u.pronouns) : '') + '</div>'
             + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill" title="Entwicklerin von VRC Nexus">👑 Nexus Admin</span>' : '') + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
             + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (window.NexusWarn ? window.NexusWarn.pill(u.warn) : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';

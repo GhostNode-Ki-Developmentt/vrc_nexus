@@ -833,3 +833,16 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .bt-cyan, .bt-gold, .bt-pink, .bt-green, .bt-red, .bt-violet { background: linear-gradient(160deg, color-mix(in srgb, var(--bk) 22%, transparent), rgba(var(--panel-rgb), 0.7)); }
 .bt-form { margin-top: 12px; } .bt-form textarea, .bt-form input[type=text], .bt-form select { width: 100%; box-sizing: border-box; } .bt-form .nc-row input[type=text], .bt-form .nc-row select { width: auto; }
 .bt-colors { display: flex; gap: 6px; } .bt-c { width: 28px; height: 28px; border: 2px solid var(--border-color); background: var(--bk, transparent); cursor: pointer; } .bt-c.on { border-color: var(--text-strong, #fff); }
+
+/* 3.1 Profil-Dekorationen (nexus-deco.js): Rahmen/Ring ums Profilbild, Banner als Karten-Hintergrund, Namens-Verlauf */
+.dc-av { position: relative; display: inline-grid; place-items: center; flex: 0 0 auto; border-radius: 50%; }
+.fc-av > .dc-av { display: block; margin: -2px; } .fc-av > .dc-ring { padding: 2px; } .fc-av > .dc-framed { margin: 0; }
+.dc-av > img, .dc-av > span { position: relative; z-index: 0; }
+.dc-ring { padding: 2px; background: conic-gradient(from 210deg, var(--dc-r1), var(--dc-r2), var(--dc-r1)); box-shadow: 0 0 10px color-mix(in srgb, var(--dc-r1) 55%, transparent); }
+.dc-ring > img, .dc-ring > span { border-color: transparent !important; }
+.dc-frame { position: absolute; inset: -22%; background: center / contain no-repeat; pointer-events: none; z-index: 1; }
+.dc-card { background-image: linear-gradient(100deg, transparent 30%, var(--dc-c, transparent) 135%); }
+.dc-card.dc-has-bg { background-image: linear-gradient(100deg, rgba(var(--panel-rgb), 0.94) 38%, rgba(var(--panel-rgb), 0.55) 75%, rgba(var(--panel-rgb), 0.25)), linear-gradient(100deg, transparent 30%, var(--dc-c, transparent) 135%), var(--dc-img); background-size: cover; background-position: right center; }
+.vx-u-head.dc-card { padding: 10px; border-radius: 6px; }
+.dc-name { background: linear-gradient(90deg, var(--dc-n1), var(--dc-n2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent !important; }
+body.no-anim .dc-ring { box-shadow: none; }

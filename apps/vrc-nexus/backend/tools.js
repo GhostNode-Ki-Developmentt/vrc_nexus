@@ -635,6 +635,7 @@ class Tools {
                 try {
                     const u = await this.call('GET', '/users/' + encodeURIComponent(id));
                     this.db.prepare('INSERT OR REPLACE INTO user_cache (vrc_id, data, fetched) VALUES (?, ?, ?)').run(id, JSON.stringify(u), now());
+                    if (this.app.deco) this.app.deco.remember(id, u);                 // 3.1: Profil-Dekorationen
                 } catch (e) {
                     if (e instanceof VrcAuthError) { this.queue = []; break; }
                     if (/429|zu viele/i.test(e.message)) { this.queue.unshift(id); await sleep(15000); }

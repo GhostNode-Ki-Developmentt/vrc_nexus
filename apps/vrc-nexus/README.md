@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.1.0 – Profile decorations
+
+- 🎀 **Profile decorations everywhere:** the frame around the profile picture, the banner colour/image and the name effect that people set in VRChat now appear wherever profiles are shown – friend cards, the friends bar, profile window, player list, home, locations and more. Can be switched off under Settings → Appearance.
+
 ### New in 3.0.6 – Neon Beach theme
 
 - 🌴 **New theme "Neon Beach":** a retro sunset look – pink, orange and turquoise neon, gradient headings, a hand-drawn sunset with palms, skyline and sea as background (also selectable on its own under Background). Choose it via 🎨 or Settings → Appearance.

@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.1.0",
+  "title": "Profile decorations",
+  "body": "- 🎀 **Profile decorations everywhere:** the frame around the profile picture, the banner colour/image and the name effect that people set in VRChat now appear wherever profiles are shown – friend cards, the friends bar, profile window, player list, home, locations and more. Can be switched off under Settings → Appearance."
+ },
+ {
   "version": "3.0.6",
   "title": "Neon Beach theme",
   "body": "- 🌴 **New theme \"Neon Beach\":** a retro sunset look – pink, orange and turquoise neon, gradient headings, a hand-drawn sunset with palms, skyline and sea as background (also selectable on its own under Background). Choose it via 🎨 or Settings → Appearance."
