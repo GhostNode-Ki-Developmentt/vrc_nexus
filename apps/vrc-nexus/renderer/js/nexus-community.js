@@ -6,7 +6,7 @@
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
     const T = s => (window.t ? window.t(s) : s);
     const when = ts => UI.ago ? UI.ago(ts) : new Date(ts * 1000).toLocaleString();
-    let box = null, sub = 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false;
+    let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false;
     const card = (t, html, cls) => '<div class="nc-card ' + (cls || '') + '">' + (t ? '<h4>' + t + '</h4>' : '') + html + '</div>';
     const MOBILE = document.body.classList.contains('mobile');
     let chat = { list: null, uid: '', open: null, timer: null };
@@ -140,6 +140,7 @@
     function go(s, arg) {
         sub = s; openThread = {};
         if (s === 'nsfw' && !(me && me.nsfw)) sub = 'feed';
+        if (window.NexusUI.store) window.NexusUI.store.set('cmtSub', sub);   // 3.1: letzte Unterseite merken
         if (sub === 'feed' || sub === 'nsfw') { items = []; render(); loadFeed(); }
         else if (sub === 'profile') { profEdit = false; loadProfile(arg); }
         else if (sub === 'mod') { modData = null; render(); loadMod(); }

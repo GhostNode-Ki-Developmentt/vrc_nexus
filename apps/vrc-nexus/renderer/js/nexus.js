@@ -164,6 +164,9 @@
         $$('.vx-tab').forEach(p => { p.hidden = p.dataset.pane !== name; });
         store.set('tab', name);
         store.set('tabSub', sub);
+        // 3.1: zuletzt benutzten Eintrag je Menügruppe merken (für Strg+1…9)
+        const gb = $$('#tabs .vx-mgroup [data-tab="' + name + '"]').find(b => (b.dataset.msub || '') === sub);
+        if (gb) store.set('grpLast:' + gb.closest('.vx-mgroup').querySelector('.vx-mtop em').textContent, { tab: name, sub });
         if (name === 'favs' && sub && fv.kind !== sub) { fv.kind = sub; fv.sel = null; loaded.favsDirty = true; }
         if (name === 'feed') { const ft = $('#feedType'); if (sub === 'friendlog') ft.value = 'friend_add,friend_remove'; else if (ft.value === 'friend_add,friend_remove' && store.get('tabSubPrev') === 'friendlog') ft.value = ''; store.set('tabSubPrev', sub); }
         if (name === 'feed') loadFeed(true);
@@ -246,6 +249,24 @@
         if (e.key === 'r' || e.key === 'R') load(true, true);
         if (/^[0-9]$/.test(e.key)) { const i = e.key === '0' ? 9 : +e.key - 1; if (TABS[i]) tab(TABS[i]); }
     });
+    // 3.1: Strg+1…9 = n-ter sichtbarer Eintrag der Hauptleiste (Gruppen: zuletzt benutzte Unterseite), auch aus Eingabefeldern
+    const topItems = () => [...$('#tabs').children].filter(x => (x.matches('.vx-tabbtn') || x.matches('.vx-mgroup')) && !x.hidden && x.offsetParent !== null
+        && (!x.matches('.vx-mgroup') || x.querySelector('.vx-mdrop [data-tab]:not([hidden])')));
+    function goTop(n) {
+        const x = topItems()[n];
+        if (!x) return;
+        if (x.matches('.vx-tabbtn')) return tab(x.dataset.tab, x.dataset.msub);
+        const last = store.get('grpLast:' + x.querySelector('.vx-mtop em').textContent, null);
+        const ok = last && x.querySelector('[data-tab="' + last.tab + '"]' + (last.sub ? '[data-msub="' + last.sub + '"]' : ':not([data-msub])') + ':not([hidden])');
+        const b = ok || x.querySelector('.vx-mdrop [data-tab]:not([hidden])');
+        tab(b.dataset.tab, b.dataset.msub);
+    }
+    function hintKeys() { topItems().forEach((x, i) => { const t = x.matches('.vx-tabbtn') ? x : x.querySelector('.vx-mtop'); if (i < 9) t.title = (t.querySelector('em') || t).textContent.trim() + ' (' + (window.t ? window.t('Strg') : 'Strg') + '+' + (i + 1) + ')'; }); }
+    document.addEventListener('keydown', e => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey || !/^[1-9]$/.test(e.key) || !$('#userModal').hidden) return;
+        e.preventDefault(); goTop(+e.key - 1);
+    });
+    setTimeout(hintKeys, 1500);
 
     // ---------- Zustand laden ----------
     function load(refresh, force) {
@@ -1336,7 +1357,7 @@
     }, true);
 
     // ---------- Benachrichtigungen (alte API + V2, mit Verlauf) ----------
-    let nfView = 'open', nfLabels = {}, nfTimer = null;
+    let nfView = store.get('nfView', 'open'), nfLabels = {}, nfTimer = null;
     const fileImg = (id, cls) => /^file_[0-9a-f-]{36}$/i.test(id || '') ? '<img class="' + cls + '" src="nexus.php?img=' + encodeURIComponent(id) + '" alt="" loading="lazy">' : '';
     const ago2 = ts => ts ? new Date(ts * 1000).toLocaleString(nxLoc(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
     function loadNotifs(cached) {
@@ -1374,6 +1395,7 @@
     const NF_EXTRA = ['news', 'reports'];
     function nfSet(view, cached) {
         nfView = view;
+        if (!NF_EXTRA.includes(view)) store.set('nfView', view);   // 3.1: letzte Ansicht merken
         $$('#nfView .chip').forEach(c => c.classList.toggle('on', c.dataset.view === view));
         const extra = NF_EXTRA.includes(view);
         $('#nfCtl').hidden = extra;
