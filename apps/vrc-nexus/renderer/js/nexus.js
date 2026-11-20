@@ -178,6 +178,7 @@
         if (name === 'moderation') loadModeration();
         if (name === 'warn' && window.NexusWarn) window.NexusWarn.open();
         if (name === 'community' && window.NexusCommunity) window.NexusCommunity.open(sub);
+        if (name === 'buttons' && window.NexusButtons) window.NexusButtons.open();
         if (name === 'calendar') loadCalendar(false);
         if (name === 'gallery' && !loaded.gallery) loadGallery(false);
         if (name === 'client' && window.NexusClient) window.NexusClient.open();

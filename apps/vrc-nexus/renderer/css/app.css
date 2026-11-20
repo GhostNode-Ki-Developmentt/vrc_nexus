@@ -797,3 +797,15 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .ch-msg small { display: block; color: var(--text-muted); font-size: 0.68rem; margin-top: 2px; } .ch-sn { font-size: 1rem; letter-spacing: 1px; word-spacing: 6px; }
 .ch-comp textarea { resize: vertical; }
 @media (max-width: 760px) { .ch-wrap { grid-template-columns: 1fr; } }
+/* 3.0 Nexus-Knöpfe (Android) – Idee von Natsu */
+.bt-top { margin-bottom: 10px; } .bt-tools { margin-bottom: 10px; }
+.bt-grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10px; }
+.bt-key { position: relative; aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; border: 1px solid var(--bk, var(--border-color)); background: linear-gradient(160deg, rgba(var(--panel-rgb), 0.95), rgba(var(--panel-rgb), 0.6)); color: var(--text-main); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.08s, box-shadow 0.15s; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)); }
+.bt-key:active, .bt-key.run { transform: scale(0.94); box-shadow: inset 0 0 0 2px var(--bk, var(--accent-cyan)); }
+.bt-ic { font-size: 2rem; line-height: 1; } .bt-l { font-size: 0.78rem; text-align: center; overflow-wrap: anywhere; line-height: 1.2; }
+.bt-key i { position: absolute; top: 4px; right: 8px; font-style: normal; font-size: 0.8rem; opacity: 0.7; } .bt-key.sel { outline: 2px solid var(--accent-gold); }
+.bt-grid.editing .bt-key { border-style: dashed; }
+.bt-cyan { --bk: var(--accent-cyan); } .bt-gold { --bk: var(--accent-gold); } .bt-pink { --bk: #ff5c8a; } .bt-green { --bk: #51e57e; } .bt-red { --bk: #ff5c5c; } .bt-violet { --bk: #b388ff; }
+.bt-cyan, .bt-gold, .bt-pink, .bt-green, .bt-red, .bt-violet { background: linear-gradient(160deg, color-mix(in srgb, var(--bk) 22%, transparent), rgba(var(--panel-rgb), 0.7)); }
+.bt-form { margin-top: 12px; } .bt-form textarea, .bt-form input[type=text], .bt-form select { width: 100%; box-sizing: border-box; } .bt-form .nc-row input[type=text], .bt-form .nc-row select { width: auto; }
+.bt-colors { display: flex; gap: 6px; } .bt-c { width: 28px; height: 28px; border: 2px solid var(--border-color); background: var(--bk, transparent); cursor: pointer; } .bt-c.on { border-color: var(--text-strong, #fff); }

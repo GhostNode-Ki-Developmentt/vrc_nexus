@@ -1976,6 +1976,46 @@ test('3.0.0: E2EE (X3DH + Double Ratchet) – Austausch, Reihenfolge, verlorene 
     assert.strictEqual(E.decrypt(E.accept(bob, old.pre).st, old).text, 'alt');
 });
 
+test('3.0.0: Nexus-Knöpfe (Android) – Seiten, Säubern, Ausführen über Dashboard-Verbindung und VRChat-Status', async () => {
+    const { NexusApp } = require('../backend/app');
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
+    const sent = [], posts = [];
+    app.link.remoteSend = async (kind, d) => { sent.push(Object.assign({ kind }, d)); return { ok: true }; };
+    app.link.remoteState = async () => ({ state: { params: { Ears: true } } });
+    const realPost = app.post.bind(app);
+    app.post = async (input, files) => { if (input.act === 'status') { posts.push(input); return { ok: true }; } return realPost(input, files); };
+    let r = await app.post({ act: 'btn_get' }, {});
+    assert.ok(r.cfg.pages[0].buttons.length >= 4, 'Beispiel-Knöpfe');
+    const cfg = { cols: 9, pages: [{ name: 'Test', buttons: [
+        { kind: 'chatbox', icon: '👋👋👋👋👋', label: 'Hi', text: 'Hallo\r\nWelt', color: 'evil' },
+        { kind: 'param', name: 'Ears<script>', mode: 'toggle' },
+        { kind: 'input', name: 'rm -rf' },
+        { kind: 'status', status: 'busy', desc: 'Stream' },
+        { kind: 'tab', tab: 'community' },
+        { kind: 'gibtsnicht' },
+    ] }] };
+    r = await app.post({ act: 'btn_save', cfg: JSON.stringify(cfg) }, {});
+    const b = r.cfg.pages[0].buttons;
+    assert.strictEqual(r.cfg.cols, 6); assert.strictEqual(b[0].color, ''); assert.strictEqual(Array.from(b[0].icon).length <= 4, true);
+    assert.strictEqual(b[0].text, 'Hallo\nWelt'); assert.strictEqual(b[1].name, 'Earsscript'); assert.strictEqual(b[2].name, 'Jump'); assert.strictEqual(b[5].kind, 'chatbox');
+    await app.post({ act: 'btn_run', id: b[0].id }, {});
+    assert.deepStrictEqual(sent.pop(), { kind: 'chatbox', text: 'Hallo\nWelt', split: '1' });
+    b[1].name = 'Ears'; r = await app.post({ act: 'btn_save', cfg: JSON.stringify(r.cfg) }, {});
+    await app.post({ act: 'btn_run', id: r.cfg.pages[0].buttons[1].id }, {});
+    assert.deepStrictEqual(sent.pop(), { kind: 'param', name: 'Ears', type: 'bool', value: '0' }, 'umschalten: war an → aus');
+    await app.post({ act: 'btn_run', id: b[2].id }, {});
+    assert.strictEqual(sent.pop().name, 'Jump');
+    await app.post({ act: 'btn_run', id: b[3].id }, {});
+    assert.strictEqual(posts.pop().status, 'busy');
+    r = await app.post({ act: 'btn_run', id: b[4].id }, {});
+    assert.strictEqual(r.tab, 'community');
+    await assert.rejects(app.post({ act: 'btn_run', id: 'ffffffffff' }, {}), /nicht gefunden/);
+    // Seite bleibt nach Neustart erhalten (Datenbank)
+    const app2 = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() }, mobile: true });
+    assert.strictEqual((await app2.post({ act: 'btn_get' }, {})).cfg.pages[0].name, 'Test');
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

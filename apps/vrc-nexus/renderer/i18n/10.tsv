@@ -813,3 +813,32 @@ Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.	Please enter
 Für den Chat erst das Nexus-Konto verbinden (Einstellungen → Erweitert).	To chat, connect your Nexus account first (Settings → Advanced).	Pour discuter, connecte d’abord ton compte Nexus (Paramètres → Avancé).	チャットには先にNexusアカウントを接続してください（設定 → 詳細）。
 Diese Person hat den Chat noch nicht eingerichtet (muss Nexus-Community → Chat einmal öffnen).	This person hasn’t set up chat yet (needs to open Nexus Community → Chat once).	Cette personne n’a pas encore configuré le chat (doit ouvrir Communauté Nexus → Chat une fois).	この人はまだチャットを設定していません（Nexusコミュニティ → チャットを一度開く必要があります）。
 Der verschlüsselte Chat kommt für Android später.	Encrypted chat for Android is coming later.	Le chat chiffré pour Android arrive plus tard.	Android版の暗号化チャットは後日対応です。
+Nexus-Knöpfe	Nexus buttons	Boutons Nexus	Nexusボタン
+Knopf	Button	Bouton	ボタン
+Seite	Page	Page	ページ
+Seite umbenennen	Rename page	Renommer la page	ページ名を変更
+Beispiel-Knöpfe	Example buttons	Boutons d’exemple	サンプルボタン
+Beschriftung	Label	Libellé	ラベル
+auf Seite …	to page …	vers la page …	ページへ …
+Text für die Chatbox am PC	Text for the chatbox on the PC	Texte pour la chatbox sur le PC	PCのチャットボックス用テキスト
+einschalten (sonst aus)	turn on (otherwise off)	activer (sinon désactiver)	オンにする（でなければオフ）
+Parameter-Name	Parameter name	Nom du paramètre	パラメーター名
+umschalten (an/aus)	toggle (on/off)	basculer (on/off)	切り替え（オン/オフ）
+Wert setzen	set value	définir la valeur	値を設定
+Status-Text (optional)	Status text (optional)	Texte de statut (facultatif)	ステータス文（任意）
+Noch keine Knöpfe – „Bearbeiten“ → „＋ Knopf“.	No buttons yet – “Edit” → “＋ Button”.	Pas encore de boutons – « Modifier » → « ＋ Bouton ».	まだボタンがありません – 「編集」→「＋ ボタン」。
+PC-Knöpfe laufen über die Dashboard-Verbindung (wie die PC-Fernbedienung) – am PC muss VRC Nexus mit dem Dashboard verbunden sein. Kein Stream Deck nötig.	PC buttons run via the dashboard connection (like the PC remote) – VRC Nexus on the PC must be connected to the dashboard. No Stream Deck needed.	Les boutons PC passent par la connexion au tableau de bord (comme la télécommande PC) – VRC Nexus sur le PC doit y être connecté. Pas besoin de Stream Deck.	PCボタンはダッシュボード接続経由で動作します（PCリモートと同じ）– PCのVRC Nexusがダッシュボードに接続されている必要があります。Stream Deck不要。
+Idee von Natsu	Idea by Natsu	Idée de Natsu	Natsuのアイデア
+Name der neuen Seite	Name of the new page	Nom de la nouvelle page	新しいページ名
+Seite mit allen Knöpfen löschen?	Delete page with all buttons?	Supprimer la page et tous ses boutons ?	ページとすべてのボタンを削除しますか？
+Alle Knöpfe durch die Beispiel-Knöpfe ersetzen?	Replace all buttons with the example buttons?	Remplacer tous les boutons par les boutons d’exemple ?	すべてのボタンをサンプルに置き換えますか？
+Chatbox-Text	Chatbox text	Texte de chatbox	チャットボックス文
+„tippt …“ an/aus	“typing …” on/off	« écrit … » on/off	「入力中…」オン/オフ
+Eingabe (z. B. Springen, Mikro)	Input (e.g. jump, mic)	Entrée (p. ex. sauter, micro)	入力（例：ジャンプ、マイク）
+VRChat-Status	VRChat status	Statut VRChat	VRChatステータス
+Bereich in der App öffnen	Open an area in the app	Ouvrir une section de l’appli	アプリ内の画面を開く
+Mikro	Mic	Micro	マイク
+Auf Beispiel-Knöpfe zurückgesetzt.	Reset to example buttons.	Réinitialisé aux boutons d’exemple.	サンプルボタンに戻しました。
+Knopf nicht gefunden.	Button not found.	Bouton introuvable.	ボタンが見つかりません。
+Kein Text hinterlegt.	No text set.	Aucun texte défini.	テキストが設定されていません。
+Kein Parameter hinterlegt.	No parameter set.	Aucun paramètre défini.	パラメーターが設定されていません。
