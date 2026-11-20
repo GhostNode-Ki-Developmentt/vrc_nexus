@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.2 – Connect in one click
+
+- 🪪 **Nexus account:** connecting now works directly with your VRChat login – one click, no code and no changes to your VRChat bio.
+
 ### New in 3.0.1 – Easier account setup
 
 - 🪪 **Nexus account:** connecting works without extra setup on the website, and your status is now checked directly with VRChat for your own account – no profile settings needed.

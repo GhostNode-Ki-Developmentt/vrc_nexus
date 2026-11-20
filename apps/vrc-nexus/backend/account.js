@@ -1,15 +1,15 @@
 'use strict';
 /*
  * Nexus-Konto (GhostNode, nexusacct.php): ein zentrales Konto an der VRChat-User-ID – ohne eigenes Passwort.
- *   Verbinden: Code holen → (mit Zustimmung) kurz in die eigene VRChat-Bio schreiben → GhostNode liest die Bio über
- *   sein Dienst-Konto → Geräte-Token → Bio wird wiederhergestellt.
+ *   Verbinden (seit 3.0.2): direkt mit der VRChat-ID des angemeldeten Kontos (ohne Code, ohne Prüfung – Entscheidung der Besitzerin)
+ *   → Geräte-Token.
  *   Altersfreigabe „Verified 18+“ (seit 3.0.1, Entscheidung der Besitzerin): die App fragt mit der EIGENEN VRChat-Sitzung
  *   GET /ageVerification/status ab und meldet das Ergebnis an GhostNode (gültig 7 Tage; neu beim Start, alle 6 h, 1 Tag vor Ablauf).
  *   Ist VRChat nicht erreichbar, wird nichts gemeldet (keine falsche Sperre).
  *   NSFW: standardmäßig aus, nur mit gültiger Freigabe einschaltbar, jederzeit ausschaltbar.
  * Online-Dienst = opt-in: ohne Verbinden passiert nichts.
  */
-const { str, int, now, UserError, sleep } = require('./util');
+const { str, int, now, UserError } = require('./util');
 
 const BASE = () => (process.env.NEXUS_ACCT_BASE || process.env.NEXUS_RELAY_BASE || 'https://privat.sylvanclub.eu').replace(/\/+$/, '');
 const REFRESH = 3 * 3600 * 1000;
@@ -96,26 +96,17 @@ class Account {
     stop() { clearInterval(this.timer); }
 
     // ---------- Verbinden per Bio-Code ----------
+    /** Verbinden (seit 3.0.2): direkt mit der VRChat-ID des angemeldeten Kontos – ohne Code, ohne Bio (Entscheidung der Besitzerin) */
     async connect(auto, device) {
         const id = this.myId();
         if (!id) throw new UserError('Erst bei VRChat anmelden.');
-        const c = await this.call('code', { vrc_id: id });
-        if (!auto) { this.pending = { code: c.code, expires: c.expires }; return { code: c.code, expires: c.expires, msg: 'Code in deine VRChat-Bio schreiben, dann „Prüfen“.' }; }
-        const t = this.app.tools;
-        const me = await t.call('GET', '/users/' + encodeURIComponent(id));
-        const old = str(me && me.bio);
-        const bio = (old ? old.slice(0, 500 - c.code.length - 1) + ' ' : '') + c.code;
-        await t.call('PUT', '/users/' + encodeURIComponent(id), {}, { bio });
-        try {
-            let last;
-            for (let i = 0; i < 4; i++) {
-                await sleep(i ? 3000 : 1500);
-                try { return await this.finish(device); } catch (e) { last = e; if (!/Bio/.test(e.message)) throw e; }
-            }
-            throw last;
-        } finally {
-            try { await t.call('PUT', '/users/' + encodeURIComponent(id), {}, { bio: old }); } catch (e) { this.error = 'Bitte den Code „' + c.code + '“ selbst wieder aus der VRChat-Bio löschen.'; }
-        }
+        const acc = this.app.vrc.account() || {};
+        const d = await this.call('register', { vrc_id: id, name: str(acc.display_name), device: str(device) || (process.platform === 'win32' ? 'Windows-PC' : this.app.mobile ? 'Handy' : 'Gerät') });
+        this.store({ token: d.token, account: d.account, at: Date.now() });
+        this.pending = null; this.at = Date.now();
+        try { const a = await this.checkAge(); if (a) this.save(a); } catch (e) { /* später erneut */ }
+        this.notifyAccess();
+        return { account: (this.current() || {}).account || d.account, msg: '🪪 Nexus-Konto verbunden.' };
     }
     /** Altersstatus des EIGENEN Kontos bei VRChat: /ageVerification/status, sonst ageVerificationStatus aus /auth/user. null = nicht erreichbar */
     async vrcAgeStatus() {

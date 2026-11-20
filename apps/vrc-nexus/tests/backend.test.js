@@ -1809,18 +1809,17 @@ test('3.0.0: Warnliste über GhostNode (Mock) – Schlüssel nötig, Kennzeichen
     delete process.env.NEXUS_WARN_BASE;
 });
 
-test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+ nur vom Server, NSFW-Schalter, Entzug sperrt NSFW', async () => {
+test('3.0.2: Nexus-Konto – direkt mit der VRChat-ID (ohne Code, Bio bleibt unberührt), 18+ direkt bei VRChat, NSFW-Schalter, Entzug sperrt NSFW', async () => {
     const http = require('http');
     const { NexusApp } = require('../backend/app');
     const ME = 'usr_00000000-0000-4000-8000-0000000000aa';
     // Mock von nexusacct.php + VRChat-Bio
     let bio = 'Meine Bio', code = '', age = '', vrcAge = '', nsfw = false, tokenOk = true, vrcDown = false;
-    const reported = [];
+    const reported = [], registered = [];
     const acc = () => ({ vrc_id: ME, name: 'Tester', verified18: age === '18+', age_status: age || 'hidden', age_until: age === '18+' ? Math.floor(Date.now() / 1000) + 7 * 86400 : 0, nsfw_on: age === '18+' && nsfw });
     const srv = http.createServer((req, res) => { let b = ''; req.on('data', c => { b += c; }); req.on('end', () => {
         const a = new URL(req.url, 'http://x').searchParams.get('a'), j = JSON.parse(b || '{}'), out = (o, c) => { res.writeHead(c || 200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
-        if (a === 'code') { code = 'NX-ABC123'; return out({ code, expires: 0 }); }
-        if (a === 'verify') return bio.includes(code) ? out({ token: 'f'.repeat(64), account: acc() }) : out({ error: 'Der Code steht (noch) nicht in deiner VRChat-Bio.' }, 400);
+        if (a === 'register') { registered.push(j); return out({ token: 'f'.repeat(64), account: acc() }); }
         if (!tokenOk || j.token !== 'f'.repeat(64)) return out({ error: 'Nicht angemeldet.' }, 401);
         if (a === 'age') { reported.push(j.status); age = j.status === '18+' ? '18+' : ''; return out({ account: acc() }); }
         if (a === 'me' || a === 'recheck') return out({ account: acc(), devices: [] });
@@ -1833,7 +1832,7 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     const app = new NexusApp({ db, crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: os.tmpdir() } });
     app.game.osc.stopListen();
     app.vrc.account = () => ({ vrc_id: ME, me: {}, display_name: 'Tester' });
-    const bios = [];
+    const bios = [];   // darf leer bleiben: seit 3.0.2 wird die Bio nicht mehr angefasst
     app.tools.call = async (m, p, q, b) => {
         if (p === '/ageVerification/status') { if (vrcDown) throw new Error('offline'); return { status: vrcAge }; }
         if (p === '/auth/user') { if (vrcDown) throw new Error('offline'); return { id: ME }; }
@@ -1844,7 +1843,8 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     assert.strictEqual(app.nsfw.access().reason, 'Nexus-Konto nicht verbunden.');
     let r = await post('acct_connect', { auto: '1' });
     assert.ok(r.connected && r.account.vrc_id === ME);
-    assert.deepStrictEqual(bios, ['Meine Bio NX-ABC123', 'Meine Bio'], 'Code kurz in die Bio, danach wiederhergestellt');
+    assert.deepStrictEqual(bios, [], 'Bio bleibt unberührt');
+    assert.strictEqual(registered[0].vrc_id, ME); assert.strictEqual(registered[0].name, 'Tester');
     assert.ok(db.setting('nexus_acct', '').startsWith('E:'), 'Token verschlüsselt gespeichert');
     // ohne 18+: NSFW nicht einschaltbar
     await assert.rejects(post('acct_nsfw', { on: '1' }), /Verified 18\+/);

@@ -19,6 +19,10 @@ Noch einzurichten: Dienst-Konto auf der Webseite (Admin → Nexus-Konten).
 
 ## 2. Identität & Nexus-Konto (Spez. 2.2, 4.2)
 
+> **Geändert mit 3.0.2 (Entscheidung der Besitzerin, 20.11.2026: „direkt über Nexus, VRChat-ID ohne Code – ganz ohne Prüfung“):** Die App meldet die
+> VRChat-ID des angemeldeten Kontos (`nexusacct.php?a=register`), jedes Gerät wird sofort angenommen. Kein Bio-Code, kein Nachweis – eine veränderte App
+> könnte eine fremde ID melden (akzeptiertes Risiko; Gegenmittel: Konto sperren im Admin Core). Der Bio-Code-Weg bleibt nur für ältere Apps.
+
 1. App fragt GhostNode nach einem **Bio-Code** (einmalig, 10 min gültig).
 2. Die App schreibt den Code mit Zustimmung kurz in die eigene VRChat-Bio (über die eigene Sitzung) – oder der Nutzer trägt ihn selbst ein.
 3. GhostNode liest die Bio über ein **Dienst-Konto** (VRChat-Konto der Webseite, Cookie verschlüsselt) → Code passt → **Nexus-Konto** für diese User-ID.

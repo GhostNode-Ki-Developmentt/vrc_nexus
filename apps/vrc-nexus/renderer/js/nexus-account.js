@@ -13,9 +13,7 @@
         if (!st) return '<div class="vx-loading">…</div>';
         if (!st.connected) {
             return '<p class="nx-hint">' + esc(T('Ein Konto für Community, Warnliste und NSFW – an deiner VRChat-ID, ohne eigenes Passwort. Online-Dienste sind freiwillig; ohne Konto funktioniert die App wie bisher.')) + '</p>'
-                + '<p class="nx-hint">' + esc(T('Zum Nachweis schreibt Nexus kurz einen Code in deine VRChat-Bio und stellt die Bio danach wieder her.')) + '</p>'
-                + '<div class="nx-row"><button type="button" class="btn btn-sm btn-gold" data-acct="auto">🪪 ' + esc(T('Nexus-Konto verbinden')) + '</button>'
-                + '<button type="button" class="btn btn-sm" data-acct="manual">' + esc(T('Code selbst eintragen')) + '</button></div>'
+                + '<div class="nx-row"><button type="button" class="btn btn-sm btn-gold" data-acct="auto">🪪 ' + esc(T('Nexus-Konto verbinden')) + '</button></div>'
                 + (st.pending ? '<div class="nx-row"><code class="ns-url">' + esc(st.pending.code) + '</code><button type="button" class="vx-copy" data-copy="' + esc(st.pending.code) + '">⧉</button><span class="nx-hint">' + esc(T('in deine VRChat-Bio schreiben, dann:')) + '</span><button type="button" class="btn btn-sm btn-gold" data-acct="verify">✔ ' + esc(T('Prüfen')) + '</button></div>' : '')
                 + (st.error ? '<p class="nx-hint bad">⚠ ' + esc(T(st.error)) + '</p>' : '');
         }
