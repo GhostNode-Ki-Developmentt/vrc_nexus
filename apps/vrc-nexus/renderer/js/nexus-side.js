@@ -48,7 +48,7 @@
         const fr = (st.friends || []).filter(f => !q || f.name.toLowerCase().includes(q));
         const me = st.me || {};
         el.innerHTML = '<div class="fs-sec"><button type="button" class="fs-head" data-sec="me"><i>' + (open.me ? '▾' : '▸') + '</i> Ich</button>'
-            + (open.me ? '<button type="button" class="fs-row fs-me" data-tab-go="account">' + UI.img(me.image, 'fs-img', me.name) + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(me.status) + ' ' + esc(me.name || '') + '</b><small data-no-i18n>' + esc(me.status_desc || '') + '</small></span></button>' : '') + '</div>'
+            + (open.me ? '<button type="button" class="fs-row fs-me" data-tab-go="community" data-tab-sub="profile">' + UI.img(me.image, 'fs-img', me.name) + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(me.status) + ' ' + esc(me.name || '') + '</b><small data-no-i18n>' + esc(me.status_desc || '') + '</small></span></button>' : '') + '</div>'
             + (fr.some(fresh) ? section('fresh', '✨ ' + T('Gerade online'), fr.filter(fresh)) : '')
             + section('fav', 'Favoriten', fr.filter(f => f.fav_group))
             + section('online', 'Im Spiel', fr.filter(f => f.state === 'online'))
@@ -101,7 +101,7 @@
         const i = e.target.closest('[data-inst]');
         if (i) return UI.openInstance(i.dataset.inst);
         const g = e.target.closest('[data-tab-go]');
-        if (g) return UI.tab(g.dataset.tabGo);
+        if (g) return UI.tab(g.dataset.tabGo, g.dataset.tabSub);
     }
     const join = loc => UI.api('invite_self', { location: loc }).then(r => UI.toast(r.msg)).catch(x => UI.toast('⚠ ' + x.message, true));
     const act = (a, data) => UI.api(a, data).then(r => UI.toast(r.msg || '✔')).catch(x => UI.toast('⚠ ' + x.message, true));

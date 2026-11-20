@@ -150,7 +150,8 @@
     const TABS = [...new Set($$('#tabs [data-tab]').map(b => b.dataset.tab))];
     function tab(name, sub) {
         if (name === 'news' || name === 'reports') { sub = name; name = 'notifs'; }
-        if (name === 'about') { store.set('setTab', 'about'); name = 'settings'; }   // „Über“ ist jetzt ein Reiter der Einstellungen   // Info-Push & Meldungen sind jetzt Ansichten der Benachrichtigungen
+        if (name === 'about') { store.set('setTab', 'about'); name = 'settings'; }
+        if (name === 'account') { name = 'community'; sub = 'profile'; }   // 3.2: „Konto & Status“ ist jetzt Community → Mein Profil   // „Über“ ist jetzt ein Reiter der Einstellungen   // Info-Push & Meldungen sind jetzt Ansichten der Benachrichtigungen
         if (!TABS.includes(name)) name = 'friends';
         sub = sub || '';
         let hit = false;
@@ -197,7 +198,7 @@
         syncSubNav(name);
     }
     // ---------- Unterpunkte oben (bei Menü links): Gruppen-Einträge oder die eigenen Reiter der Seite ----------
-    const SUBNAV = { client: '#ncSub', notifs: '#nfView', community: '#cmtSub', settings: '#setTabs' };   // Seiten mit eigenen Unterreitern
+    const SUBNAV = { client: '#ncSub', notifs: '#nfView', settings: '#setTabs' };   // Seiten mit eigenen Unterreitern
     const subHomes = new Map();                                // verschobenes Element → ursprünglicher Platz
     function syncSubNav(name) {
         const bar = $('#subNav');
@@ -232,6 +233,9 @@
         const sub = store.get('tabSub') || '';
         bar.innerHTML = '<span class="vx-subhead">' + g.querySelector('.vx-mtop').innerHTML.replace(/<i>.*?<\/i>/, '') + '</span>'
             + $$('.vx-mdrop .vx-tabbtn', g).filter(b => !b.hidden).map(b => '<button type="button" class="chip' + (b.dataset.tab === name && (b.dataset.msub || '') === sub ? ' on' : '') + '" data-tab="' + b.dataset.tab + '"' + (b.dataset.msub ? ' data-msub="' + b.dataset.msub + '"' : '') + '>' + b.innerHTML + '</button>').join('');
+        // Community: NSFW-Schalter rechts in derselben Leiste
+        const extra = name === 'community' && $('#cmtSub');
+        if (extra) { subHomes.set(extra, { parent: extra.parentNode, next: extra.nextSibling }); bar.appendChild(extra); }
         bar.hidden = false;
     }
     $('#subNav') && $('#subNav').addEventListener('click', e => { const b = e.target.closest('.chip[data-tab]'); if (b) tab(b.dataset.tab, b.dataset.msub); });
@@ -1744,7 +1748,7 @@
     });
     /** 🚪 Abmelden – Knopf im Konto-Bereich und ⏻ am eigenen Profil oben rechts */
     const doLogout = () => { if (confirm('Von VRChat abmelden? Freunde, Verlauf und Notizen bleiben auf diesem Gerät gespeichert.')) api('logout').then(() => location.reload()).catch(x => toast(x.message, true)); };
-    $('#logoutBtn').addEventListener('click', doLogout);
+    if ($('#logoutBtn')) $('#logoutBtn').addEventListener('click', doLogout);
     document.addEventListener('click', e => { if (e.target.closest('.vx-logout')) { e.preventDefault(); e.stopPropagation(); doLogout(); } }, true);
 
     // ---------- Gruppen-Moderation im Profil ----------

@@ -6,7 +6,7 @@
     const esc = UI.esc, api = UI.api, toast = (m, bad) => UI.toast(m, bad);
     const T = s => (window.t ? window.t(s) : s);
     const when = ts => UI.ago ? UI.ago(ts) : new Date(ts * 1000).toLocaleString();
-    let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false, acct = null, p18Edit = false;
+    let box = null, sub = (window.NexusUI.store && window.NexusUI.store.get('cmtSub', 'feed')) || 'feed', me = null, items = [], openThread = {}, attach = [], modData = null, prof = null, profEdit = false, busy = false, acct = null, p18Edit = false, profTab = 'main';
     const card = (t, html, cls) => '<div class="nc-card ' + (cls || '') + '">' + (t ? '<h4>' + t + '</h4>' : '') + html + '</div>';
     const MOBILE = document.body.classList.contains('mobile');
     let chat = { list: null, uid: '', open: null, timer: null };
@@ -14,7 +14,12 @@
 
     function nav() {
         const n = document.getElementById('cmtSub');
-        if (n) n.innerHTML = subs().map(([k, l]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-csub="' + k + '">' + esc(l) + '</button>').join('')
+        document.querySelectorAll('#tabs .cm-nsfw-only').forEach(b => { b.hidden = !(me && me.nsfw); });
+        document.querySelectorAll('#tabs .cm-mod-only').forEach(b => { b.hidden = !(me && me.mod); });
+        const vis = (me && me.nsfw ? 'n' : '') + (me && me.mod ? 'm' : '');
+        if (vis !== nav.vis) { nav.vis = vis; if (UI.subnav) setTimeout(() => UI.subnav(), 0); }   // Leiste oben neu, wenn Einträge dazukommen/wegfallen
+        const side = document.body.classList.contains('nav-side');   // Menü links: Unterpunkte stehen oben in der Leiste (Menü-Gruppe „Community“)
+        if (n) n.innerHTML = (side ? '' : subs().map(([k, l]) => '<button type="button" class="chip' + (sub === k ? ' on' : '') + '" data-csub="' + k + '">' + esc(l) + '</button>').join(''))
             // 3.1.1: NSFW direkt hier ein-/ausschalten (nur mit Verified 18+)
             + (acct && acct.age && acct.age.verified ? '<label class="cm-nsfwsw" title="' + esc(T('NSFW-Inhalte und -Werkzeuge anzeigen (freiwillig, jederzeit abschaltbar)')) + '"><input type="checkbox" data-cnsfw="1"' + (acct.age.nsfw_on ? ' checked' : '') + '><span></span>🔞 NSFW</label>' : '');
     }
@@ -40,8 +45,11 @@
             + (nsfw && !parent ? '<span class="small muted">' + esc(T('NSFW-Bilder erscheinen nach Prüfung durch einen Moderator.')) + '</span>' : '')
             + '<button class="btn btn-sm btn-gold" style="margin-left:auto">' + esc(T(parent ? 'Antworten' : 'Posten')) + '</button></div></form>';
     }
+    /** Karten aus „Konto & Status“ (Status, VRChat-Profil, Benachrichtigungen) – vor jedem Neuzeichnen zurück in ihren Bereich */
+    function acctPark() { const c = document.getElementById('acctCards'), pane = document.querySelector('[data-pane="account"]'); if (c && pane && c.parentNode !== pane) pane.prepend(c); }
     function render() {
         if (!box) return;
+        if (!(box.contains(document.activeElement) && document.activeElement.matches('textarea, input[type=text]'))) acctPark();
         if (busy || (box.contains(document.activeElement) && document.activeElement.matches('textarea, input[type=text]'))) return;
         nav();
         if (!me) { box.innerHTML = '<div class="vx-loading">' + esc(T('Lade …')) + '</div>'; return; }
@@ -53,7 +61,7 @@
                 + (items.length >= 30 ? '<button type="button" class="btn btn-sm" data-cmore="1">' + esc(T('Ältere laden')) + '</button>' : '') + '</div>';
             return;
         }
-        if (sub === 'profile') { box.innerHTML = profileHtml(); return; }
+        if (sub === 'profile') { box.innerHTML = profileHtml(); const slot = box.querySelector('#cmAcctSlot'), c = document.getElementById('acctCards'); if (slot && c) slot.appendChild(c); return; }
         if (sub === 'mod') { box.innerHTML = modHtml(); return; }
         if (sub === 'chat') { box.innerHTML = chatHtml(); const l = box.querySelector('.ch-msgs'); if (l) l.scrollTop = l.scrollHeight; return; }
     }
@@ -102,7 +110,14 @@
             + (window.NexusProfile18 ? window.NexusProfile18.factsForm(p.facts) : '')
             + '<div class="nc-row"><label class="btn btn-sm">🖼 ' + esc(T('Profilbild')) + '<input type="file" accept="image/*" data-cav="avatar" hidden></label><label class="btn btn-sm">🖼 ' + esc(T('Banner')) + '<input type="file" accept="image/*" data-cav="banner" hidden></label>'
             + '<button class="btn btn-sm btn-gold" style="margin-left:auto">' + esc(T('Speichern')) + '</button><button type="button" class="btn btn-sm" data-cpedit="0">' + esc(T('Abbrechen')) + '</button></div></form>';
-        return '<div class="cm-pgrid' + (p.nsfw_facts !== undefined || (p.own && acct && acct.age && acct.age.verified) ? ' two' : '') + '"><div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
+        // 3.2: Reiter – Profil · Status & VRChat (nur eigenes) · 🔞 18+-Profil (wie im Profil-Fenster)
+        const has18 = p.nsfw_facts !== undefined || (p.own && acct && acct.age && acct.age.verified);
+        const tabs = [['main', '👤 ' + T('Profil')]].concat(p.own ? [['acct', '⚙ ' + T('Status & VRChat')]] : []).concat(has18 ? [['p18', '🔞 ' + T('18+-Profil')]] : []);
+        if (!tabs.some(t => t[0] === profTab)) profTab = 'main';
+        const bar = '<div class="u-tabs cm-ptabs">' + tabs.map(([k, l]) => '<button type="button" data-cptab="' + k + '" class="' + (k === profTab ? 'on' : '') + '">' + esc(l) + '</button>').join('') + '</div>';
+        if (profTab === 'acct') return bar + '<div id="cmAcctSlot"></div>';
+        if (profTab === 'p18') return bar + p18Html(p);
+        return bar + '<div class="cm-prof">' + (p.banner ? '<div class="cm-banner" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
             + card('', '<div class="cm-phead">' + (p.avatar ? '<img class="cm-pav" src="nexus.php?cimg=' + esc(p.avatar) + '" alt="">' : '<span class="cm-pav">👤</span>') + '<div><h3>' + esc(p.name) + '</h3>'
                 + '<div class="small muted">' + [p.pronouns, p.languages].filter(Boolean).map(esc).join(' · ') + '</div>'
                 + (window.NexusProfile18 ? window.NexusProfile18.factsView(p.facts) : '')
@@ -111,7 +126,7 @@
                 + (p.bio ? '<p>' + esc(p.bio).replace(/\n/g, '<br>') + '</p>' : '') + (p.interests ? '<p class="small">✨ ' + esc(p.interests) + '</p>' : '')
                 + ((p.links || []).length ? '<p class="small">' + p.links.map(l => '<a href="' + esc(l) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(l.replace(/^https:\/\//, '')) + '</a>').join(' · ') + '</p>' : '')
 )
-            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>' + p18Html(p) + '</div>';
+            + (p.feed && p.feed.length ? p.feed.map(x => post(x)).join('') : '') + '</div>';
     }
     /** 3.1.1: 🔞 18+-Profil rechts neben dem Profil */
     function p18Html(p) {
@@ -195,6 +210,7 @@
             if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
             if (t.closest('[data-p18e]')) { p18Edit = true; return render(); }
+            const pt = t.closest('[data-cptab]'); if (pt) { profTab = pt.dataset.cptab; return render(); }
             if (t.closest('[data-p18cancel]')) { p18Edit = false; return render(); }
             const md = t.closest('[data-cmod]');
             if (md) {

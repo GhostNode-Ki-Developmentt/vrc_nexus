@@ -58,15 +58,17 @@
         <div class="vx-msec" role="separator">Leute</div>
         <button type="button" class="vx-tabbtn" data-tab="locations"><span>📍</span><em>Freunde-Orte</em></button>
         <button type="button" class="vx-tabbtn" data-tab="players"><span>👥</span><em>Spielerliste</em></button>
-        <button type="button" class="vx-tabbtn" data-tab="community"><span>🫂</span><em>Community</em></button>
-        <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>🫂</span><em>Sozial</em><i>▾</i></button>
+        <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>🫂</span><em>Community</em><i>▾</i></button>
             <div class="vx-mdrop" role="menu">
-                <button type="button" class="vx-tabbtn" data-tab="feed" data-msub="friendlog"><span>📜</span><em>Freundes-Log</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="community" data-msub="feed"><span>📰</span><em>Feed</em></button>
+                <button type="button" class="vx-tabbtn cm-nsfw-only" data-tab="community" data-msub="nsfw" hidden><span>🔞</span><em>NSFW-Feed</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="community" data-msub="chat"><span>💬</span><em>Chat</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="community" data-msub="profile"><span>👤</span><em>Mein Profil</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="friends"><span>👥</span><em>Freundesliste</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="feed" data-msub="friendlog"><span>📜</span><em>Freundes-Log</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="groups"><span>🛡️</span><em>Gruppen</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="moderation"><span>🚫</span><em>Moderation</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="warn"><span>⚠</span><em>Warnliste</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="mod"><span>🛡</span><em>Mod-Zentrale (Gruppen)</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="moderation"><span>🚫</span><em>Blockiert &amp; stumm</em></button>
+                <button type="button" class="vx-tabbtn cm-mod-only" data-tab="community" data-msub="mod" hidden><span>🛡</span><em>Community-Moderation</em></button>
             </div></div>
         <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>⭐</span><em>Favoriten</em><i>▾</i></button>
             <div class="vx-mdrop" role="menu">
@@ -78,7 +80,12 @@
         <div class="vx-msec" role="separator">Spiel</div>
         <button type="button" class="vx-tabbtn" data-tab="client"><span>🎮</span><em>Spiel &amp; OSC</em></button>
         <button type="button" class="vx-tabbtn" data-tab="client" data-msub="log"><span>🕘</span><em>Spiel-Log</em></button>
-        <button type="button" class="vx-tabbtn" data-tab="tools"><span>🧰</span><em>Werkzeuge</em></button>
+        <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>🧰</span><em>Werkzeuge</em><i>▾</i></button>
+            <div class="vx-mdrop" role="menu">
+                <button type="button" class="vx-tabbtn" data-tab="tools"><span>🧰</span><em>Alle Werkzeuge</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="warn"><span>⚠</span><em>Warnliste</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="mod"><span>🛡</span><em>Mod-Zentrale (Gruppen)</em></button>
+            </div></div>
         <button type="button" class="vx-tabbtn" data-tab="stream"><span>📺</span><em>Stream-Bot</em></button>
         <button type="button" class="vx-tabbtn" data-tab="remote" data-mobile><span>🎮</span><em>PC-Fernbedienung</em></button>
         <button type="button" class="vx-tabbtn" data-tab="buttons" data-mobile><span>🎛</span><em>Nexus-Knöpfe</em></button>
@@ -99,7 +106,6 @@
         <div class="vx-mgroup vx-mright"><button type="button" class="vx-mtop" aria-haspopup="true"><span>⚙</span><em>Mehr</em><i>▾</i></button>
             <div class="vx-mdrop" role="menu">
                 <button type="button" class="vx-tabbtn" data-tab="settings" hidden><span>⚙</span><em>Einstellungen</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="account"><span>👤</span><em>Konto &amp; Status</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="calendar"><span>📅</span><em>Gruppen-Kalender</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="gallery"><span>🖼️</span><em>Galerie &amp; Inventar</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="shop"><span>🛒</span><em>Shop &amp; Käufe</em></button>
@@ -324,7 +330,7 @@
 
     <section class="vx-tab" data-pane="client" hidden><div id="clientPane" class="nc"></div></section>
     <section class="vx-tab" data-pane="account" hidden>
-        <div class="vx-cols">
+        <div class="vx-cols" id="acctCards">
             <div class="panel">
                 <div class="panel-title">Mein Status</div>
                 <form id="statusForm" class="vx-status-form">
@@ -368,13 +374,14 @@
                     <button type="button" class="btn btn-sm" id="notifyTest" style="margin-top: 10px;">🔔 Test-Benachrichtigung</button>
                 </form>
             </div>
-            <div class="panel">
+        </div>
+        <div class="acct-park">
+            <div class="panel" id="connCard">
                 <div class="panel-title">Verbindung &amp; Daten</div>
                 <p class="vx-small" id="connInfo"></p>
                 <p class="vx-small">Freunde werden höchstens alle {{SYNC_MIN}} Sekunden abgeglichen, offline Freunde alle {{OFFLINE_MIN}} Minuten.
                    Verlauf und Statistik entstehen durch diese Abgleiche – solange VRC Nexus läuft (auch minimiert im Infobereich), wird aufgezeichnet. Wie lange der Verlauf aufbewahrt wird, stellst du unter Einstellungen → System → Aufräumen ein (Vorgabe {{FEED_DAYS}} Tage).</p>
                 <p><a class="btn btn-sm" href="nexus.php?export=friends">⬇ Freunde (CSV)</a> <a class="btn btn-sm" href="nexus.php?export=feed">⬇ Verlauf (CSV)</a></p>
-                <button type="button" class="btn btn-danger" id="logoutBtn">🚪 Abmelden</button>
             </div>
             
 

@@ -686,8 +686,19 @@
             + row('Stream-Chat', base + 'chat?token=' + tok, 'Twitch/YouTube-Chat + Punkte-Einlösungen (Stream-Bot). z. B. 420 × 600.')
             + '<p class="nx-hint">Optionen anhängen: <code>&amp;theme=light</code>, <code>&amp;hide=players,time,music,chat</code>. Die Adresse funktioniert nur auf diesem PC.</p></div>';
     }
+    /** 3.2: „Verbindung & Daten“ (+ Tastenkürzel/Direkt-Zugriff) aus dem früheren „Konto & Status“ – angezeigt in Einstellungen → System */
+    function connWrap() {
+        let w = document.getElementById('connWrap');
+        if (w) return w;
+        const pane = document.querySelector('[data-pane="account"]');
+        w = document.createElement('div'); w.id = 'connWrap';
+        if (pane) { [document.getElementById('connCard')].concat([...pane.querySelectorAll(':scope > p.vx-small, :scope > .panel')]).filter(Boolean).forEach(x => w.appendChild(x)); pane.appendChild(w); }
+        return w;
+    }
+    function connPark() { const w = connWrap(), pane = document.querySelector('[data-pane="account"]'); if (pane && w.parentNode !== pane) pane.appendChild(w); }
     function renderSettings() {
         if (window.NexusClient && window.NexusClient.cfgPark) window.NexusClient.cfgPark();
+        connPark();
         const d = setData, box = $('#setBox');
         const MOBILE_HIDE = /^(upd\.mode|link\.(upload|remote)|sys\.|vr\.|media\.|int\.|social\.(players|memo)|notify\.(player_|screenshot|vrc_start)|adv\.(debug|devtools)|ui\.(wide|sticky_menu))/;
         const visible = f => !MOBILE || !MOBILE_HIDE.test(f.key);
@@ -714,11 +725,11 @@
             + (setTab === 'int' && !MOBILE ? obsHtml(d.settings) : '')
             + (setTab === 'vr' && !MOBILE ? '<div class="set-sec"><h3>🎮 VRChat-Logs &amp; OSC-Verbindung</h3><div id="setGameCfg"><div class="vx-loading">Lade …</div></div></div>' : '')
             + (setTab === 'about' ? '<div class="set-sec"><div id="aboutBox"><div class="vx-loading">Lade …</div></div></div>' : '')
-            + (setTab === 'system' ? '<div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
+            + (setTab === 'system' ? '<div class="set-sec"><h3>🔗 Verbindung &amp; Daten</h3><div id="setConn"></div></div><div class="set-sec"><h3>🗄 Datenbank</h3><div id="dbBox"><div class="vx-loading">…</div></div></div>' : '')
             + (MOBILE ? (['adv', 'link'].includes(setTab) ? extra : '') : extra) + '<p class="vx-small">Änderungen werden sofort gespeichert.</p></div>';
         if (setTab === 'tr' && window.NexusTr) window.NexusTr.panel($('#trPanel'));
         if (setTab === 'link') { linkPanel(); if (!MOBILE) backupPanel(); }
-        if (setTab === 'system') dbPanel();
+        if (setTab === 'system') { dbPanel(); const sc = $('#setConn'); if (sc) sc.appendChild(connWrap()); }
         if (setTab === 'adv' && window.NexusAccount && $('#acctBox')) window.NexusAccount.render($('#acctBox'));
         if (setTab === 'about' && window.NexusAbout) window.NexusAbout.open();
         if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
