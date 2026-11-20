@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.6 – Neon Beach theme
+
+- 🌴 **New theme "Neon Beach":** a retro sunset look – pink, orange and turquoise neon, gradient headings, a hand-drawn sunset with palms, skyline and sea as background (also selectable on its own under Background). Choose it via 🎨 or Settings → Appearance.
+
 ### New in 3.0.5 – Community profile fix
 
 - 🫂 **Community:** "My profile" and other people's profiles open again (no more "invalid VRChat user ID").

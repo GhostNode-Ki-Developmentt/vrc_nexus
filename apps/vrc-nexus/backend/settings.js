@@ -33,7 +33,7 @@ const FIELDS = [
     ['sys.keep_cache', 'system', 'Aufräumen', 'select', '30', 'Profil-Zwischenspeicher behalten', 'Wird bei Bedarf neu von VRChat geladen.', [['0', 'für immer'], ['7', '7 Tage'], ['30', '30 Tage'], ['90', '90 Tage']]],
     // ---------- Oberfläche ----------
     ['ui.lang', 'ui', 'Aussehen', 'select', 'auto', 'Sprache / Language', 'Auch über die Flagge umschaltbar. „Automatisch“ nimmt die Sprache von Windows/Android (sonst Englisch).', [['auto', '🌐 Automatisch (Systemsprache)'], ['de', 'Deutsch'], ['en', 'English'], ['fr', 'Français'], ['ja', '日本語']]],
-    ['ui.theme', 'ui', 'Aussehen', 'select', 'neon', 'Theme', 'Auch über 🎨 unten rechts umschaltbar.', [['neon', '🌃 Neon (dunkel, Standard)'], ['midnight', '🌌 Mitternacht (dunkel)'], ['snow', '❄️ Schnee (hell)'], ['sakura', '🌸 Sakura (hell)'], ['auto', '🌗 Automatisch (wie Windows/Android)']]],
+    ['ui.theme', 'ui', 'Aussehen', 'select', 'neon', 'Theme', 'Auch über 🎨 unten rechts umschaltbar.', [['neon', '🌃 Neon (dunkel, Standard)'], ['midnight', '🌌 Mitternacht (dunkel)'], ['snow', '❄️ Schnee (hell)'], ['sakura', '🌸 Sakura (hell)'], ['beach', '🌴 Neon Beach (dunkel, Sonnenuntergang)'], ['auto', '🌗 Automatisch (wie Windows/Android)']]],
     ['ui.accent', 'ui', 'Aussehen', 'color', '#38d5e6', 'Akzentfarbe', 'Bei #38d5e6 nimmt jedes Theme seine eigene Farbe.'],
     ['ui.zoom', 'ui', 'Aussehen', 'number', 100, 'Zoom (%)', '70–150 %', [70, 150]],
     ['ui.font', 'ui', 'Aussehen', 'select', 'default', 'Schrift', '', [['default', 'Standard'], ['system', 'Windows-Systemschrift'], ['mono', 'Monospace']]],

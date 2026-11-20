@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+<!-- VRC Nexus – „Neon Beach“: eigener Sonnenuntergang über dem Meer, Neon-Skyline und Palmen (selbst gezeichnet) -->
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1a0b2e"/><stop offset="0.35" stop-color="#4b1460"/><stop offset="0.58" stop-color="#c2307a"/><stop offset="0.7" stop-color="#ff7a59"/><stop offset="0.74" stop-color="#ffb36b"/>
+  </linearGradient>
+  <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset="0.5" stop-color="#ffb35c"/><stop offset="1" stop-color="#ff4f9a"/></linearGradient>
+  <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1550"/><stop offset="0.4" stop-color="#173a6b"/><stop offset="1" stop-color="#07152b"/></linearGradient>
+  <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a5c" stop-opacity="0.7"/><stop offset="1" stop-color="#ff4f9a" stop-opacity="0"/></linearGradient>
+  <clipPath id="sunCut"><rect x="0" y="0" width="1920" height="790"/></clipPath>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/>
+<g fill="#fff" opacity="0.6"><circle cx="210" cy="90" r="1.4"/><circle cx="530" cy="160" r="1"/><circle cx="880" cy="60" r="1.2"/><circle cx="1240" cy="120" r="1"/><circle cx="1560" cy="70" r="1.5"/><circle cx="1780" cy="190" r="1"/><circle cx="380" cy="250" r="0.9"/><circle cx="1420" cy="240" r="0.9"/></g>
+<!-- Sonne mit Streifen -->
+<g clip-path="url(#sunCut)">
+  <circle cx="1180" cy="700" r="250" fill="url(#sun)"/>
+  <g fill="#c2307a"><rect x="900" y="640" width="560" height="8"/><rect x="900" y="672" width="560" height="11"/><rect x="900" y="706" width="560" height="14"/><rect x="900" y="742" width="560" height="17"/><rect x="900" y="778" width="560" height="20"/></g>
+</g>
+<!-- Skyline mit Neon-Fenstern -->
+<g fill="#22103a">
+  <rect x="180" y="640" width="70" height="150"/><rect x="255" y="590" width="55" height="200"/><rect x="315" y="660" width="80" height="130"/><rect x="400" y="560" width="46" height="230"/><rect x="452" y="620" width="90" height="170"/>
+  <rect x="548" y="680" width="60" height="110"/><rect x="612" y="600" width="40" height="190"/><rect x="1500" y="650" width="70" height="140"/><rect x="1575" y="575" width="50" height="215"/><rect x="1630" y="630" width="95" height="160"/><rect x="1730" y="690" width="60" height="100"/>
+</g>
+<g fill="#3fe0d0" opacity="0.8"><rect x="268" y="610" width="8" height="5"/><rect x="290" y="640" width="8" height="5"/><rect x="412" y="590" width="7" height="5"/><rect x="425" y="640" width="7" height="5"/><rect x="470" y="650" width="9" height="5"/><rect x="1590" y="600" width="7" height="5"/><rect x="1605" y="660" width="7" height="5"/><rect x="1650" y="660" width="9" height="5"/></g>
+<g fill="#ff5fb0" opacity="0.85"><rect x="200" y="665" width="9" height="5"/><rect x="330" y="690" width="9" height="5"/><rect x="500" y="700" width="9" height="5"/><rect x="620" y="630" width="7" height="5"/><rect x="1520" y="680" width="9" height="5"/><rect x="1690" y="700" width="9" height="5"/><rect x="1745" y="715" width="8" height="5"/></g>
+<rect x="400" y="552" width="46" height="4" fill="#ff5fb0"/><rect x="1575" y="567" width="50" height="4" fill="#3fe0d0"/>
+<!-- Meer + Spiegelung -->
+<rect y="790" width="1920" height="290" fill="url(#sea)"/>
+<rect x="930" y="790" width="500" height="220" fill="url(#glow)"/>
+<g stroke="#ffc38a" stroke-width="3" opacity="0.55"><line x1="1010" y1="815" x2="1350" y2="815"/><line x1="1040" y1="845" x2="1320" y2="845"/><line x1="1070" y1="880" x2="1290" y2="880"/><line x1="1100" y1="920" x2="1260" y2="920"/></g>
+<g stroke="#3fe0d0" stroke-width="2" opacity="0.25"><line x1="0" y1="960" x2="1920" y2="960"/><line x1="0" y1="1020" x2="1920" y2="1020"/></g>
+<!-- Palmen (Silhouetten) -->
+<g fill="#0d0618">
+  <path d="M150 1080 C170 950 190 820 240 700 L252 704 C210 830 196 950 186 1080 Z"/>
+  <path d="M246 702 C190 660 120 650 60 680 C120 640 200 640 250 690 Z"/>
+  <path d="M246 702 C230 630 260 570 320 540 C280 590 268 640 258 700 Z"/>
+  <path d="M248 700 C300 650 380 640 440 670 C380 668 310 676 256 708 Z"/>
+  <path d="M246 704 C200 700 150 730 120 790 C160 740 210 720 250 712 Z"/>
+  <path d="M250 704 C300 710 350 750 370 810 C330 760 290 730 248 714 Z"/>
+  <path d="M1760 1080 C1745 960 1730 860 1690 760 L1700 756 C1742 860 1762 960 1790 1080 Z"/>
+  <path d="M1694 758 C1740 715 1800 705 1860 725 C1810 722 1750 735 1700 768 Z"/>
+  <path d="M1694 758 C1660 712 1600 700 1540 720 C1595 690 1660 700 1700 750 Z"/>
+  <path d="M1696 758 C1700 700 1730 660 1780 640 C1745 680 1720 715 1704 760 Z"/>
+  <path d="M1694 760 C1650 765 1610 800 1595 850 C1625 805 1660 785 1698 770 Z"/>
+  <path d="M1698 760 C1740 770 1770 810 1780 860 C1755 815 1728 790 1694 772 Z"/>
+</g>
+</svg>

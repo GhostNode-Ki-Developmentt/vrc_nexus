@@ -21,6 +21,7 @@
         midnight: ['🌌 Mitternacht', 'dark', ['#08050f', '#140d22', '#b794ff', '#ff8fc7']],
         snow: ['❄️ Schnee', 'light', ['#edf1f7', '#ffffff', '#0b7fa3', '#b26a00']],
         sakura: ['🌸 Sakura', 'light', ['#fbf0f3', '#fffcfd', '#c2255c', '#b45309']],
+        beach: ['🌴 Neon Beach', 'dark', ['#140a24', '#ff4fa3', '#ffae5c', '#3fe0c5']],
         auto: ['🌗 Automatisch', 'auto', ['#040609', '#38d5e6', '#edf1f7', '#0b7fa3']],
     };
     // „Automatisch“: hell/dunkel wie Windows bzw. Android – wechselt mit, wenn das System umschaltet
@@ -62,7 +63,7 @@
         applyBg(s);
     }
     /** Hintergrundbild hinter allem (Deckkraft, Weichzeichnen, Anpassen) */
-    const BUILTIN_BG = [['synthwave', 'Synthwave'], ['polarlicht', 'Polarlicht'], ['sakura', 'Sakura-Nacht'], ['nexus-raster', 'Nexus-Raster'], ['galaxie', 'Galaxie']];
+    const BUILTIN_BG = [['neon-beach', 'Neon Beach'], ['synthwave', 'Synthwave'], ['polarlicht', 'Polarlicht'], ['sakura', 'Sakura-Nacht'], ['nexus-raster', 'Nexus-Raster'], ['galaxie', 'Galaxie']];
     function bgUrl(v) { v = String(v || ''); if (/^builtin:[a-z-]+$/.test(v)) return 'img/bg/' + v.slice(8) + '.svg'; return /^local:(\d+)$/.test(v) ? 'nexus.php?bgimg=' + v.slice(6) : /^(https:\/\/\S+|nexus\.php\?img=file_[0-9a-f-]{36}&v=\d+)$/i.test(v) ? v : ''; }
     function applyBg(s) {
         let el = document.getElementById('vxBgImg');

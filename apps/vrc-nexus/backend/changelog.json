@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.0.6",
+  "title": "Neon Beach theme",
+  "body": "- 🌴 **New theme \"Neon Beach\":** a retro sunset look – pink, orange and turquoise neon, gradient headings, a hand-drawn sunset with palms, skyline and sea as background (also selectable on its own under Background). Choose it via 🎨 or Settings → Appearance."
+ },
+ {
   "version": "3.0.5",
   "title": "Community profile fix",
   "body": "- 🫂 **Community:** \"My profile\" and other people's profiles open again (no more \"invalid VRChat user ID\")."

@@ -58,6 +58,40 @@ html[data-theme="sakura"] {
     --surface: #fffafc; --line: #eac3d2; --grid-line: rgba(194, 37, 92, 0.05);
 }
 
+/* 🌴 Neon Beach – dunkel: Sonnenuntergang über dem Meer, Pink/Orange/Türkis (angelehnt an den Retro-Miami-Neon-Look, eigene Umsetzung) */
+html[data-theme="beach"] {
+    --bg-color: #140a24; --bg-rgb: 20, 10, 36;
+    --panel-rgb: 30, 14, 46; --panel2-rgb: 48, 22, 70;
+    --panel-bg: rgba(30, 14, 46, 0.84); --panel-hover: rgba(52, 22, 74, 0.95);
+    --accent-cyan: #ff4fa3; --accent-rgb: 255, 79, 163;
+    --accent-gold: #ffae5c; --gold-rgb: 255, 174, 92;
+    --accent-green: #3fe0c5; --accent-purple: #b38cff; --accent-red: #ff5470;
+    --accent-glow: rgba(255, 79, 163, 0.35); --border-color: rgba(255, 79, 163, 0.32);
+    --text-main: #fff0f7; --text-muted: #c79abb; --text-strong: #ffffff;
+    --surface: #1f0d31; --line: #5a2a6e; --grid-line: rgba(63, 224, 197, 0.05);
+    --beach-grad: linear-gradient(100deg, #ff4fa3 0%, #ff8a5c 45%, #ffd36b 70%, #3fe0c5 100%);
+}
+/* Hintergrund: eigenes Sonnenuntergangs-Bild, abgedunkelt (ein eigenes Hintergrundbild hat Vorrang) */
+html[data-theme="beach"] body:not(.has-bgimg):not(.no-bg) {
+    background-image: linear-gradient(rgba(20, 10, 36, 0.35), rgba(20, 10, 36, 0.5) 55%, rgba(20, 10, 36, 0.72)), url("../img/bg/neon-beach.svg");
+    background-size: cover; background-position: center bottom; background-attachment: fixed;
+}
+html[data-theme="beach"] body::before { opacity: 0.22; }
+/* Schriftzug & Überschriften: Verlauf Pink → Orange → Türkis, kursiv und kräftig */
+html[data-theme="beach"] h1, html[data-theme="beach"] .vx-sidebrand, html[data-theme="beach"] .vx-sidebrand b {
+    background: var(--beach-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-style: italic; text-shadow: none; filter: drop-shadow(0 0 10px rgba(255, 79, 163, 0.45));
+}
+html[data-theme="beach"] .panel-title, html[data-theme="beach"] .nc-card h4, html[data-theme="beach"] .vx-msec { color: var(--accent-gold); }
+/* Menü: aktiver Eintrag mit Sonnenuntergangs-Kante */
+html[data-theme="beach"] .vx-menu .vx-tabbtn.active { background: linear-gradient(90deg, rgba(255, 79, 163, 0.28), rgba(255, 138, 92, 0.12) 70%, transparent); border-color: transparent; box-shadow: inset 3px 0 0 #ff4fa3; color: #fff; }
+html[data-theme="beach"] .vx-menu .vx-tabbtn:hover, html[data-theme="beach"] .vx-mtop:hover { color: var(--accent-green); }
+/* Knöpfe */
+html[data-theme="beach"] .btn-gold { background: linear-gradient(100deg, rgba(255, 79, 163, 0.25), rgba(255, 174, 92, 0.25)); border-color: #ff8a5c; color: #ffd0a8; }
+html[data-theme="beach"] .btn-gold:hover { background: var(--beach-grad); color: #1a0b2e; box-shadow: 0 0 16px rgba(255, 79, 163, 0.55); border-color: transparent; }
+html[data-theme="beach"] .chip.on { background: linear-gradient(100deg, rgba(255, 79, 163, 0.3), rgba(63, 224, 197, 0.2)); border-color: #ff4fa3; color: #fff; }
+html[data-theme="beach"] ::-webkit-scrollbar-thumb { background: linear-gradient(#ff4fa3, #ff8a5c); }
+
 /* helle Themes: Leuchten/Schrift-Schein abschwächen, Bilder-Platzhalter hell */
 html[data-scheme="light"] body { background-image: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.10), transparent 65%), linear-gradient(rgba(var(--bg-rgb), 0.9), rgba(var(--bg-rgb), 1)); }
 html[data-scheme="light"] body::before, html[data-scheme="light"] body::after { opacity: 0.25; }
