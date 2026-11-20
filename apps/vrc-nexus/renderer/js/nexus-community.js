@@ -135,7 +135,7 @@
         const before = more && items.length ? items[items.length - 1].id : 0;
         return api('comm_feed', { rating: sub === 'nsfw' ? 'nsfw' : 'sfw', before }).then(d => { items = more ? items.concat(d.items) : d.items; render(); }).catch(e => toast('⚠ ' + e.message, true));
     }
-    function loadProfile(id) { prof = null; render(); return api('comm_profile', { id: id || '' }).then(d => { prof = d.profile; return api('comm_feed', { rating: 'sfw', author: prof.vrc_id }); }).then(d => { prof.feed = d.items; render(); }).catch(e => toast('⚠ ' + e.message, true)); }
+    function loadProfile(id) { prof = null; render(); return api('comm_profile', id ? { id } : {}).then(d => { prof = d.profile; return api('comm_feed', { rating: 'sfw', author: prof.vrc_id }); }).then(d => { prof.feed = d.items; render(); }).catch(e => toast('⚠ ' + e.message, true)); }
     function loadMod() { return api('comm_mod_queue').then(d => { modData = d; render(); }).catch(e => toast('⚠ ' + e.message, true)); }
     function go(s, arg) {
         sub = s; openThread = {};

@@ -1922,6 +1922,13 @@ test('3.0.0: Community – App reicht nur mit Konto-Token durch, Mod-Schlüssel 
     img = await app.handle({ method: 'GET', query: new URLSearchParams('cimg=../../etc') });
     assert.strictEqual(img.status, 404);
     await assert.rejects(post('comm_hack'), /Unbekannte/);
+    // 3.0.4: Profil-ID ist eine VRChat-ID (keine Zahl); leer = eigenes Profil → nicht mitschicken
+    await post('comm_profile', { id: 'usr_00000000-0000-4000-8000-0000000000dd' });
+    assert.strictEqual(seen[seen.length - 1][1].id, 'usr_00000000-0000-4000-8000-0000000000dd');
+    await post('comm_profile', { id: '' });
+    assert.ok(!('id' in seen[seen.length - 1][1]), 'eigenes Profil ohne id');
+    await post('comm_thread', { id: '42' });
+    assert.strictEqual(seen[seen.length - 1][1].id, 42, 'Beitrags-IDs bleiben Zahlen');
     app.tools.stop(); srv.close();
     delete process.env.NEXUS_COMM_BASE;
 });

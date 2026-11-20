@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.0.5",
+  "title": "Community profile fix",
+  "body": "- 🫂 **Community:** \"My profile\" and other people's profiles open again (no more \"invalid VRChat user ID\")."
+ },
+ {
   "version": "3.0.4",
   "title": "Account fixes and a smarter friends bar",
   "body": "- 🪪 **Nexus account:** older VRChat accounts with a short user ID can now connect (no more \"invalid VRChat user ID\").\n- ✔ **Age check:** the app now reads your own VRChat profile first and also recognises accounts that are verified with the 18+ badge hidden; the status endpoint is only used as a second source.\n- ⌨ **Shortcuts:** Ctrl+1…9 jump to the entries of the left menu (groups open the sub-page you used last); Community and Notifications remember their last view.\n- 🌐 \"Worlds\" is now \"My worlds\": it opens your own uploaded worlds (favourite worlds stay under ⭐ Favourites).\n- 👥 **Friends bar:** right-click menu (open profile, join, view instance, request invite, invite to my instance, copy ID), a \"Just online\" section for friends who came online in the last 10 minutes, sorting (A–Z, recently active, by world), long lists load in steps and stay smooth, and group instances can be joined straight from the list."

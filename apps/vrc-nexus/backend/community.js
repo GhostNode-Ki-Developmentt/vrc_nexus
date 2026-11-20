@@ -60,6 +60,7 @@ class Community {
         for (const [k, v] of Object.entries(input || {})) {
             if (k === 'act' || k === 'token' || k === 'key') continue;
             if (k === 'media' || k === 'links') body[k] = Array.isArray(v) ? v.map(str) : str(v) ? str(v).split(',').map(x => x.trim()).filter(Boolean) : [];
+            else if (k === 'id' && a === 'profile') { if (str(v).trim()) body.id = str(v).trim(); }   // Profil: VRChat-ID (leer = eigenes Profil), keine Zahl
             else if (['id', 'before', 'parent', 'hours', 'report'].includes(k)) body[k] = int(v);
             else body[k] = str(v);
         }

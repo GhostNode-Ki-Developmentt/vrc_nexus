@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.5 – Community profile fix
+
+- 🫂 **Community:** "My profile" and other people's profiles open again (no more "invalid VRChat user ID").
+
 ### New in 3.0.4 – Account fixes and a smarter friends bar
 
 - 🪪 **Nexus account:** older VRChat accounts with a short user ID can now connect (no more "invalid VRChat user ID").
