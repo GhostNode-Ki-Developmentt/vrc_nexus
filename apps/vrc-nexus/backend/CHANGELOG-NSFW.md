@@ -2,6 +2,11 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.1.2 – NSFW overhaul completed
+
+- 🔒 **Toy remote via the GhostNode website now checked on the server:** sending and receiving through the website relay needs your Nexus account with Verified 18+ and NSFW switched on, and you can only read your own mailbox. Your own relay address keeps working as before (your account token is never sent there).
+- 👁 **Who can see your 18+ profile:** everyone with Verified 18+ and NSFW on (default) or only you.
+
 ### New in 3.1.1 – 18+ profile
 
 - 🔞 **18+ profile in the Community:** next to your profile there is now an 18+ section – role, behaviour, open to contact, safer-sex policy, “can host” and a kink list with separate ratings for *receive* and *give* (♥ love it · 👍 like it · 〜 maybe · 👎 no). Only Verified 18+ people with NSFW switched on can see it; the website enforces this.

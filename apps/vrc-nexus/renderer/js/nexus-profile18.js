@@ -17,6 +17,7 @@
         open_contact: ['Offen für sexuelle Kontakte', [['', '– leer lassen –'], ['yes', 'Ja'], ['no', 'Nein'], ['ask', 'Frag mich']]],
         safer: ['Safer-Sex-Grundsatz', [['', '– leer lassen –'], ['always', 'Immer'], ['sometimes', 'Manchmal'], ['never', 'Nie'], ['talk', 'Lass uns reden']]],
     };
+    const VIS = { visibility: ['Wer sieht mein 18+-Profil?', [['', 'Alle mit Verified 18+ und NSFW an'], ['hidden', 'Nur ich']]] };
     /* Kink-Liste: Schlüssel → Bezeichnung (die Bezeichnungen bleiben bewusst Englisch – so kennt man sie in der Community) */
     const KINKS = [
         ['Allgemein', [['condoms', 'Condoms'], ['feet', 'Feet'], ['foreplay', 'Foreplay'], ['inflatables', 'Inflatables'], ['toys', 'Sex Toys'], ['sweat', 'Sweat'], ['teasing', 'Teasing'], ['tickling', 'Tickling']]],
@@ -65,6 +66,7 @@
         nf = nf || {};
         const rows = Object.keys(NSETS).map(k => nf[k] ? [NSETS[k][0], label(NSETS, k, nf[k])] : null).filter(Boolean);
         if (nf.can_host) rows.push(['Kann Gastgeber sein', T('🏡 Du kannst mich besuchen')]);
+        if (nf.visibility === 'hidden') rows.unshift(['Wer sieht mein 18+-Profil?', '🔒 ' + T('Nur ich')]);
         const kk = nf.kinks || {};
         const cats = KINKS.map(([cat, list]) => [cat, list.filter(([k]) => kk[k])]).filter(c => c[1].length);
         return (bio ? '<p class="p18-bio">' + esc(bio).replace(/\n/g, '<br>') + '</p>' : '')
@@ -79,7 +81,7 @@
         const kk = nf.kinks || {};
         const cell = (k, i) => { const v = kk[k] ? kk[k][i] : null; return '<button type="button" class="p18-rb" data-p18k="' + k + '" data-p18i="' + i + '" data-v="' + (v === null || v === undefined ? '' : v) + '">' + rate(v) + '</button>'; };
         return '<form class="p18-edit"><textarea name="nsfw_bio" rows="3" maxlength="1000" placeholder="🔞 ' + esc(T('18+-Profilteil (nur für Verified 18+ mit NSFW an sichtbar)')) + '">' + esc(bio || '') + '</textarea>'
-            + '<fieldset class="p18-box"><legend>After Dark</legend>' + Object.keys(NSETS).map(k => sel('nf_' + k, NSETS, k, nf[k])).join('')
+            + '<fieldset class="p18-box"><legend>After Dark</legend>' + sel('nf_visibility', VIS, 'visibility', nf.visibility) + Object.keys(NSETS).map(k => sel('nf_' + k, NSETS, k, nf[k])).join('')
             + '<label class="check"><input type="checkbox" name="nf_can_host"' + (nf.can_host ? ' checked' : '') + '> 🏡 ' + esc(T('Kann Gastgeber sein')) + '</label></fieldset>'
             + '<p class="small muted">' + esc(T('Antippen wechselt: ♥ liebe ich → 👍 mag ich → 〜 vielleicht → 👎 nein → leer.')) + '</p>'
             + KINKS.map(([cat, list]) => '<details class="p18-cat"><summary>' + esc(T(cat)) + '</summary><div class="p18-k p18-kh"><span></span><b>' + esc(T('Erhalten')) + '</b><b>' + esc(T('Geben')) + '</b></div>'
@@ -88,7 +90,7 @@
     }
     function readNsfw(form) {
         const v = n => form.elements[n] ? form.elements[n].value : '';
-        const out = { position: v('nf_position'), behavior: v('nf_behavior'), open_contact: v('nf_open_contact'), safer: v('nf_safer'), can_host: !!(form.elements.nf_can_host && form.elements.nf_can_host.checked), kinks: {} };
+        const out = { visibility: v('nf_visibility'), position: v('nf_position'), behavior: v('nf_behavior'), open_contact: v('nf_open_contact'), safer: v('nf_safer'), can_host: !!(form.elements.nf_can_host && form.elements.nf_can_host.checked), kinks: {} };
         form.querySelectorAll('[data-p18k]').forEach(b => {
             const k = b.dataset.p18k, i = +b.dataset.p18i, val = b.dataset.v === '' ? null : +b.dataset.v;
             if (val === null) return;

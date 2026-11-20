@@ -1,10 +1,23 @@
 # Umsetzungskonzept: Nexus Community, Chat (E2EE) & NSFW-Overhaul
 
-Stand 20.11.2026 · Grundlage: `docs/spec-community-nsfw-overhaul.md` · Status: **Schritt 1 umgesetzt (Konto, Verified 18+, NSFW-Tor)**
+Stand 20.11.2026 · Grundlage: `docs/spec-community-nsfw-overhaul.md` · Status: **Schritte 1–5 umgesetzt (3.0.0–3.1.2)** – offen nur noch: Discord-Verknüpfung als Identitätsbestätigung (Spez. 4.2, braucht Discord-Anbindung der Webseite – Entscheidung der Besitzerin), E2EE-Chat in der Android-App, Gruppenchats
 
 **Entscheidungen der Besitzerin (20.11.2026):** E2EE = eigene Umsetzung der Signal-Spezifikationen · NSFW nur im eigenen Feed · 18+-Prüfung alle 7 Tage · sofort umstellen (NXK1 schaltet ab sofort kein NSFW mehr frei, auch nicht für die Besitzerin – ihre Admin-Rechte bleiben) · allgemeines Recht „🛡 Moderator“ (NXK1 `mod`).
 Weitere Entscheidungen (20.11.2026): Navigation = **ein Menüpunkt „Community“** mit Unterpunkten (Feed, Profil, Chat, Gruppen; „🔞 NSFW-Feed“ nur bei Verified 18+ mit NSFW an) · Info bei Verlust = **Vorwarnung**: 1 Tag vor Ablauf automatisch neu prüfen, nur bei Problemen warnen · Moderation = **alle Werkzeuge**: Melden + Warteschlange, als NSFW umstufen, stummschalten/sperren, NSFW-Medien vorab freigeben · Webseite: direkt in `main`.
 Noch einzurichten: Dienst-Konto auf der Webseite (Admin → Nexus-Konten).
+
+## 0. Umsetzungsstand (3.1.2)
+
+| Spez. | Umsetzung |
+|---|---|
+| 2.2 Konto | Nexus-Konto an der VRChat-ID (3.0.2: direkt, ohne Code), Geräte-Token nur als Hash |
+| 3.2 / 4.3 Verified 18+ | App fragt VRChat mit der eigenen Sitzung (`/auth/user` → `ageVerified`/`ageVerificationStatus`, sonst `/ageVerification/status`), gültig 7 Tage, neu beim Start / alle 6 h / 1 Tag vor Ablauf; Entzug sperrt NSFW |
+| 3.3 / 3.4 Standard & Schalter | NSFW aus, nur mit Verified 18+ einschaltbar (Einstellungen und seit 3.1.1 direkt in der Community-Leiste), jederzeit aus |
+| 4.1 NXK1 | nur noch Supporter/Moderator/Admin, kein NSFW |
+| 5 / 7 Serverseitige Prüfung | `nexuscomm.php` (Feed, Beiträge, Antworten, Bilder, 18+-Profil), `nexusacct.php` (`peer`), seit 3.1.2 auch `toyrelay.php` (Konto-Token, Verified 18+, NSFW an, nur eigener Briefkasten) |
+| 6 Integration | ein Menüpunkt „Community“ (Feed, NSFW-Feed, Chat, Profil, Moderation), gemeinsames Profil mit Steckbrief + 18+-Profil (3.1.1), Sichtbarkeit des 18+-Profils „alle Verified 18+“ / „nur ich“ (3.1.2) |
+| Moderation | Melden, Warteschlange, umstufen, stummschalten/sperren, NSFW-Medien vorab freigeben, Protokoll, Admin Core |
+| Chat | eigene Umsetzung von X3DH + Double Ratchet (Windows), Mehrgeräte, Sicherheitsnummer |
 
 ## 1. Bestandsaufnahme (Analyse)
 

@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.1.2",
+  "title": "Community & NSFW overhaul completed",
+  "body": "- 🔞 *** (only visible in the app when NSFW is unlocked)"
+ },
+ {
   "version": "3.1.1",
   "title": "Profile facts, tidier menus",
   "body": "- 🪪 **Community profile facts:** gender (several possible plus your own), sexual orientation, relationship status and whether you are looking for a partner – shown on your Community profile.\n- 🔞 *** (only visible in the app when NSFW is unlocked)\n- 🧭 **Left menu:** groups like Social or Favourites no longer expand in the sidebar – their sub-pages are already shown as tabs at the top; clicking the group opens the page you used last.\n- ⚙ **Settings:** the settings tabs (System, Interface, Social …) now sit in the top bar instead of the \"More\" group.\n- 🎀 **Profile decorations fixed:** frames no longer cover the profile picture, \"avatar banners\" now show the current avatar picture, and name effects stay readable."

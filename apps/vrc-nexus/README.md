@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.1.2 – Community & NSFW overhaul completed
+
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+
 ### New in 3.1.1 – Profile facts, tidier menus
 
 - 🪪 **Community profile facts:** gender (several possible plus your own), sexual orientation, relationship status and whether you are looking for a partner – shown on your Community profile.

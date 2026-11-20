@@ -28,6 +28,12 @@ const RELAY = () => (process.env.NEXUS_RELAY_BASE || 'https://privat.sylvanclub.
 const PUB = () => (process.env.NEXUS_NTFY_BASE || 'https://ntfy.sh').replace(/\/+$/, '');
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
 const uidHash = u => sha('vrcnx-toy|' + str(u).toLowerCase());
+/** 3.1.1: GhostNode prüft Verified 18+ serverseitig – das Konto-Token geht NUR an die GhostNode-Webseite, nie an eine fremde Relay-Adresse */
+function relayBody(app, url, body) {
+    const own = str(url).replace(/\/+$/, '') === RELAY();
+    const acc = own && app.account ? app.account.current() : null;
+    return JSON.stringify(acc ? Object.assign({ token: acc.token }, body) : body);
+}
 const topic = (u, code) => 'vrcnx_' + sha('topic|' + str(u).toLowerCase() + '|' + code).slice(0, 40);
 const keyOf = code => crypto.createHash('sha256').update('key|vrcnx-toy|' + code).digest();
 function enc(o, code) {
@@ -147,7 +153,7 @@ class ToyRemote {
         if (!url || !this.myId()) { if (host) this.st.web = { ok: false, err: 'Webseiten-Adresse fehlt', at: 0 }; return; }
         if (this.webBusy) return; this.webBusy = true;
         try {
-            const r = await fetch(url + '/toyrelay.php?a=poll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: uidHash(this.myId()), key: this.inboxKey() }), signal: AbortSignal.timeout(8000) });
+            const r = await fetch(url + '/toyrelay.php?a=poll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: relayBody(this.app, url, { to: uidHash(this.myId()), key: this.inboxKey() }), signal: AbortSignal.timeout(8000) });
             const d = await r.json().catch(() => ({ error: 'Antwort kein JSON – liegt toyrelay.php auf der Webseite?' }));
             if (d.error) throw new Error(d.error);
             if (host) this.st.web = { ok: true, err: '', at: Date.now() };
@@ -185,7 +191,7 @@ class ToyRemote {
     }
     async reply(to, via, o) {
         const c = this.cfg();
-        if (via === 'web') await fetch((c.web_url || RELAY()) + '/toyrelay.php?a=send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: uidHash(to), msg: JSON.stringify(o) }), signal: AbortSignal.timeout(8000) });
+        if (via === 'web') await fetch((c.web_url || RELAY()) + '/toyrelay.php?a=send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: relayBody(this.app, c.web_url || RELAY(), { to: uidHash(to), msg: JSON.stringify(o) }), signal: AbortSignal.timeout(8000) });
         if (via === 'pub' && c.code) await fetch(PUB() + '/' + topic(to, c.code), { method: 'POST', body: enc(o, c.code), signal: AbortSignal.timeout(8000) });
     }
     /** Befehl prüfen und ausführen */
@@ -289,7 +295,7 @@ class ToyRemote {
             return Object.assign({ sent: true }, d);
         }
         if (via === 'web') {
-            const r = await fetch((c.t_url || RELAY()) + '/toyrelay.php?a=send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: uidHash(c.t_uid), msg: JSON.stringify(m) }), signal: AbortSignal.timeout(8000) }).catch(e => { throw new UserError('Webseite nicht erreichbar' + (e.message === 'fetch failed' ? '' : ': ' + e.message) + '.'); });
+            const r = await fetch((c.t_url || RELAY()) + '/toyrelay.php?a=send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: relayBody(this.app, c.t_url || RELAY(), { to: uidHash(c.t_uid), msg: JSON.stringify(m) }), signal: AbortSignal.timeout(8000) }).catch(e => { throw new UserError('Webseite nicht erreichbar' + (e.message === 'fetch failed' ? '' : ': ' + e.message) + '.'); });
             const d = await r.json().catch(() => ({ error: 'Antwort kein JSON – liegt toyrelay.php auf der Webseite?' }));
             if (d.error) throw new UserError(d.error);
             this.pollWeb();
