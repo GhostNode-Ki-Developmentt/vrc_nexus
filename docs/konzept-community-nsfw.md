@@ -29,6 +29,13 @@ Bestehende Daten bleiben: die Warnliste nutzt weiter NXK1, ein späterer Wechsel
 
 ## 3. Altersfreigabe „Verified 18+“ (Spez. 3.2, 4.3, 7)
 
+> **Geändert mit 3.0.1 (Entscheidung der Besitzerin, 20.11.2026: „Nur App prüft direkt“):** Die App fragt mit der **eigenen** VRChat-Sitzung
+> `GET /ageVerification/status` ab (Fallback: `ageVerificationStatus` aus `/auth/user`) und meldet das Ergebnis an GhostNode (`nexusacct.php?a=age`).
+> Der Server **vertraut dieser Meldung bewusst** – eine manipulierte App könnte 18+ vortäuschen (akzeptiertes Risiko). Gültig 7 Tage;
+> die App prüft beim Start, alle 6 h und 1 Tag vor Ablauf neu; ist VRChat nicht erreichbar, wird nichts gemeldet. Das Dienst-Konto wird nur noch
+> für den Bio-Code beim Verbinden gebraucht (ohne Auswahl automatisch das VRChat-Konto eines Administrators). Der folgende Text beschreibt den ursprünglichen Plan.
+
+
 - **Nur serverseitig:** GhostNode ruft `GET /users/{id}` mit dem Dienst-Konto ab und liest `ageVerificationStatus`. Die App meldet den Status **nicht** selbst (nicht fälschbar).
 - `18+` sichtbar → Rolle **Verified 18+** mit Ablaufzeit (Intervall = offene Entscheidung). Fehlt der Status oder ist er unsichtbar → Rolle entzogen, NSFW sofort gesperrt.
 - Prüfung beim Aktivieren von NSFW, beim Ablauf der Rolle und zufällig verteilt im Hintergrund (Cron), damit die VRChat-API nicht belastet wird.

@@ -20,11 +20,11 @@
                 + (st.error ? '<p class="nx-hint bad">⚠ ' + esc(T(st.error)) + '</p>' : '');
         }
         const a = st.account, g = st.age;
-        return (st.lost && !g.verified ? '<div class="tts-help">⚠ ' + esc(T(st.lost.title)) + '<br>' + esc(T('VRChat zeigt keinen sichtbaren 18+-Status mehr. NSFW ist gesperrt – Status in VRChat sichtbar machen und „18+ neu prüfen“.')) + '</div>' : '')
+        return (st.lost && !g.verified ? '<div class="tts-help">⚠ ' + esc(T(st.lost.title)) + '<br>' + esc(T('VRChat meldet für dein Konto keine Altersverifizierung (18+) mehr. NSFW ist gesperrt – in VRChat prüfen und „18+ neu prüfen“.')) + '</div>' : '')
             + '<div class="vx-kpis sm"><div><b>' + esc(a.name || '–') + '</b><span>' + esc(T('Nexus-Konto')) + '</span></div>'
             + '<div><b class="' + (g.verified ? 'acct-ok' : 'bad') + '">' + (g.verified ? '✔ Verified 18+' : '✖ ' + esc(T('nicht verifiziert'))) + '</b><span>' + (g.verified ? esc(T('gültig bis')) + ' ' + day(g.age_until) : esc(T('VRChat-Altersstatus'))) + '</span></div>'
             + '<div><b>' + (g.nsfw_on ? '🔞 ' + esc(T('an')) : esc(T('aus'))) + '</b><span>NSFW</span></div></div>'
-            + (!g.verified ? '<p class="nx-hint">' + esc(T('Für NSFW: In VRChat die Altersverifizierung (18+) abschließen und im Profil sichtbar machen, dann „Neu prüfen“. Der Status wird alle 7 Tage erneut geprüft.')) + '</p>' : '')
+            + (!g.verified ? '<p class="nx-hint">' + esc(T('Für NSFW: In VRChat die Altersverifizierung (18+) abschließen, dann „18+ neu prüfen“. Nexus fragt den Status direkt bei VRChat ab (nur für dein eigenes Konto) und prüft regelmäßig neu.')) + '</p>' : '')
             + '<label class="check"><input type="checkbox" data-acct="nsfw"' + (g.nsfw_on ? ' checked' : '') + (g.verified ? '' : ' disabled') + '> 🔞 ' + esc(T('NSFW-Inhalte und -Werkzeuge anzeigen (freiwillig, jederzeit abschaltbar)')) + '</label>'
             + '<div class="nx-row"><button type="button" class="btn btn-sm" data-acct="recheck">⟳ ' + esc(T('18+ neu prüfen')) + '</button><button type="button" class="btn btn-sm" data-acct="logout">' + esc(T('Auf diesem Gerät abmelden')) + '</button></div>'
             + (st.devices && st.devices.length > 1 ? '<details><summary class="small">' + esc(T('Angemeldete Geräte')) + ' (' + st.devices.length + ')</summary>' + st.devices.map(d => '<div class="nx-row"><span class="small">' + esc(d.name) + ' · ' + day(d.last_seen) + '</span><button type="button" class="nc-x" data-acct="dev" data-id="' + esc(d.id) + '" title="' + esc(T('abmelden')) + '">✕</button></div>').join('') + '</details>' : '')

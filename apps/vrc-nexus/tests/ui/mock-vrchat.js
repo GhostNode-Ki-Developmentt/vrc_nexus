@@ -29,6 +29,8 @@ function route(req, url, body) {
         if (auth.startsWith('Basic ')) { const [, pw] = Buffer.from(auth.slice(6), 'base64').toString().split(':'); return pw === 'test' ? [200, me, true] : [401, { error: { message: 'Invalid Username/Email or Password' } }]; }
         return /auth=mock/.test(req.headers.cookie || '') ? [200, me] : [401, { error: { message: 'Missing Credentials' } }];
     }
+    // Altersstatus des angemeldeten Kontos (wie VRChat: nur das eigene)
+    if (p === '/ageVerification/status') return /auth=mock/.test(req.headers.cookie || '') ? [200, { status: (extra[ME] || {}).age || '' }] : [401, { error: { message: 'Missing Credentials' } }];
     if (p === '/auth/user/friends') return [200, url.searchParams.get('offline') === 'true' ? friends.filter(f => f.location === 'offline') : friends.filter(f => f.location !== 'offline')];
     let m;
     if ((m = /^\/users\/(usr_[\w-]+)$/.exec(p))) {

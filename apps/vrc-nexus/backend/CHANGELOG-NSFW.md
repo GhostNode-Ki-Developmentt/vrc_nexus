@@ -2,6 +2,10 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.0.1 – Age check directly with VRChat
+
+- 🔞 **Verified 18+ is now checked directly with VRChat:** the app asks VRChat for your own account’s age verification (`/ageVerification/status`) with your own login – it no longer has to be visible on your profile, and the website no longer needs a separate checking account. Re-checked at start, every 6 hours and one day before it expires; if VRChat is unreachable, nothing changes. If VRChat stops reporting 18+, NSFW is locked and you get one notice.
+
 ### New in 3.0.0 – NSFW overhaul: Verified 18+
 
 - 🔞 **NSFW now only with “Verified 18+”:** your VRChat age verification (`18+`) must be completed and **visible** on your profile. The GhostNode website checks it itself (never the app), re-checks it every 7 days and one day before it expires; if the status disappears, NSFW is locked immediately and you get a single notice.

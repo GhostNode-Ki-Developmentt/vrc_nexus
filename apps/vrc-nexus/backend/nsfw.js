@@ -95,7 +95,7 @@ class Nsfw {
         const owner = this.isOwner(uid), k = this.roles();
         const age = this.app.account ? this.app.account.age() : { connected: false, verified: false, nsfw_on: false, age_until: 0 };
         const unlocked = age.verified && age.nsfw_on;
-        const reason = unlocked ? '' : !age.connected ? 'Nexus-Konto nicht verbunden.' : !age.verified ? 'Kein gültiger „Verified 18+“-Status (VRChat-Altersverifizierung sichtbar machen).' : 'NSFW ist ausgeschaltet.';
+        const reason = unlocked ? '' : !age.connected ? 'Nexus-Konto nicht verbunden.' : !age.verified ? 'Kein gültiger „Verified 18+“-Status (VRChat-Altersverifizierung 18+ abschließen, dann „18+ neu prüfen“).' : 'NSFW ist ausgeschaltet.';
         return { owner, unlocked, features: unlocked ? Object.keys(FEATURES) : [], roles: k.roles, key: k.key, mod: k.roles.includes('mod'), supporter: k.roles.includes('supporter'),
             verified18: age.verified, nsfw_on: age.nsfw_on, connected: age.connected, exp: age.age_until, reason, key_reason: k.reason || '' };
     }

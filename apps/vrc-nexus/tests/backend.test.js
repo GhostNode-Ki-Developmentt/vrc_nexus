@@ -1814,13 +1814,15 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     const { NexusApp } = require('../backend/app');
     const ME = 'usr_00000000-0000-4000-8000-0000000000aa';
     // Mock von nexusacct.php + VRChat-Bio
-    let bio = 'Meine Bio', code = '', age = '', nsfw = false, tokenOk = true;
+    let bio = 'Meine Bio', code = '', age = '', vrcAge = '', nsfw = false, tokenOk = true, vrcDown = false;
+    const reported = [];
     const acc = () => ({ vrc_id: ME, name: 'Tester', verified18: age === '18+', age_status: age || 'hidden', age_until: age === '18+' ? Math.floor(Date.now() / 1000) + 7 * 86400 : 0, nsfw_on: age === '18+' && nsfw });
     const srv = http.createServer((req, res) => { let b = ''; req.on('data', c => { b += c; }); req.on('end', () => {
         const a = new URL(req.url, 'http://x').searchParams.get('a'), j = JSON.parse(b || '{}'), out = (o, c) => { res.writeHead(c || 200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
         if (a === 'code') { code = 'NX-ABC123'; return out({ code, expires: 0 }); }
         if (a === 'verify') return bio.includes(code) ? out({ token: 'f'.repeat(64), account: acc() }) : out({ error: 'Der Code steht (noch) nicht in deiner VRChat-Bio.' }, 400);
         if (!tokenOk || j.token !== 'f'.repeat(64)) return out({ error: 'Nicht angemeldet.' }, 401);
+        if (a === 'age') { reported.push(j.status); age = j.status === '18+' ? '18+' : ''; return out({ account: acc() }); }
         if (a === 'me' || a === 'recheck') return out({ account: acc(), devices: [] });
         if (a === 'nsfw') { if (j.on && age !== '18+') return out({ error: 'NSFW lässt sich nur mit „Verified 18+“ einschalten.' }, 400); nsfw = !!j.on; return out({ account: acc() }); }
         out({ ok: true });
@@ -1832,7 +1834,11 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     app.game.osc.stopListen();
     app.vrc.account = () => ({ vrc_id: ME, me: {}, display_name: 'Tester' });
     const bios = [];
-    app.tools.call = async (m, p, q, b) => { if (m === 'GET') return { bio }; if (m === 'PUT') { bio = b.bio; bios.push(bio); } return {}; };
+    app.tools.call = async (m, p, q, b) => {
+        if (p === '/ageVerification/status') { if (vrcDown) throw new Error('offline'); return { status: vrcAge }; }
+        if (p === '/auth/user') { if (vrcDown) throw new Error('offline'); return { id: ME }; }
+        if (m === 'GET') return { bio }; if (m === 'PUT') { bio = b.bio; bios.push(bio); } return {};
+    };
     const post = (act, d) => app.post(Object.assign({ act }, d || {}), {});
     assert.strictEqual(app.nsfw.access().unlocked, false);
     assert.strictEqual(app.nsfw.access().reason, 'Nexus-Konto nicht verbunden.');
@@ -1843,9 +1849,11 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     // ohne 18+: NSFW nicht einschaltbar
     await assert.rejects(post('acct_nsfw', { on: '1' }), /Verified 18\+/);
     assert.strictEqual(app.nsfw.access().unlocked, false);
-    // VRChat zeigt 18+ → neu prüfen → einschalten
-    age = '18+';
+    assert.deepStrictEqual(reported, [''], 'nach dem Verbinden direkt bei VRChat geprüft und gemeldet');
+    // VRChat meldet 18+ (eigene Sitzung, /ageVerification/status) → neu prüfen → einschalten
+    vrcAge = '18+';
     r = await post('acct_recheck');
+    assert.strictEqual(reported[reported.length - 1], '18+');
     assert.ok(r.age.verified && !r.age.nsfw_on);
     assert.strictEqual(app.nsfw.access().unlocked, false, 'NSFW bleibt aus, bis man es bewusst einschaltet');
     await post('acct_nsfw', { on: '1' });
@@ -1853,14 +1861,19 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     // lokal abgelaufene Freigabe sperrt ohne Server
     const o = app.account.load(); o.account.age_until = 1; app.account.store(o);
     assert.strictEqual(app.nsfw.access().unlocked, false);
-    // Server entzieht (Status nicht mehr sichtbar) → beim Auffrischen gesperrt + einmalige Warnung
-    age = '18+'; await app.account.refresh(true);
-    age = '';
+    // VRChat nicht erreichbar → nichts melden, keine falsche Sperre
+    vrcDown = true; const n = reported.length;
+    await assert.rejects(post('acct_recheck'), /nicht erreichbar/);
+    assert.strictEqual(reported.length, n); vrcDown = false;
+    // Status bei VRChat weg → beim Auffrischen gesperrt + einmalige Warnung
+    vrcAge = '18+'; await post('acct_recheck'); await post('acct_nsfw', { on: '1' });
+    vrcAge = '';
+    const ac = app.account.load(); ac.account.age_checked = 1; app.account.store(ac);   // letzte Prüfung > 6 h her
     await app.account.refresh(true);
     assert.strictEqual(app.nsfw.access().unlocked, false);
     assert.ok(app.account.lost && /abgelaufen/.test(app.account.lost.title));
     // anderes VRChat-Konto am selben PC: Konto gilt nicht
-    age = '18+'; await post('acct_recheck'); await post('acct_nsfw', { on: '1' });
+    vrcAge = '18+'; await post('acct_recheck'); await post('acct_nsfw', { on: '1' });
     app.vrc.account = () => ({ vrc_id: 'usr_00000000-0000-4000-8000-0000000000bb', me: {} });
     assert.strictEqual(app.nsfw.access().unlocked, false, 'Konto gehört zu einer anderen VRChat-ID');
     app.vrc.account = () => ({ vrc_id: ME, me: {} });

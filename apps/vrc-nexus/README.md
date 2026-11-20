@@ -22,6 +22,11 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.1 – Easier account setup
+
+- 🪪 **Nexus account:** connecting works without extra setup on the website, and your status is now checked directly with VRChat for your own account – no profile settings needed.
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+
 ### New in 3.0.0 – Community, encrypted chat, heart rate & warning list
 
 - 🪪 **Nexus account:** one account for all online features, tied to your VRChat ID – no extra password. To verify, Nexus briefly writes a code into your VRChat bio and restores it afterwards. Online services are **opt-in**; without an account the app works as before. (Settings → Advanced)
