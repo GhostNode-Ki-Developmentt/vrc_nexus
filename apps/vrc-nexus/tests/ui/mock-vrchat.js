@@ -19,8 +19,11 @@ const friends = names.map((name, i) => ({
 const me = { id: ME, displayName: 'Test Nutzerin', username: 'test', status: 'active', statusDescription: 'Testdaten', currentAvatarThumbnailImageUrl: '', userIcon: '', tags: ['system_trust_veteran', 'system_trust_trusted'],
     friends: friends.map(f => f.id), onlineFriends: friends.slice(0, 3).map(f => f.id), activeFriends: [], offlineFriends: friends.slice(3).map(f => f.id), bio: '', bioLinks: [], location: 'offline', presence: {} };
 
-function route(req, url) {
+/** Testzustand: POST /__mock/set {"id","bio","age"} setzt Bio und ageVerificationStatus eines Profils */
+const extra = {};
+function route(req, url, body) {
     const p = url.pathname.replace(/^\/api\/1/, '');
+    if (p === '/__mock/set') { const j = JSON.parse(body || '{}'); extra[j.id] = Object.assign(extra[j.id] || {}, j); return [200, { ok: true }]; }
     if (p === '/auth/user') {
         const auth = req.headers.authorization || '';
         if (auth.startsWith('Basic ')) { const [, pw] = Buffer.from(auth.slice(6), 'base64').toString().split(':'); return pw === 'test' ? [200, me, true] : [401, { error: { message: 'Invalid Username/Email or Password' } }]; }
@@ -28,7 +31,13 @@ function route(req, url) {
     }
     if (p === '/auth/user/friends') return [200, url.searchParams.get('offline') === 'true' ? friends.filter(f => f.location === 'offline') : friends.filter(f => f.location !== 'offline')];
     let m;
-    if ((m = /^\/users\/(usr_[\w-]+)$/.exec(p))) { const u = friends.find(f => f.id === m[1]) || (m[1] === ME ? me : null); return u ? [200, u] : [404, { error: { message: 'Not found' } }]; }
+    if ((m = /^\/users\/(usr_[\w-]+)$/.exec(p))) {
+        const u = friends.find(f => f.id === m[1]) || (m[1] === ME ? me : null);
+        if (!u) return [404, { error: { message: 'Not found' } }];
+        if (req.method === 'PUT') { const j = JSON.parse(body || '{}'); if (j.bio !== undefined) { u.bio = j.bio; (extra[u.id] = extra[u.id] || {}).bio = j.bio; } return [200, u]; }
+        const x = extra[u.id] || {};
+        return [200, Object.assign({}, u, x.bio !== undefined ? { bio: x.bio } : {}, x.age !== undefined ? { ageVerificationStatus: x.age, ageVerified: x.age === '18+' } : {})];
+    }
     if (/^\/users\/[\w-]+\/groups/.test(p)) return [200, []];
     if (/^\/worlds\/wrld_/.test(p)) return [200, { id: WORLD, name: 'Testwelt', authorName: 'Mock', capacity: 32, imageUrl: '', thumbnailImageUrl: '' }];
     if (p === '/visits') return [200, 1234];
@@ -41,7 +50,7 @@ function start(port) {
         let body = '';
         req.on('data', c => { body += c; });
         req.on('end', () => {
-            const [code, json, login] = route(req, url);
+            const [code, json, login] = route(req, url, body);
             const h = { 'Content-Type': 'application/json' };
             if (login) h['Set-Cookie'] = 'auth=mock; Path=/; HttpOnly';
             res.writeHead(code, h);

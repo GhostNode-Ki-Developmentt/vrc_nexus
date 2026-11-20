@@ -711,3 +711,40 @@ Bitte einen Grund wählen.	Please choose a reason.	Choisis une raison.	理由を
 Die Warnliste gibt es nur mit Freischalt-Schlüssel (Einstellungen → 🔞 NSFW / Schlüssel).	The warning list requires an unlock key (Settings → 🔞 NSFW / key).	La liste d’alerte nécessite une clé (Paramètres → 🔞 NSFW / clé).	警告リストには解除キーが必要です（設定 → 🔞 NSFW / キー）。
 ⚠ Gewarnter Spieler kommt	⚠ Flagged player joins	⚠ Joueur signalé arrive	⚠ 警告対象プレイヤーが参加
 Grund	Reason	Raison	理由
+18+ neu prüfen	Re-check 18+	Revérifier 18+	18+を再確認
+Angemeldete Geräte	Signed-in devices	Appareils connectés	ログイン中のデバイス
+Auf diesem Gerät abmelden	Sign out on this device	Se déconnecter sur cet appareil	このデバイスでログアウト
+Code selbst eintragen	Enter the code myself	Saisir le code moi-même	自分でコードを入力
+Ein Konto für Community, Warnliste und NSFW – an deiner VRChat-ID, ohne eigenes Passwort. Online-Dienste sind freiwillig; ohne Konto funktioniert die App wie bisher.	One account for community, warning list and NSFW – tied to your VRChat ID, no extra password. Online services are optional; without an account the app works as before.	Un compte pour la communauté, la liste d’alerte et le NSFW – lié à ton ID VRChat, sans mot de passe. Les services en ligne sont facultatifs ; sans compte, l’appli fonctionne comme avant.	コミュニティ・警告リスト・NSFW用のアカウント – VRChat IDに紐づき、パスワード不要。オンラインサービスは任意で、アカウントなしでも今まで通り使えます。
+Für NSFW: In VRChat die Altersverifizierung (18+) abschließen und im Profil sichtbar machen, dann „Neu prüfen“. Der Status wird alle 7 Tage erneut geprüft.	For NSFW: complete age verification (18+) in VRChat and make it visible on your profile, then “Re-check”. The status is re-checked every 7 days.	Pour le NSFW : termine la vérification d’âge (18+) dans VRChat et rends-la visible sur ton profil, puis « Revérifier ». Le statut est revérifié tous les 7 jours.	NSFWには：VRChatで年齢確認（18+）を完了してプロフィールに表示し、「再確認」してください。状態は7日ごとに再確認されます。
+NSFW einschalten? Damit bestätigst du, volljährig zu sein. Inhalte bleiben getrennt und lassen sich jederzeit wieder ausschalten.	Turn on NSFW? You confirm you are an adult. Content stays separate and can be turned off at any time.	Activer le NSFW ? Tu confirmes être majeur·e. Le contenu reste séparé et peut être désactivé à tout moment.	NSFWをオンにしますか？成人であることを確認します。コンテンツは分けて表示され、いつでもオフにできます。
+NSFW-Inhalte und -Werkzeuge anzeigen (freiwillig, jederzeit abschaltbar)	Show NSFW content and tools (optional, can be turned off any time)	Afficher le contenu et les outils NSFW (facultatif, désactivable à tout moment)	NSFWコンテンツとツールを表示（任意、いつでもオフ可）
+Nexus-Konto	Nexus account	Compte Nexus	Nexusアカウント
+Nexus-Konto auf diesem Gerät abmelden? NSFW wird dabei gesperrt.	Sign out of the Nexus account on this device? NSFW will be locked.	Se déconnecter du compte Nexus sur cet appareil ? Le NSFW sera verrouillé.	このデバイスでNexusアカウントからログアウトしますか？NSFWはロックされます。
+Nexus-Konto verbinden	Connect Nexus account	Connecter le compte Nexus	Nexusアカウントを接続
+Prüfe …	Checking …	Vérification …	確認中 …
+Prüfen	Check	Vérifier	確認
+VRChat-Altersstatus	VRChat age status	Statut d’âge VRChat	VRChat年齢ステータス
+Zum Nachweis schreibt Nexus kurz einen Code in deine VRChat-Bio und stellt die Bio danach wieder her.	To verify, Nexus briefly writes a code into your VRChat bio and restores your bio afterwards.	Pour vérifier, Nexus écrit brièvement un code dans ta bio VRChat puis la restaure.	確認のため、NexusはVRChatのプロフィール文に一時的にコードを書き込み、その後元に戻します。
+abmelden	sign out	déconnecter	ログアウト
+an	on	activé	オン
+gültig bis	valid until	valable jusqu’au	有効期限
+in deine VRChat-Bio schreiben, dann:	write into your VRChat bio, then:	écris-le dans ta bio VRChat, puis :	VRChatのプロフィール文に書いてから：
+nicht verifiziert	not verified	non vérifié	未確認
+🪪 Nexus-Konto & 🔞 NSFW	🪪 Nexus account & 🔞 NSFW	🪪 Compte Nexus & 🔞 NSFW	🪪 Nexusアカウント & 🔞 NSFW
+🔑 Freischalt-Schlüssel (Supporter / Moderator)	🔑 Unlock key (supporter / moderator)	🔑 Clé (supporter / modérateur)	🔑 解除キー（サポーター / モデレーター）
+Rollen wie 💖 Supporter oder 🛡 Moderator – den Schlüssel bekommst du von der Besitzerin. Er gilt nur für dein VRChat-Konto. NSFW wird darüber nicht freigeschaltet.	Roles like 💖 supporter or 🛡 moderator – you get the key from the owner. It only works for your VRChat account. It does not unlock NSFW.	Rôles comme 💖 supporter ou 🛡 modérateur – la clé vient de la propriétaire. Elle ne vaut que pour ton compte VRChat. Elle ne déverrouille pas le NSFW.	💖 サポーターや 🛡 モデレーターなどの役割 – キーはオーナーから受け取ります。あなたのVRChatアカウント専用で、NSFWは解除されません。
+🔞 NSFW ist gesperrt	🔞 NSFW is locked	🔞 Le NSFW est verrouillé	🔞 NSFWはロック中
+NSFW gibt es nur mit „Verified 18+“: VRChat-Altersverifizierung abgeschlossen und im Profil sichtbar. Danach NSFW bewusst einschalten – jederzeit wieder ausschaltbar.	NSFW is only available with “Verified 18+”: VRChat age verification completed and visible on your profile. Then turn NSFW on deliberately – you can turn it off any time.	Le NSFW n’est disponible qu’avec « Verified 18+ » : vérification d’âge VRChat terminée et visible sur le profil. Active ensuite le NSFW volontairement – désactivable à tout moment.	NSFWは「Verified 18+」のみ：VRChatの年齢確認を完了しプロフィールに表示。その後NSFWを自分でオンに – いつでもオフにできます。
+Nexus-Konto nicht verbunden.	Nexus account not connected.	Compte Nexus non connecté.	Nexusアカウント未接続。
+Kein gültiger „Verified 18+“-Status (VRChat-Altersverifizierung sichtbar machen).	No valid “Verified 18+” status (make your VRChat age verification visible).	Pas de statut « Verified 18+ » valide (rends ta vérification d’âge VRChat visible).	有効な「Verified 18+」がありません（VRChatの年齢確認を表示してください）。
+NSFW ist ausgeschaltet.	NSFW is turned off.	Le NSFW est désactivé.	NSFWはオフです。
+💖 Supporter	💖 Supporter	💖 Supporter	💖 サポーター
+NSFW gibt es nur über Verified 18+ (Nexus-Konto), nicht per Schlüssel.	NSFW is only available via Verified 18+ (Nexus account), not via key.	Le NSFW n’est disponible que via Verified 18+ (compte Nexus), pas par clé.	NSFWはVerified 18+（Nexusアカウント）のみで、キーでは解除できません。
+Mindestens eine Rolle wählen (Supporter oder Moderator).	Choose at least one role (supporter or moderator).	Choisis au moins un rôle (supporter ou modérateur).	役割を1つ以上選んでください（サポーターまたはモデレーター）。
+🪪 Nexus-Konto verbunden.	🪪 Nexus account connected.	🪪 Compte Nexus connecté.	🪪 Nexusアカウントを接続しました。
+🔞 NSFW eingeschaltet.	🔞 NSFW turned on.	🔞 NSFW activé.	🔞 NSFWをオンにしました。
+NSFW ausgeschaltet.	NSFW turned off.	NSFW désactivé.	NSFWをオフにしました。
+✖ Kein sichtbarer 18+-Status bei VRChat.	✖ No visible 18+ status on VRChat.	✖ Aucun statut 18+ visible sur VRChat.	✖ VRChatに表示された18+ステータスがありません。
+Erst das Nexus-Konto verbinden.	Connect the Nexus account first.	Connecte d’abord le compte Nexus.	先にNexusアカウントを接続してください。
+Absender hat keine NSFW-Freigabe (Verified 18+).	Sender has no NSFW clearance (Verified 18+).	L’expéditeur n’a pas d’accès NSFW (Verified 18+).	送信者にNSFW許可（Verified 18+）がありません。

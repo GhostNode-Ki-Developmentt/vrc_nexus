@@ -39,7 +39,7 @@
         if (!box || !st) return;
         if (busy || (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea, input[type=number], select'))) return;
         const a = st.access;
-        if (!a.unlocked) { box.innerHTML = '<div class="vx-empty">🔒 Nicht freigeschaltet. Den Freischalt-Schlüssel unter Einstellungen → Erweitert eintragen.</div>'; return; }
+        if (!a.unlocked) { box.innerHTML = '<div class="nc-grid"><div class="nc-card"><h4>🔞 NSFW ist gesperrt</h4><p class="small">' + esc(a.reason || '') + '</p><p class="small muted">NSFW gibt es nur mit „Verified 18+“: VRChat-Altersverifizierung abgeschlossen und im Profil sichtbar. Danach NSFW bewusst einschalten – jederzeit wieder ausschaltbar.</p><div id="nsAcct"></div></div></div>'; if (window.NexusAccount) window.NexusAccount.render(box.querySelector('#nsAcct')); return; }
         const c = st.cfg || {}, t = st.toys, r = st.remote, has = f => a.features.includes(f);
         let h = '<div class="ns-top"><button type="button" class="btn ns-panic" data-ns="panic">🚨 PANIK</button>'
             + '<button type="button" class="btn ' + (st.private ? 'btn-gold' : '') + '" data-ns="private">🕶 Privat-Modus ' + (st.private ? 'AN' : 'aus') + '</button>'
@@ -250,13 +250,7 @@
         refreshAccess().then(render);
         clearInterval(tPoll); tPoll = setInterval(() => { if (box && !box.closest('[hidden]') && !document.hidden) refreshAccess(); }, 3000);
     }
-    function onSubmit(e) {
-        if (e.target.id !== 'nsIssue') return;
-        e.preventDefault();
-        const f = e.target, feats = ['nsfw'].concat(f.f_toys.checked ? ['toys'] : [], f.f_remote.checked ? ['remote'] : []);
-        api('nsfw_admin_issue', { uid: f.uid.value, name: f.name.value, days: f.days.value, note: f.note.value, features: feats.join(',') })
-            .then(d => { lastToken = d.token; st.issued = d.items; toast(d.msg); f.reset(); render(); UI.copy(d.token); }).catch(x => toast(x.message, true));
-    }
+    function onSubmit() { /* Schlüssel werden im 👑 Admin-Bereich erzeugt */ }
     if (window.NexusToyLinks) window.NexusToyLinks.bind(d => { if (st) st.toys = d; });
     window.NexusNsfw = { open, refresh: refreshAccess };
     setTimeout(refreshAccess, 1500);

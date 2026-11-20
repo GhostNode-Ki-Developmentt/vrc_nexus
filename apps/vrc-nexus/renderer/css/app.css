@@ -765,3 +765,4 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .wl-ap { border-left: 2px solid var(--accent-gold); padding: 6px 10px; margin: 6px 0; background: rgba(var(--gold-rgb), 0.06); }
 .wl-rep { margin: 6px 0; } .wl-rep .nc-row input[type=text] { flex: 1 1 140px; }
 #warnBox a, #adWarn a { color: var(--accent-cyan); text-decoration: none; } #warnBox a:hover, #adWarn a:hover { text-decoration: underline; }
+.acct-ok { color: var(--accent-green, #51e57e) !important; }

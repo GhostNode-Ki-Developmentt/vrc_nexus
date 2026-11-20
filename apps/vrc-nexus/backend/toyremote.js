@@ -201,8 +201,10 @@ class ToyRemote {
         if (!(age > -30000 && age < 60000)) throw new UserError('Befehl zu alt (Uhrzeit prüfen).');
         const nonce = str(m.n);
         if (!/^[0-9a-f]{16,40}$/.test(nonce) || this.seen.has(nonce)) throw new UserError('Befehl doppelt.');
-        const chk = this.app.nsfw.check(m.tok, from);
-        if (chk.error || !arr(chk.payload.f).includes('toys')) { this.note(who.name || from, '⛔ Schlüssel: ' + (chk.error || 'ohne Spielzeug-Freigabe')); throw new UserError('Schlüssel ungültig: ' + (chk.error || 'ohne Spielzeug-Freigabe')); }
+        // seit 3.0: Absender muss „Verified 18+“ mit NSFW an sein – geprüft über GhostNode (nicht mehr per NXK1)
+        let peerOk = self;
+        if (!self) { try { peerOk = await this.app.account.peer(from); } catch (e) { this.note(who.name || from, '⛔ ' + e.message); throw new UserError('Freigabe nicht prüfbar: ' + e.message); } }
+        if (!peerOk) { this.note(who.name || from, '⛔ ohne Verified 18+ / NSFW'); throw new UserError('Absender hat keine NSFW-Freigabe (Verified 18+).'); }
         this.seen.set(nonce, Date.now());
         if (this.seen.size > 2000) for (const [k, t] of this.seen) if (Date.now() - t > 120000) this.seen.delete(k);
         const name = who.name || from, cmd = str(m.c), a = m.a || {}, t = this.app.toys, cap = c.max / 100;
@@ -259,8 +261,7 @@ class ToyRemote {
         if (!me) throw new UserError('Erst bei VRChat anmelden.');
         if (!UIDRE.test(c.t_uid)) throw new UserError('Erst die User-ID des Partners eintragen.');
         const self = c.t_uid.toLowerCase() === me.toLowerCase();   // Selbsttest: immer direkt auf diesem PC
-        const tok = this.token();
-        if (!tok) throw new UserError(this.app.nsfw.isOwner() ? 'Als Besitzer erst unter 👑 Admin ein Schlüsselpaar haben.' : 'Kein Freischalt-Schlüssel gespeichert.');
+        const tok = this.token() || '';   // nur noch zur Kompatibilität mit älteren Empfängern – geprüft wird über GhostNode (Verified 18+)
         const m = { v: 1, from: me, to: c.t_uid, tok, ts: Date.now(), n: crypto.randomBytes(10).toString('hex'), c: cmd, a: a || {} };
         this.ctrl.at = Date.now(); this.ctrl.sentAt = Date.now(); this.ctrl.err = '';
         if (cmd === 'set') this.ctrl.lv = Math.max(0, Math.min(1, Number(a && a.lv) || 0));

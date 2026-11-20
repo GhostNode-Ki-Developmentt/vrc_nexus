@@ -2,8 +2,11 @@
 /*
  * 🔞 NSFW-Bereich & Admin:
  *  - Besitzer: nur ein VRChat-Konto (im Code steht nur der SHA-256 der User-ID) bekommt Admin & Dashboard-Funktionen.
- *  - Freischalt-Schlüssel: der Besitzer erzeugt sie (Ed25519-unterschrieben), jeder Schlüssel gilt nur für EINE VRChat-User-ID.
+ *  - Freischalt-Schlüssel (NXK1): der Besitzer erzeugt sie (Ed25519-unterschrieben), jeder Schlüssel gilt nur für EINE VRChat-User-ID.
  *    Andere Apps prüfen die Unterschrift mit dem öffentlichen Schlüssel des Besitzers (TRUSTED) – fälschen oder weitergeben geht nicht.
+ *    Seit 3.0 NUR noch für Rollen (Supporter, Moderator) – NXK1 schaltet KEIN NSFW mehr frei.
+ *  - NSFW-Freigabe (seit 3.0): nur mit „Verified 18+“ (VRChat-Altersstatus, serverseitig geprüft über das Nexus-Konto, account.js)
+ *    UND bewusst eingeschaltetem NSFW-Schalter. Das gilt für alle, auch für den Besitzer.
  *  - Werkzeuge: Panik-Knopf, Privat-Modus, SFW/NSFW-Avatarpaare, Grenzen-Karte, 18+-Instanz.
  * Inhalte (Bilder/Texte) bringt die App bewusst nicht mit – nur Werkzeuge.
  */
@@ -16,9 +19,10 @@ const OWNER_HASH = '23e799d90cf62600203499e3f4d2712bb1a016e71dac64718b2c7d8267b2
 const TRUSTED = [
     'MCowBQYDK2VwAyEAg3Ejm0ec/StudDQryGwNGNr55UKQT3EQYvdPhL3dvo4=',   // Besitzer, erzeugt am 15.11.2026
 ];
-const FEATURES = { nsfw: 'NSFW-Werkzeuge', toys: 'Spielzeug-Steuerung (Intiface)', remote: 'Handy-Fernbedienung', mod: 'Moderator' };
-/** Rechte, die den NSFW-Bereich freischalten (Moderator allein schaltet NSFW NICHT frei) */
-const NSFW_FEATURES = ['nsfw', 'toys', 'remote'];
+/** Bereiche, die mit der NSFW-Freigabe (Verified 18+ + Schalter) gemeinsam frei werden */
+const FEATURES = { nsfw: 'NSFW-Werkzeuge', toys: 'Spielzeug-Steuerung (Intiface)', remote: 'Handy-Fernbedienung' };
+/** Rollen, die ein NXK1-Schlüssel vergeben kann (keine Altersfreigabe!) */
+const ROLES = { supporter: 'Supporter', mod: 'Moderator' };
 const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 const hashId = id => crypto.createHash('sha256').update(str(id)).digest('hex');
@@ -73,16 +77,27 @@ class Nsfw {
     revoked() { try { return JSON.parse(this.app.db.setting('nsfw_revoked', '[]')) || []; } catch (e) { return []; } }
     myToken() { try { return this.crypt.decrypt(this.app.db.setting('nsfw_token', '')) || ''; } catch (e) { return ''; } }
     /** Was ist für das eingeloggte Konto freigeschaltet? */
+    /** Rollen aus dem NXK1-Schlüssel (Supporter/Moderator) */
+    roles() {
+        const uid = this.myId();
+        if (!uid) return { key: false, roles: [], reason: '' };
+        if (this.isOwner(uid)) return { key: true, roles: Object.keys(ROLES), exp: 0 };
+        const t = this.myToken();
+        if (!t) return { key: false, roles: [], reason: '' };
+        const r = this.check(t, uid);
+        if (r.error) return { key: false, roles: [], reason: r.error };
+        return { key: true, roles: arr(r.payload.f).filter(f => ROLES[f]), exp: int(r.payload.exp), note: str(r.payload.n) };
+    }
+    /** Was ist für das eingeloggte Konto freigeschaltet? NSFW nur mit Verified 18+ + Schalter (account.js) */
     access() {
         const uid = this.myId();
-        if (!uid) return { owner: false, unlocked: false, features: [], reason: 'Nicht bei VRChat angemeldet.' };
-        if (this.isOwner(uid)) return { owner: true, unlocked: true, key: true, mod: true, features: Object.keys(FEATURES), exp: 0 };
-        const t = this.myToken();
-        if (!t) return { owner: false, unlocked: false, features: [], reason: '' };
-        const r = this.check(t, uid);
-        if (r.error) return { owner: false, unlocked: false, features: [], reason: r.error };
-        const features = arr(r.payload.f).filter(f => FEATURES[f]);
-        return { owner: false, unlocked: features.some(f => NSFW_FEATURES.includes(f)), key: true, mod: features.includes('mod'), features, exp: int(r.payload.exp), note: str(r.payload.n) };
+        if (!uid) return { owner: false, unlocked: false, features: [], roles: [], reason: 'Nicht bei VRChat angemeldet.' };
+        const owner = this.isOwner(uid), k = this.roles();
+        const age = this.app.account ? this.app.account.age() : { connected: false, verified: false, nsfw_on: false, age_until: 0 };
+        const unlocked = age.verified && age.nsfw_on;
+        const reason = unlocked ? '' : !age.connected ? 'Nexus-Konto nicht verbunden.' : !age.verified ? 'Kein gültiger „Verified 18+“-Status (VRChat-Altersverifizierung sichtbar machen).' : 'NSFW ist ausgeschaltet.';
+        return { owner, unlocked, features: unlocked ? Object.keys(FEATURES) : [], roles: k.roles, key: k.key, mod: k.roles.includes('mod'), supporter: k.roles.includes('supporter'),
+            verified18: age.verified, nsfw_on: age.nsfw_on, connected: age.connected, exp: age.age_until, reason, key_reason: k.reason || '' };
     }
     /** Schlüssel für Online-Dienste (Warnliste): eigener Freischalt-Schlüssel – die Besitzerin unterschreibt sich einen kurzlebigen selbst */
     serviceToken() {
@@ -107,8 +122,9 @@ class Nsfw {
         let name = cut(str(input.name).trim(), 60);
         if (!name) { try { const u = await this.app.tools.call('GET', '/users/' + encodeURIComponent(uid)); name = str(u && u.displayName); } catch (e) { /* ohne Namen */ } }
         const days = int(input.days);
-        const f = arr(String(input.features || 'nsfw,toys,remote').split(',')).map(x => x.trim()).filter(x => FEATURES[x]);
-        const payload = { v: 1, id: crypto.randomBytes(6).toString('hex'), uid, f: f.length ? f : ['nsfw'], iat: now(), exp: days > 0 ? now() + days * 86400 : 0, n: cut(str(input.note), 80) };
+        const f = arr(String(input.features || 'supporter').split(',')).map(x => x.trim()).filter(x => ROLES[x]);
+        if (!f.length) throw new UserError('Mindestens eine Rolle wählen (Supporter oder Moderator).');
+        const payload = { v: 1, id: crypto.randomBytes(6).toString('hex'), uid, f, iat: now(), exp: days > 0 ? now() + days * 86400 : 0, n: cut(str(input.note), 80) };
         const token = this.sign(payload);
         const l = this.issued(); l.unshift({ id: payload.id, uid, name, f: payload.f, iat: payload.iat, exp: payload.exp, note: payload.n, revoked: false });
         this.app.db.setSetting('nsfw_issued', JSON.stringify(l.slice(0, 500)));
@@ -173,10 +189,10 @@ class Nsfw {
 
     state() {
         const a = this.access(), c = this.cfg();
-        const out = { access: a, private: this.private, features: FEATURES };
+        const out = { access: a, private: this.private, features: FEATURES, roles: ROLES };
+        if (a.owner) { const k = this.ownerKey(); Object.assign(out, { owner_key: k ? k.pub : '', key_known: !!(k && TRUSTED.includes(k.pub)), issued: this.issued() }); }
         if (!a.unlocked) return out;
         Object.assign(out, { cfg: c, current_avatar: str(this.acc() && this.acc().me && this.acc().me.currentAvatar), toys: this.app.toys ? this.app.toys.status() : null, tremote: this.app.toyremote ? this.app.toyremote.status() : null, remote: this.app.remote ? this.app.remote.status() : null });
-        if (a.owner) { const k = this.ownerKey(); Object.assign(out, { owner_key: k ? k.pub : '', key_known: !!(k && TRUSTED.includes(k.pub)), issued: this.issued() }); }
         return out;
     }
     async action(act, input) {
@@ -190,7 +206,7 @@ class Nsfw {
                 const r = this.check(t, uid);
                 if (r.error) throw new UserError(r.error);
                 this.app.db.setSetting('nsfw_token', this.crypt.encrypt(t));
-                return Object.assign(this.state(), { msg: '🔓 Freigeschaltet.' });
+                return Object.assign(this.state(), { msg: '🔑 Schlüssel gespeichert: ' + (arr(r.payload.f).filter(f => ROLES[f]).map(f => ROLES[f]).join(', ') || 'keine Rolle') + '.' });
             }
         }
         // ab hier nur freigeschaltet
@@ -229,4 +245,4 @@ class Nsfw {
     }
 }
 
-module.exports = { Nsfw, OWNER_HASH, TRUSTED, FEATURES, hashId };
+module.exports = { Nsfw, OWNER_HASH, TRUSTED, FEATURES, ROLES, hashId };

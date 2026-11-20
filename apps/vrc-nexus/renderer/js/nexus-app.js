@@ -631,7 +631,7 @@
     document.addEventListener('submit', e => {
         if (e.target.id !== 'nsUnlock') return;
         e.preventDefault();
-        api('nsfw_unlock', { token: e.target.token.value }).then(d => { toast(d.msg); e.target.reset(); const m = $('#nsUnlockMsg'); if (m) m.textContent = d.access.unlocked ? '✔ ' + (d.access.features || []).join(', ') : ''; if (window.NexusNsfw) window.NexusNsfw.refresh(); })
+        api('nsfw_unlock', { token: e.target.token.value }).then(d => { toast(d.msg); e.target.reset(); const m = $('#nsUnlockMsg'); if (m) m.textContent = d.access.key ? '✔ ' + (d.access.roles || []).join(', ') : ''; if (window.NexusNsfw) window.NexusNsfw.refresh(); })
             .catch(x => { toast(x.message, true); const m = $('#nsUnlockMsg'); if (m) m.textContent = '⚠ ' + x.message; });
     });
     document.addEventListener('click', e => { if (e.target.id === 'nsLock') api('nsfw_unlock', { token: '' }).then(d => { toast(d.msg); if (window.NexusNsfw) window.NexusNsfw.refresh(); }); });
@@ -672,7 +672,8 @@
             link: '<div class="set-sec"><h3>Geräte-Token</h3><div id="linkBox"><div class="vx-loading">Lade …</div></div></div>',
             notify: '<div class="set-sec"><h3>Test</h3><button type="button" class="btn btn-sm" data-act="test">🔔 Test-Benachrichtigung (alle eingeschalteten Wege)</button></div>',
             int: '<div class="set-sec"><h3>Status</h3><p class="vx-small">Lokale Schnittstelle: ' + esc(d.status.api) + ' · Discord: ' + esc(d.status.rpc) + '</p></div>',
-            adv: '<div class="set-sec"><h3>🔑 Freischalt-Schlüssel</h3><p class="nx-hint">Zusätzliche Bereiche (z. B. ❤️ NSFW / ERP) – den Schlüssel bekommst du vom Besitzer. Er gilt nur für dein VRChat-Konto.</p>'
+            adv: '<div class="set-sec"><h3>🪪 Nexus-Konto &amp; 🔞 NSFW</h3><div id="acctBox"></div></div>'
+                + '<div class="set-sec"><h3>🔑 Freischalt-Schlüssel (Supporter / Moderator)</h3><p class="nx-hint">Rollen wie 💖 Supporter oder 🛡 Moderator – den Schlüssel bekommst du von der Besitzerin. Er gilt nur für dein VRChat-Konto. NSFW wird darüber nicht freigeschaltet.</p>'
                 + '<form class="nx-row" id="nsUnlock"><input type="password" name="token" placeholder="NXK1.…" autocomplete="off" style="flex:1"><button class="btn btn-sm btn-gold">🔓 Freischalten</button><button type="button" class="btn btn-sm" id="nsLock">Entfernen</button></form><div class="nx-hint" id="nsUnlockMsg"></div></div>'
                 + '<div class="set-sec"><h3>Daten &amp; Wartung</h3><div class="nx-row"><button type="button" class="btn btn-sm" data-act="cache">🧹 Profil-Zwischenspeicher leeren</button><button type="button" class="btn btn-sm" data-act="vacuum">🗜 Datenbank optimieren</button>'
                 + '<a class="btn btn-sm" href="nexus.php?tools_export=settings">⬇ Einstellungen exportieren</a><label class="btn btn-sm">⬆ Importieren<input type="file" accept=".json" id="setImport" hidden></label>'
@@ -689,6 +690,7 @@
         if (setTab === 'tr' && window.NexusTr) window.NexusTr.panel($('#trPanel'));
         if (setTab === 'link') { linkPanel(); if (!MOBILE) backupPanel(); }
         if (setTab === 'system') dbPanel();
+        if (setTab === 'adv' && window.NexusAccount && $('#acctBox')) window.NexusAccount.render($('#acctBox'));
         if (setTab === 'about' && window.NexusAbout) window.NexusAbout.open();
         if (setTab === 'vr' && !MOBILE && window.NexusClient && window.NexusClient.cfgInto) window.NexusClient.cfgInto($('#setGameCfg'));
     }

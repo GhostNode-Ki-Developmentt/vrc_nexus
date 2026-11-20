@@ -11,6 +11,8 @@ const { LogParser, LogWatcher, oscEncode, oscDecode, GameLog } = require('../bac
 const { formToObject } = require('../backend/app');
 
 const tests = [];
+/** Test: Nexus-Konto mit „Verified 18+“ und NSFW-Schalter (wie vom Server bestätigt) */
+const grant18 = (app, on = true) => app.account.store({ token: 'a'.repeat(64), at: Date.now(), account: { vrc_id: app.account.myId(), name: 'Test', verified18: true, age_status: '18+', age_until: Math.floor(Date.now() / 1000) + 86400, nsfw_on: on } });
 const test = (name, fn) => tests.push([name, fn]);
 
 test('Ort zerlegen', () => {
@@ -1303,13 +1305,16 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
     const own = await mk(OWNER), fr = await mk(FRIEND), ot = await mk(OTHER);
     // Besitzer
     let st = await own.post({ act: 'nsfw_state' }, {});
+    assert.ok(st.access.owner && !st.access.unlocked, 'seit 3.0: auch der Besitzer braucht Verified 18+');
+    grant18(own);
+    st = await own.post({ act: 'nsfw_state' }, {});
     assert.ok(st.access.owner && st.access.unlocked);
     assert.strictEqual((await fr.post({ act: 'nsfw_state' }, {})).access.unlocked, false);
     await assert.rejects(fr.post({ act: 'nsfw_admin_keypair' }, {}), /Besitzer/);
     await assert.rejects(fr.post({ act: 'backup_status' }, {}), /Besitzer/, 'Dashboard/Cloud nur für den Besitzer');
     const kp = await own.post({ act: 'nsfw_admin_keypair' }, {});
     assert.ok(kp.pub && kp.owner_key === kp.pub);
-    const iss = await own.post({ act: 'nsfw_admin_issue', uid: 'https://vrchat.com/home/user/' + FRIEND, name: 'Foxy', days: '30', features: 'nsfw,toys,remote' }, {});
+    const iss = await own.post({ act: 'nsfw_admin_issue', uid: 'https://vrchat.com/home/user/' + FRIEND, name: 'Foxy', days: '30', features: 'supporter,mod' }, {});
     assert.ok(/^NXK1\./.test(iss.token) && iss.items[0].uid === FRIEND);
     // andere Apps kennen den öffentlichen Schlüssel (kommt in TRUSTED)
     fr.nsfw.trusted.push(kp.pub); ot.nsfw.trusted.push(kp.pub);
@@ -1318,6 +1323,11 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
     await assert.rejects(ot.post({ act: 'nsfw_unlock', token: forged }, {}), /Unterschrift/, 'umschreiben geht nicht');
     await assert.rejects(fr.post({ act: 'nsfw_panic' }, {}), /Nicht freigeschaltet/);
     st = await fr.post({ act: 'nsfw_unlock', token: iss.token }, {});
+    assert.ok(st.access.key && st.access.mod && !st.access.unlocked, 'NXK1 schaltet kein NSFW mehr frei');
+    grant18(fr, false);
+    assert.ok(!(await fr.post({ act: 'nsfw_state' }, {})).access.unlocked, 'Verified 18+ ohne Schalter: gesperrt');
+    grant18(fr);
+    st = await fr.post({ act: 'nsfw_state' }, {});
     assert.ok(st.access.unlocked && st.access.features.includes('toys'));
     // Werkzeuge
     const A1 = 'avtr_' + '1'.repeat(8) + '-1111-2222-3333-444444444444', A2 = 'avtr_' + '2'.repeat(8) + '-1111-2222-3333-444444444444', SAFE = 'avtr_' + '3'.repeat(8) + '-1111-2222-3333-444444444444';
@@ -1346,7 +1356,7 @@ test('2.9.0: Besitzer-Sperre, Freischalt-Schlüssel (an User-ID gebunden), NSFW-
     assert.strictEqual(fr.toys.cfg().url, 'ws://127.0.0.1:12345', '0.0.0.0 aus Intiface → 127.0.0.1');
     assert.ok(/umgestellt/.test(st.msg));
     // anderer Client schon verbunden: TCP offen, WebSocket wird sofort geschlossen
-    const fr2 = await mk(FRIEND); fr2.nsfw.trusted.push(kp.pub); await fr2.post({ act: 'nsfw_unlock', token: iss.token }, {});
+    const fr2 = await mk(FRIEND); fr2.nsfw.trusted.push(kp.pub); await fr2.post({ act: 'nsfw_unlock', token: iss.token }, {}); grant18(fr2);
     fr2.toys.probeHook = () => true;
     fr2.toys.WebSocket = class { constructor() { setTimeout(() => this.onclose && this.onclose({}), 5); } close() {} };
     await assert.rejects(fr2.post({ act: 'toys_connect' }, {}), /anderes Programm/);
@@ -1426,6 +1436,7 @@ test('2.9.2: Spielzeug-Verknüpfungen (SPS-Plugs/Sockets/Touch, Ein-/Ausschließ
     app.game.osc.stopListen();
     let uid = OWNER;
     app.vrc.account = () => ({ vrc_id: uid, me: {}, display_name: 'X' });
+    grant18(app);
     assert.ok(/data-tab="admin"/.test(app.page()) && /nexus-admin\.js/.test(app.page()), 'Besitzer bekommt Admin');
     uid = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444';
     const pg = app.page();
@@ -1466,6 +1477,7 @@ test('2.11.0: NSFW-Spielereien – Muster (alle 8), Dauer läuft ab, Überraschu
     const app = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-211-')) } });
     app.game.osc.stopListen();
     app.vrc.account = () => ({ vrc_id: OWNER, me: {}, display_name: 'X' });
+    grant18(app);
     const t = app.toys, sent = [], chat = [];
     app.game.osc.chatbox = async (x) => { chat.push(x); };
     await assert.rejects(app.post({ act: 'toys_pattern', id: 'welle' }, {}), /verbinden/);
@@ -1530,8 +1542,9 @@ test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP)
     const mk = async uid => { const db = await openDatabase(null); const a = new NexusApp({ db, crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-212-')) } }); a.game.osc.stopListen(); a.vrc.account = () => ({ vrc_id: uid, me: {}, display_name: uid === OWN ? 'Besitzer' : 'Partner' }); return a; };
     const O = await mk(OWN), P = await mk(PART);
     const pub = O.nsfw.makeOwnerKey(); P.nsfw.trusted.push(pub);
-    const { token } = await O.nsfw.issue({ uid: PART, name: 'Partner', features: 'nsfw,toys' });
-    await P.post({ act: 'nsfw_unlock', token }, {});
+    grant18(O); grant18(P);
+    const peers = new Set([PART, OWN]);   // GhostNode-Abfrage „ist Verified 18+ mit NSFW an?“ (Mock)
+    O.account.peer = P.account.peer = async uid => peers.has(uid);
     const t = O.toys, sent = []; t.ws = { readyState: 1 }; t.req = async m => { sent.push(m); return {}; };
     t.devices.set(0, { index: 0, name: 'Testgerät', motors: [{ index: 0, type: 'Vibrate', steps: 100 }] });
     const last = () => { const l = sent.filter(m => m.ScalarCmd); return l.length ? l[l.length - 1].ScalarCmd.Scalars[0].Scalar : null; };
@@ -1548,10 +1561,13 @@ test('2.12.0: Spielzeug-Fernsteuerung über User-ID – Heimnetz (Suche per UDP)
     assert.strictEqual(last(), 0.6, 'Höchststärke 60 %');
     assert.strictEqual(O.toyremote.status().active.name, 'Partner');
     // Doppelt, falsche ID, kaputter Schlüssel
-    const m = { v: 1, from: PART, to: OWN, tok: token, ts: Date.now(), n: 'ab'.repeat(10), c: 'stop', a: {} };
+    const m = { v: 1, from: PART, to: OWN, tok: '', ts: Date.now(), n: 'ab'.repeat(10), c: 'stop', a: {} };
     await O.toyremote.receive(m, 'lan');
     await assert.rejects(O.toyremote.receive(m, 'lan'), /doppelt/);
-    await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: 'cd'.repeat(10), tok: token.slice(0, -4) + 'AAAA' }), 'lan'), /Schlüssel ungültig/);
+    // Absender ohne Verified 18+ / NSFW (GhostNode sagt nein) → abgelehnt, egal welcher Schlüssel mitkommt
+    peers.delete(PART);
+    await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: 'cd'.repeat(10), tok: 'NXK1.x.y' }), 'lan'), /keine NSFW-Freigabe/);
+    peers.add(PART);
     await assert.rejects(O.toyremote.receive(Object.assign({}, m, { n: 'ef'.repeat(10), ts: Date.now() - 120000 }), 'lan'), /zu alt/);
     // ohne Lebenszeichen → aus
     await P.post({ act: 'tremote_send', c: 'set', lv: '0.5' }, {});
@@ -1609,6 +1625,9 @@ test('2.13.0: 🔞 NSFW-Changelog getrennt – öffentlich „***“, in der App
     let b = app.about({ n: 5 }).changelog[0].body;
     assert.ok(/🔞 \*\*\*/.test(b) && !/Geheim/.test(b), 'gesperrt: nur ***');
     uid = OWN;
+    b = app.about({ n: 5 }).changelog[0].body;
+    assert.ok(/🔞 \*\*\*/.test(b), 'auch Besitzer ohne Verified 18+: nur ***');
+    grant18(app);
     b = app.about({ n: 5 }).changelog[0].body;
     assert.ok(/Geheime Neuerung/.test(b) && /🔞 NSFW – Geheim/.test(b) && !/\*\*\* \(nur/.test(b) && /Öffentlich/.test(b), 'freigeschaltet: NSFW statt ***');
     require.cache[cl].exports = keep[0]; require.cache[cn].exports = keep[1];
@@ -1788,6 +1807,68 @@ test('3.0.0: Warnliste über GhostNode (Mock) – Schlüssel nötig, Kennzeichen
     assert.ok(app2.warn.badges()[BAD]);
     app.tools.stop(); app2.tools.stop();
     delete process.env.NEXUS_WARN_BASE;
+});
+
+test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+ nur vom Server, NSFW-Schalter, Entzug sperrt NSFW', async () => {
+    const http = require('http');
+    const { NexusApp } = require('../backend/app');
+    const ME = 'usr_00000000-0000-4000-8000-0000000000aa';
+    // Mock von nexusacct.php + VRChat-Bio
+    let bio = 'Meine Bio', code = '', age = '', nsfw = false, tokenOk = true;
+    const acc = () => ({ vrc_id: ME, name: 'Tester', verified18: age === '18+', age_status: age || 'hidden', age_until: age === '18+' ? Math.floor(Date.now() / 1000) + 7 * 86400 : 0, nsfw_on: age === '18+' && nsfw });
+    const srv = http.createServer((req, res) => { let b = ''; req.on('data', c => { b += c; }); req.on('end', () => {
+        const a = new URL(req.url, 'http://x').searchParams.get('a'), j = JSON.parse(b || '{}'), out = (o, c) => { res.writeHead(c || 200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
+        if (a === 'code') { code = 'NX-ABC123'; return out({ code, expires: 0 }); }
+        if (a === 'verify') return bio.includes(code) ? out({ token: 'f'.repeat(64), account: acc() }) : out({ error: 'Der Code steht (noch) nicht in deiner VRChat-Bio.' }, 400);
+        if (!tokenOk || j.token !== 'f'.repeat(64)) return out({ error: 'Nicht angemeldet.' }, 401);
+        if (a === 'me' || a === 'recheck') return out({ account: acc(), devices: [] });
+        if (a === 'nsfw') { if (j.on && age !== '18+') return out({ error: 'NSFW lässt sich nur mit „Verified 18+“ einschalten.' }, 400); nsfw = !!j.on; return out({ account: acc() }); }
+        out({ ok: true });
+    }); });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_ACCT_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    app.vrc.account = () => ({ vrc_id: ME, me: {}, display_name: 'Tester' });
+    const bios = [];
+    app.tools.call = async (m, p, q, b) => { if (m === 'GET') return { bio }; if (m === 'PUT') { bio = b.bio; bios.push(bio); } return {}; };
+    const post = (act, d) => app.post(Object.assign({ act }, d || {}), {});
+    assert.strictEqual(app.nsfw.access().unlocked, false);
+    assert.strictEqual(app.nsfw.access().reason, 'Nexus-Konto nicht verbunden.');
+    let r = await post('acct_connect', { auto: '1' });
+    assert.ok(r.connected && r.account.vrc_id === ME);
+    assert.deepStrictEqual(bios, ['Meine Bio NX-ABC123', 'Meine Bio'], 'Code kurz in die Bio, danach wiederhergestellt');
+    assert.ok(db.setting('nexus_acct', '').startsWith('E:'), 'Token verschlüsselt gespeichert');
+    // ohne 18+: NSFW nicht einschaltbar
+    await assert.rejects(post('acct_nsfw', { on: '1' }), /Verified 18\+/);
+    assert.strictEqual(app.nsfw.access().unlocked, false);
+    // VRChat zeigt 18+ → neu prüfen → einschalten
+    age = '18+';
+    r = await post('acct_recheck');
+    assert.ok(r.age.verified && !r.age.nsfw_on);
+    assert.strictEqual(app.nsfw.access().unlocked, false, 'NSFW bleibt aus, bis man es bewusst einschaltet');
+    await post('acct_nsfw', { on: '1' });
+    assert.ok(app.nsfw.access().unlocked && app.nsfw.access().features.includes('toys'));
+    // lokal abgelaufene Freigabe sperrt ohne Server
+    const o = app.account.load(); o.account.age_until = 1; app.account.store(o);
+    assert.strictEqual(app.nsfw.access().unlocked, false);
+    // Server entzieht (Status nicht mehr sichtbar) → beim Auffrischen gesperrt
+    age = '';
+    await app.account.refresh(true);
+    assert.strictEqual(app.nsfw.access().unlocked, false);
+    // anderes VRChat-Konto am selben PC: Konto gilt nicht
+    age = '18+'; await post('acct_recheck'); await post('acct_nsfw', { on: '1' });
+    app.vrc.account = () => ({ vrc_id: 'usr_00000000-0000-4000-8000-0000000000bb', me: {} });
+    assert.strictEqual(app.nsfw.access().unlocked, false, 'Konto gehört zu einer anderen VRChat-ID');
+    app.vrc.account = () => ({ vrc_id: ME, me: {} });
+    // Token widerrufen (401) → Konto auf dem Gerät gelöscht
+    tokenOk = false;
+    await app.account.refresh(true);
+    assert.strictEqual(app.account.current(), null);
+    assert.strictEqual(app.nsfw.access().unlocked, false);
+    app.tools.stop(); srv.close();
+    delete process.env.NEXUS_ACCT_BASE;
 });
 
 (async () => {
