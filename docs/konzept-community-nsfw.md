@@ -3,7 +3,8 @@
 Stand 20.11.2026 · Grundlage: `docs/spec-community-nsfw-overhaul.md` · Status: **Schritt 1 umgesetzt (Konto, Verified 18+, NSFW-Tor)**
 
 **Entscheidungen der Besitzerin (20.11.2026):** E2EE = eigene Umsetzung der Signal-Spezifikationen · NSFW nur im eigenen Feed · 18+-Prüfung alle 7 Tage · sofort umstellen (NXK1 schaltet ab sofort kein NSFW mehr frei, auch nicht für die Besitzerin – ihre Admin-Rechte bleiben) · allgemeines Recht „🛡 Moderator“ (NXK1 `mod`).
-Noch offen: Navigation (8.2), Info bei Verlust (8.4), NSFW-Moderationswerkzeuge (8.5), Dienst-Konto auf der Webseite einrichten.
+Weitere Entscheidungen (20.11.2026): Navigation = **ein Menüpunkt „Community“** mit Unterpunkten (Feed, Profil, Chat, Gruppen; „🔞 NSFW-Feed“ nur bei Verified 18+ mit NSFW an) · Info bei Verlust = **Vorwarnung**: 1 Tag vor Ablauf automatisch neu prüfen, nur bei Problemen warnen · Moderation = **alle Werkzeuge**: Melden + Warteschlange, als NSFW umstufen, stummschalten/sperren, NSFW-Medien vorab freigeben · Webseite: direkt in `main`.
+Noch einzurichten: Dienst-Konto auf der Webseite (Admin → Nexus-Konten).
 
 ## 1. Bestandsaufnahme (Analyse)
 

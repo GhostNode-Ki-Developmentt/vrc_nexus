@@ -10,7 +10,7 @@
 const { str, int, now, UserError, sleep } = require('./util');
 
 const BASE = () => (process.env.NEXUS_ACCT_BASE || process.env.NEXUS_RELAY_BASE || 'https://privat.sylvanclub.eu').replace(/\/+$/, '');
-const REFRESH = 6 * 3600 * 1000;
+const REFRESH = 3 * 3600 * 1000;
 
 class Account {
     constructor(app, crypt) {
@@ -60,12 +60,26 @@ class Account {
         if (!force && Date.now() - this.at < REFRESH) return o.account;
         if (this.busy) return this.busy;
         this.busy = (async () => {
-            try { const d = await this.call('me', {}, o.token); this.save(d.account); this.devices = d.devices || []; this.error = ''; }
+            const before = this.age().verified;
+            try {
+                let d = await this.call('me', {}, o.token);
+                // Vorwarnung: weniger als 1 Tag gültig → jetzt schon neu prüfen lassen (statt am Ablauftag plötzlich gesperrt)
+                if (d.account.verified18 && int(d.account.age_until) - now() < 86400) d = await this.call('recheck', {}, o.token).catch(() => d);
+                this.save(d.account); this.devices = d.devices || this.devices || []; this.error = '';
+                if (before && !d.account.verified18) this.warnLost(d.account);
+            }
             catch (e) { this.error = e.message; }
             finally { this.at = Date.now(); this.busy = null; }
             const c = this.current(); return c ? c.account : null;
         })();
         return this.busy;
+    }
+    /** nur bei Problemen melden: Freigabe ist weg */
+    warnLost(a) {
+        const title = '🔞 „Verified 18+“ ist abgelaufen', body = 'VRChat zeigt keinen sichtbaren 18+-Status mehr (' + (str(a.age_status) || 'unbekannt') + '). NSFW ist gesperrt – Status in VRChat sichtbar machen und „18+ neu prüfen“.';
+        this.lost = { at: Date.now(), title, body };
+        const t = this.app.tools;
+        if (t) { t.log.unshift({ ts: now(), title, body }); t.log = t.log.slice(0, 50); if (t.host && t.host.notify) t.host.notify(title, body, false); }
     }
     start() {
         this.refresh(true).catch(() => {});
@@ -119,7 +133,7 @@ class Account {
     }
     status() {
         const o = this.current();
-        return { connected: !!o, account: o ? o.account : null, age: this.age(), devices: this.devices || [], error: this.error, pending: this.pending || null, server: BASE() };
+        return { connected: !!o, account: o ? o.account : null, age: this.age(), devices: this.devices || [], error: this.error, pending: this.pending || null, lost: this.lost || null, server: BASE() };
     }
     async action(act, input) {
         const o = () => { const c = this.current(); if (!c) throw new UserError('Erst das Nexus-Konto verbinden.'); return c; };

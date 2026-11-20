@@ -1853,10 +1853,12 @@ test('3.0.0: Nexus-Konto – Bio-Code (Bio wird wiederhergestellt), Verified 18+
     // lokal abgelaufene Freigabe sperrt ohne Server
     const o = app.account.load(); o.account.age_until = 1; app.account.store(o);
     assert.strictEqual(app.nsfw.access().unlocked, false);
-    // Server entzieht (Status nicht mehr sichtbar) → beim Auffrischen gesperrt
+    // Server entzieht (Status nicht mehr sichtbar) → beim Auffrischen gesperrt + einmalige Warnung
+    age = '18+'; await app.account.refresh(true);
     age = '';
     await app.account.refresh(true);
     assert.strictEqual(app.nsfw.access().unlocked, false);
+    assert.ok(app.account.lost && /abgelaufen/.test(app.account.lost.title));
     // anderes VRChat-Konto am selben PC: Konto gilt nicht
     age = '18+'; await post('acct_recheck'); await post('acct_nsfw', { on: '1' });
     app.vrc.account = () => ({ vrc_id: 'usr_00000000-0000-4000-8000-0000000000bb', me: {} });
