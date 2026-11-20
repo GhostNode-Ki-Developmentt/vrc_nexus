@@ -568,6 +568,18 @@ body.nav-side.fside-on .vx-fside { display: flex; flex-direction: column; positi
 .fs-head small { color: var(--text-muted); font-weight: 400; }
 .fs-row { display: flex; align-items: center; gap: 10px; width: 100%; background: transparent; border: 0; border-radius: 6px; padding: 5px 6px; color: var(--text-main); font: inherit; text-align: left; cursor: pointer; }
 .fs-row:hover { background: rgba(var(--accent-rgb), 0.08); }
+/* 3.1 Freunde-Leiste: lange Listen flüssig, „gerade online“, Sortierung, Beitreten */
+.fs-row { content-visibility: auto; contain-intrinsic-size: auto 44px; }
+.fs-new .fs-img { box-shadow: 0 0 0 2px var(--accent-gold); }
+.fs-new .fs-txt b::after { content: " ✨"; }
+.fs-bar { display: flex; gap: 6px; align-items: center; margin: 8px 10px; }
+.fs-bar .fs-q { flex: 1; margin: 0; min-width: 0; }
+.fs-bar select { width: auto; padding: 5px 6px; font-size: 0.78rem; }
+.fs-more { display: block; margin: 4px 6px 8px; font-size: 0.8rem; }
+.fs-inst { position: relative; }
+.fs-join { margin-left: auto; flex: 0 0 auto; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); border-radius: 4px; opacity: 0; transition: opacity 0.15s; }
+.fs-inst:hover .fs-join, .fs-join:focus { opacity: 1; }
+.fs-join:hover { background: rgba(var(--accent-rgb), 0.15); }
 .fs-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; display: grid; place-items: center; font-size: 1rem; }
 .fs-thumb { width: 54px; height: 34px; border-radius: 4px; object-fit: cover; flex: 0 0 auto; display: grid; place-items: center; }
 .fs-txt { display: flex; flex-direction: column; min-width: 0; }

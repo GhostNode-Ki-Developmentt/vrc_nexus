@@ -1,11 +1,20 @@
-/* VRC Nexus – rechte Leiste (bei Menü links): Freunde nach Status (Ich, Favoriten, Im Spiel, Online, Offline) und Gruppen mit offenen Instanzen */
+/* VRC Nexus – rechte Leiste (bei Menü links): Freunde nach Status (Ich, Gerade online, Favoriten, Im Spiel, Online, Offline) und Gruppen mit offenen Instanzen.
+ * 3.1: Rechtsklick-Menü (Profil, Beitreten, Einladen, Einladung anfragen, ID kopieren), „gerade online gekommen“ (10 min), Sortierung,
+ *      Gruppen-Instanzen direkt betreten, lange Listen schrittweise (+ content-visibility, damit hunderte Zeilen flüssig bleiben). */
 (function () {
     const UI = window.NexusUI;
     if (!UI) return;
     const esc = UI.esc, store = UI.store;
     const get = (k, d) => { try { const v = JSON.parse(localStorage.getItem('vrcx-' + k)); return v === null ? d : v; } catch (e) { return d; } };
     const set = (k, v) => { try { localStorage.setItem('vrcx-' + k, JSON.stringify(v)); } catch (e) { /* egal */ } };
-    let st = null, tab = get('sideTab', 'friends'), open = get('sideOpen', { me: true, fav: true, online: true, active: false, offline: false }), q = '';
+    let st = null, tab = get('sideTab', 'friends'), open = Object.assign({ fresh: true }, get('sideOpen', { me: true, fav: true, online: true, active: false, offline: false })), q = '';
+    let sort = get('sideSort', 'name'), more = {};
+    const T = s => (window.t ? window.t(s) : s);
+    const FRESH = 600;                                     // „gerade online gekommen“: Statuswechsel vor höchstens 10 min
+    const nowS = () => Math.floor(Date.now() / 1000);
+    const fresh = f => f.state !== 'offline' && f.since && nowS() - f.since < FRESH;
+    const SORTS = { name: (a, b) => a.name.localeCompare(b.name), recent: (a, b) => (b.since || 0) - (a.since || 0) || a.name.localeCompare(b.name),
+        world: (a, b) => ((a.loc && a.loc.world_name) || '~').localeCompare((b.loc && b.loc.world_name) || '~') || a.name.localeCompare(b.name) };
     let groups = null, gAt = 0, gLoading = false, gErr = '';
     let box = null;
 
@@ -16,17 +25,21 @@
         box.id = 'friendSide';
         document.body.appendChild(box);
         box.addEventListener('click', onClick);
+        box.addEventListener('contextmenu', onContext);
+        box.addEventListener('change', e => { if (e.target.id === 'fsSort') { sort = e.target.value; set('sideSort', sort); renderList(); } });
         box.addEventListener('input', e => { if (e.target.id === 'fsQ') { q = e.target.value.trim().toLowerCase(); renderList(); } });
         return box;
     }
     const sub = f => f.state === 'online' ? (f.loc && f.loc.kind === 'world' ? (f.loc.world_name || 'Welt') + (f.loc.access ? ' · ' + f.loc.access : '') : f.loc && f.loc.kind === 'private' ? 'Private Welt' : 'Im Spiel')
         : f.state === 'active' ? (f.status_desc || 'Website / App') : (f.last_login ? 'zuletzt ' + UI.ago(Math.floor(Date.parse(f.last_login) / 1000)) : 'offline');
-    const row = f => '<button type="button" class="fs-row fs-' + esc(f.state) + '" data-user="' + esc(f.id) + '">' + UI.img(f.image, 'fs-img', f.name)
+    const row = f => '<button type="button" class="fs-row fs-' + esc(f.state) + (fresh(f) ? ' fs-new' : '') + '" data-user="' + esc(f.id) + '"' + (fresh(f) ? ' title="' + esc(T('gerade online gekommen')) + '"' : '') + '>' + UI.img(f.image, 'fs-img', f.name)
         + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(f.state === 'offline' ? 'offline' : f.status) + ' <span style="color:' + esc(UI.tcol(f)) + '">' + esc(f.name) + '</span>' + (window.NexusWarn ? window.NexusWarn.mark(f.id) : '') + '</b><small data-no-i18n>' + esc(sub(f)) + '</small></span></button>';
     function section(key, title, list, count) {
-        const on = !!open[key];
+        const on = !!open[key], max = more[key] || 150;
+        list = list.slice().sort(SORTS[sort] || SORTS.name);
         return '<div class="fs-sec"><button type="button" class="fs-head" data-sec="' + key + '"><i>' + (on ? '▾' : '▸') + '</i> ' + title + ' <small>— ' + (count === undefined ? list.length : count) + '</small></button>'
-            + (on ? '<div class="fs-list">' + (list.length ? list.slice(0, key === 'offline' ? 300 : 500).map(row).join('') : '<div class="fs-empty">–</div>') + '</div>' : '') + '</div>';
+            + (on ? '<div class="fs-list">' + (list.length ? list.slice(0, max).map(row).join('') : '<div class="fs-empty">–</div>')
+                + (list.length > max ? '<button type="button" class="nc-link fs-more" data-more="' + key + '">＋ ' + (list.length - max) + ' ' + esc(T('weitere')) + '</button>' : '') + '</div>' : '') + '</div>';
     }
     function renderList() {
         const el = box && box.querySelector('#fsBody');
@@ -36,6 +49,7 @@
         const me = st.me || {};
         el.innerHTML = '<div class="fs-sec"><button type="button" class="fs-head" data-sec="me"><i>' + (open.me ? '▾' : '▸') + '</i> Ich</button>'
             + (open.me ? '<button type="button" class="fs-row fs-me" data-tab-go="account">' + UI.img(me.image, 'fs-img', me.name) + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(me.status) + ' ' + esc(me.name || '') + '</b><small data-no-i18n>' + esc(me.status_desc || '') + '</small></span></button>' : '') + '</div>'
+            + (fr.some(fresh) ? section('fresh', '✨ ' + T('Gerade online'), fr.filter(fresh)) : '')
             + section('fav', 'Favoriten', fr.filter(f => f.fav_group))
             + section('online', 'Im Spiel', fr.filter(f => f.state === 'online'))
             + section('active', 'Online', fr.filter(f => f.state === 'active'))
@@ -49,7 +63,8 @@
         const keys = Object.keys(by).filter(k => !q || by[k].name.toLowerCase().includes(q) || by[k].items.some(i => i.world.toLowerCase().includes(q)));
         el.innerHTML = keys.length ? keys.map(k => '<div class="fs-sec"><div class="fs-gname" data-no-i18n>🛡 ' + esc(by[k].name) + '</div>'
             + by[k].items.filter(i => !q || by[k].name.toLowerCase().includes(q) || i.world.toLowerCase().includes(q)).map(i => '<button type="button" class="fs-row fs-inst" data-inst="' + esc(i.loc.location) + '">' + UI.img(i.thumb, 'fs-thumb', '')
-                + '<span class="fs-txt"><b data-no-i18n>' + esc(i.world || 'Welt') + '</b><small>👥 ' + i.users + (i.capacity ? ' / ' + i.capacity : '') + (i.loc.region ? ' · ' + esc(i.loc.region) : '') + '</small></span></button>').join('') + '</div>').join('')
+                + '<span class="fs-txt"><b data-no-i18n>' + esc(i.world || 'Welt') + '</b><small>👥 ' + i.users + (i.capacity ? ' / ' + i.capacity : '') + (i.loc.region ? ' · ' + esc(i.loc.region) : '') + '</small></span>'
+                + '<span class="fs-join" role="button" tabindex="0" data-join="' + esc(i.loc.location) + '" title="' + esc(T('Selbst-Einladung – im Spiel annehmen')) + '">' + esc(T('Beitreten')) + '</span></button>').join('') + '</div>').join('')
             : '<div class="fs-empty">Gerade hat keine deiner Gruppen eine offene Instanz.</div>';
         el.insertAdjacentHTML('beforeend', '<div class="fs-foot"><button type="button" class="nc-link" data-greload>⟳ neu laden</button> <span class="muted small">' + (gAt ? UI.ago(Math.floor(gAt / 1000)) : '') + '</span></div>');
     }
@@ -65,7 +80,9 @@
         const gCount = groups ? new Set(groups.map(i => i.group_id)).size : null;
         box.innerHTML = '<div class="vx-grip" data-grip="fside" title="Breite ziehen"></div><div class="fs-tabs"><button type="button" class="vx-fstoggle" data-fsmini title="Leiste ein-/ausklappen">' + (document.body.classList.contains('fside-mini') ? '« Freunde' : '»') + '</button><button type="button" class="' + (tab === 'friends' ? 'on' : '') + '" data-fstab="friends">Freunde <small>(' + inGame + '/' + (st.friends || []).length + ')</small></button>'
             + '<button type="button" class="' + (tab === 'groups' ? 'on' : '') + '" data-fstab="groups">Gruppen' + (gCount !== null ? ' <small>(' + gCount + ')</small>' : '') + '</button></div>'
-            + '<input type="search" id="fsQ" class="fs-q" placeholder="Suchen …" value="' + esc(q) + '"><div id="fsBody"></div>';
+            + '<div class="fs-bar"><input type="search" id="fsQ" class="fs-q" placeholder="Suchen …" value="' + esc(q) + '">'
+            + (tab === 'friends' ? '<select id="fsSort" title="' + esc(T('Sortierung')) + '">' + [['name', 'A–Z'], ['recent', T('zuletzt aktiv')], ['world', T('nach Welt')]].map(([k, l]) => '<option value="' + k + '"' + (k === sort ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select>' : '')
+            + '</div><div id="fsBody"></div>';
         renderList();
     }
     function onClick(e) {
@@ -75,12 +92,33 @@
         const s = e.target.closest('[data-sec]');
         if (s) { open[s.dataset.sec] = !open[s.dataset.sec]; set('sideOpen', open); return renderList(); }
         if (e.target.closest('[data-greload]')) { groups = null; return loadGroups(); }
+        const m = e.target.closest('[data-more]');
+        if (m) { more[m.dataset.more] = (more[m.dataset.more] || 150) + 300; return renderList(); }
+        const j = e.target.closest('[data-join]');
+        if (j) { e.stopPropagation(); return join(j.dataset.join); }
         const u = e.target.closest('[data-user]');
         if (u) { e.preventDefault(); e.stopPropagation(); return UI.openUser(u.dataset.user); }
         const i = e.target.closest('[data-inst]');
         if (i) return UI.openInstance(i.dataset.inst);
         const g = e.target.closest('[data-tab-go]');
         if (g) return UI.tab(g.dataset.tabGo);
+    }
+    const join = loc => UI.api('invite_self', { location: loc }).then(r => UI.toast(r.msg)).catch(x => UI.toast('⚠ ' + x.message, true));
+    const act = (a, data) => UI.api(a, data).then(r => UI.toast(r.msg || '✔')).catch(x => UI.toast('⚠ ' + x.message, true));
+    /** Rechtsklick auf einen Freund */
+    function friendMenu(el, f) {
+        const loc = f.loc && f.loc.kind === 'world' ? f.loc.location : '';
+        const items = [{ head: f.name }, { label: '👤 ' + T('Profil öffnen'), fn: () => UI.openUser(f.id) }];
+        if (loc) items.push({ label: '🚪 ' + T('Beitreten') + (f.loc.world_name ? ' – ' + f.loc.world_name : ''), fn: () => join(loc) }, { label: '🔎 ' + T('Instanz ansehen'), fn: () => UI.openInstance(loc) });
+        if (f.state !== 'offline') items.push({ label: '🙋 ' + T('Einladung anfragen'), fn: () => act('request_invite', { id: f.id }) });
+        items.push({ label: '📨 ' + T('In meine Instanz einladen'), fn: () => act('invite', { id: f.id }) }, '-', { label: '⧉ ' + T('ID kopieren'), fn: () => UI.copy(f.id) });
+        UI.popMenu(el, items);
+    }
+    function onContext(e) {
+        const u = e.target.closest('[data-user]');
+        if (u && st) { const f = (st.friends || []).find(x => x.id === u.dataset.user); if (f) { e.preventDefault(); return friendMenu(u, f); } }
+        const i = e.target.closest('[data-inst]');
+        if (i) { e.preventDefault(); UI.popMenu(i, [{ label: '🚪 ' + T('Beitreten'), fn: () => join(i.dataset.inst) }, { label: '🔎 ' + T('Instanz ansehen'), fn: () => UI.openInstance(i.dataset.inst) }]); }
     }
     // Gruppen-Instanzen im Hintergrund alle 2 Minuten auffrischen, solange der Reiter offen ist
     setInterval(() => { if (tab === 'groups' && document.body.classList.contains('fside-on') && !document.hidden) loadGroups(); }, 120000);

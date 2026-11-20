@@ -889,3 +889,14 @@ Freund wählen …	Choose a friend …	Choisir un ami …	フレンドを選択 
 Zeigt den aktuellen Wert und öffnet beim Antippen den passenden Bereich.	Shows the current value and opens the matching section when tapped.	Affiche la valeur actuelle et ouvre la section correspondante d’un toucher.	現在の値を表示し、タップで該当する画面を開きます。
 Variablen: {world} {players} {friends} {notifs} {avatar} {time}	Variables: {world} {players} {friends} {notifs} {avatar} {time}	Variables : {world} {players} {friends} {notifs} {avatar} {time}	変数: {world} {players} {friends} {notifs} {avatar} {time}
 Inhalte	Content	Contenus	コンテンツ
+gerade online gekommen	just came online	vient de se connecter	今オンラインになりました
+weitere	more	de plus	件 さらに表示
+Gerade online	Just online	Tout juste en ligne	今オンライン
+Selbst-Einladung – im Spiel annehmen	Self-invite – accept it in game	Auto-invitation – à accepter en jeu	セルフ招待 – ゲーム内で承認
+Sortierung	Sort order	Tri	並び順
+zuletzt aktiv	recently active	activité récente	最近のアクティブ
+nach Welt	by world	par monde	ワールド別
+Profil öffnen	Open profile	Ouvrir le profil	プロフィールを開く
+Instanz ansehen	View instance	Voir l’instance	インスタンスを見る
+In meine Instanz einladen	Invite to my instance	Inviter dans mon instance	自分のインスタンスに招待
+ID kopieren	Copy ID	Copier l’ID	IDをコピー
