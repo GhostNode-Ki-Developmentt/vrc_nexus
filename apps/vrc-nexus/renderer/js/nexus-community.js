@@ -117,8 +117,10 @@
     function p18Html(p) {
         const P = window.NexusProfile18;
         if (!P) return '';
-        if (p.nsfw_facts === undefined) return p.own && acct && acct.age && acct.age.verified ? card('🔞 ' + esc(T('18+-Profil')), '<p class="small">' + esc(T('Schalte oben rechts NSFW ein, um dein 18+-Profil zu bearbeiten.')) + '</p>', 'cm-p18') : '';
-        const canEdit = p.own && me && me.nsfw;   // ohne eingeschaltetes NSFW speichert der Server den 18+-Teil nicht
+        const nsfwOn = !!((me && me.nsfw) || (acct && acct.age && acct.age.nsfw_on));
+        // eigenes Profil ohne 18+-Teil vom Server: NSFW aus – oder die Webseite ist noch nicht auf dem Stand von 3.1.1
+        if (p.nsfw_facts === undefined) return p.own && acct && acct.age && acct.age.verified ? card('🔞 ' + esc(T('18+-Profil')), '<p class="small">' + esc(T(nsfwOn ? 'Die GhostNode-Webseite kennt das 18+-Profil noch nicht – sie muss erst aktualisiert werden.' : 'Schalte oben rechts NSFW ein, um dein 18+-Profil zu bearbeiten.')) + '</p>', 'cm-p18') : '';
+        const canEdit = p.own && nsfwOn;   // ohne eingeschaltetes NSFW speichert der Server den 18+-Teil nicht
         if (canEdit && p18Edit) return card('🔞 ' + esc(T('18+-Profil bearbeiten')), P.nsfwEditor(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
         if (p.own && !canEdit) return card('🔞 ' + esc(T('18+-Profil')), '<p class="small">' + esc(T('Schalte oben rechts NSFW ein, um dein 18+-Profil zu bearbeiten.')) + '</p>' + P.nsfwView(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
         return card('🔞 ' + esc(T('18+-Profil')) + (canEdit ? '<button type="button" class="btn btn-sm" data-p18e="1" style="margin-left:auto">✎ ' + esc(T('Bearbeiten')) + '</button>' : ''), P.nsfwView(p.nsfw_facts, p.nsfw_bio), 'cm-p18');
