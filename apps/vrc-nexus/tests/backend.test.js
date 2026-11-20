@@ -1661,6 +1661,68 @@ test('2.10.2 Handy-crypto kann alle Hashes, die das Backend nutzt', () => {
     for (const a of algs) for (const n of [0, 3, 55, 56, 64, 200]) { const b = nc.randomBytes(n); assert.strictEqual(sc.createHash(a).update(b).digest('hex'), nc.createHash(a).update(b).digest('hex'), a + ' / ' + n); }
 });
 
+test('3.0.0: Puls – gemeinsame Quelle (OSC, HypeRate-Mock), Avatar-Parameter, Verlauf, Platzhalter, Stream Deck, HUD', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { WebSocketServer } = require('ws');
+    const db = await openDatabase(null);
+    const app = new NexusApp({ db, crypt: { encrypt: s => 'enc:' + s, decrypt: s => s.replace(/^enc:/, '') }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const sent = [];
+    app.game.osc.send = async (a, v) => { sent.push([a, v]); };
+    const post = (act, d) => app.post(Object.assign({ act }, d || {}), {});
+    let r = await post('hr_get');
+    assert.strictEqual(r.cfg.source, 'off'); assert.strictEqual(r.bpm, 0);
+    await assert.rejects(post('hr_save', { source: 'quatsch' }), /Quelle/);
+    // OSC/Smartwatch: Parameter „HR“ kommt herein (Name tolerant), nichts wird zurückgeschickt (Schleife)
+    await post('hr_save', { source: 'osc', osc_in: 'hr, HeartRate' });
+    for (const f of app.game.osc.taps) f('/avatar/parameters/Heart_Rate', [77]);
+    for (const f of app.game.osc.taps) f('/avatar/parameters/HR', [81]);
+    r = await post('hr_get');
+    assert.strictEqual(r.bpm, 81); assert.ok(r.active); assert.strictEqual(r.from, 'osc');
+    assert.ok(!sent.length, 'bei OSC-Quelle darf nichts zurückgehen');
+    assert.strictEqual(app.game.fill('{puls} bpm'), '81 bpm');
+    for (const f of app.game.osc.taps) f('/avatar/parameters/HR', [0.4]);   // Float-Variante 0…1
+    assert.strictEqual(app.heart.bpm, 102);
+    // HypeRate-Mock (Phoenix-Kanal)
+    const wss = new WebSocketServer({ port: 0 });
+    let joined = '', token = '';
+    wss.on('connection', (ws, req) => {
+        token = new URL(req.url, 'http://x').searchParams.get('token');
+        ws.on('message', m => { const j = JSON.parse(String(m)); if (j.event === 'phx_join') { joined = j.topic; ws.send(JSON.stringify({ topic: j.topic, event: 'phx_reply', payload: { status: 'ok' }, ref: j.ref })); setTimeout(() => ws.send(JSON.stringify({ topic: j.topic, event: 'hr_update', payload: { hr: 95 } })), 30); } });
+    });
+    await new Promise(res => wss.on('listening', res));
+    process.env.NEXUS_HYPERATE_WS = 'ws://127.0.0.1:' + wss.address().port;
+    await assert.rejects(post('hr_save', { hyperate_id: 'nicht gültig!' }), /HypeRate/);
+    await assert.rejects(post('hr_hyperate_key', { token: 'x' }), /HypeRate/);
+    await post('hr_hyperate_key', { token: 'test-hyperate-key-123' });
+    assert.ok(db.setting('heart_hyperate', '').startsWith('enc:'), 'Schlüssel nicht verschlüsselt');
+    await post('hr_save', { source: 'hyperate', hyperate_id: 'https://app.hyperate.io/ab12', min: 60, max: 160, param: 'HeartRate' });
+    for (let i = 0; i < 50 && app.heart.bpm !== 95; i++) await U.sleep(20);
+    assert.strictEqual(joined, 'hr:ab12'); assert.strictEqual(token, 'test-hyperate-key-123');
+    assert.strictEqual(app.heart.bpm, 95);
+    const got = Object.fromEntries(sent.map(([a, v]) => [a.replace('/avatar/parameters/', ''), v]));
+    assert.strictEqual(got.HR, 95); assert.strictEqual(got.isHRActive, true); assert.strictEqual(got.tensHR, 9); assert.strictEqual(got.onesHR, 5);
+    assert.strictEqual(got.HRPercent.float, 0.35); assert.strictEqual(got.HeartRate, 95);
+    // Verlauf, Werte für Startseite, Stream Deck und SteamVR-HUD
+    r = await post('hr_get');
+    assert.ok(r.hist.length >= 1 && r.stats.max >= 95);
+    assert.strictEqual(app.home.data().heart.bpm, 95);
+    assert.strictEqual(app.tools.apiState().heart.bpm, 95);
+    app.settings.save({ 'vr.overlay_hud_items': 'puls,zeit' });
+    assert.ok(app.hudState().items.some(i => i.key === 'puls' && i.value === '95'));
+    // Chatbox-Modul nutzt dieselbe Quelle
+    await post('cm_save', { mod: 'heart', mod_on: '1' });
+    r = await post('cm_get', { refresh: '1' });
+    assert.strictEqual(r.values.puls, '95'); assert.strictEqual(r.hr_source, 'hyperate');
+    // weg → „aus“ an den Avatar
+    app.heart.at = Date.now() - 60000; sent.length = 0; await app.heart.refresh();
+    assert.ok(sent.some(([a, v]) => a.endsWith('/isHRActive') && v === false));
+    assert.strictEqual(app.game.fill('[{puls}]'), '[]');
+    await post('hr_save', { source: 'off' });
+    app.heart.stop(); app.chatmods.stop(); app.tools.stop(); wss.close();
+    delete process.env.NEXUS_HYPERATE_WS;
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

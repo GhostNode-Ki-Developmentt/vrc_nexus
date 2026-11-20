@@ -750,3 +750,15 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .nc-subdrop .chip { text-align: left; white-space: nowrap; }
 .vx-me { position: relative; } .vx-logout { margin-left: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; font-size: 0.95rem; }
 .vx-logout:hover { color: #ff5555; border-color: #ff5555; background: rgba(255, 85, 85, 0.1); }
+/* 3.0 Puls */
+.hr-box { display: flex; flex-direction: column; gap: 10px; max-width: 880px; }
+.hr-head { display: grid; grid-template-columns: auto auto 1fr; gap: 16px; align-items: center; padding: 10px 14px; border: 1px solid var(--border-color); background: rgba(var(--panel-rgb), 0.7); }
+.hr-big, .hm-hr { display: flex; align-items: baseline; gap: 6px; } .hr-big b { font-size: 2.4rem; } .hm-hr b { font-size: 1.8rem; } .hr-big small, .hm-hr small { color: var(--text-muted); }
+.hm-hr { flex-wrap: wrap; } .hm-hr .muted { flex-basis: 100%; }
+.hr-heart { display: inline-block; } .hr-big.on .hr-heart, .hm-hr.on .hr-heart { animation: hrBeat 0.9s ease-in-out infinite; }
+@keyframes hrBeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .hr-heart { animation: none !important; } }
+.hr-kpi { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; }
+.hr-spark { width: 100%; height: 54px; color: #ff5c8a; display: block; } .hr-spark.empty { height: auto; }
+.hr-src { display: flex; flex-wrap: wrap; gap: 6px; } .hr-h { margin: 6px 0 0; font-size: 0.85rem; color: var(--accent-cyan); }
+@media (max-width: 640px) { .hr-head { grid-template-columns: 1fr; } }

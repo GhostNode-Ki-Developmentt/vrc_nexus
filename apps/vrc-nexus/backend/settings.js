@@ -126,7 +126,7 @@ const FIELDS = [
     ['vr.overlay_gaze', 'vr', 'SteamVR-Overlay', 'bool', true, 'Nur bedienbar, wenn ich draufschaue', 'Sonst ist das Fenster halb durchsichtig und der Laser geht an VRChat – so bleibt VRChat bedienbar, während das Overlay offen ist.'],
     ['vr.overlay_hud', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'bool', false, 'Zweites Fenster mit Infos & Untertiteln', 'Nur zum Ablesen (nicht bedienbar). Läuft mit dem SteamVR-Overlay oben.'],
     ['vr.overlay_hud_place', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'select', 'wrist', 'Platz', '', [['wrist', 'neben dem Arm-Fenster'], ['head', 'unten im Blickfeld (wie Untertitel)']]],
-    ['vr.overlay_hud_items', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'text', 'zeit,welt,spieler,dauer,musik,freunde', 'Infos', 'Kommagetrennt: zeit, welt, spieler, dauer, musik, freunde, avatar, region – leer = nur Untertitel'],
+    ['vr.overlay_hud_items', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'text', 'zeit,welt,spieler,dauer,musik,freunde', 'Infos', 'Kommagetrennt: zeit, welt, spieler, dauer, musik, freunde, avatar, region, puls – leer = nur Untertitel'],
     ['vr.overlay_hud_subs', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'bool', true, 'Untertitel zeigen', 'Eigene Sprache und der Übersetzer „VRChat → Text“ (Spiel & OSC → Übersetzer).'],
     ['vr.overlay_hud_width', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'number', 28, 'Breite (cm)', '', [10, 150]],
     ['vr.overlay_hud_alpha', 'vr', 'SteamVR-HUD (Infos & Untertitel)', 'number', 90, 'Deckkraft (%)', '', [10, 100]],

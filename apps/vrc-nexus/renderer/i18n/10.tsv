@@ -605,3 +605,43 @@ Geräte neu einlesen	Reload devices	Recharger les appareils	デバイスを再�
 Abmelden	Log out	Se déconnecter	ログアウト
 🚪 Abmelden	🚪 Log out	🚪 Se déconnecter	🚪 ログアウト
 Von VRChat abmelden? Freunde, Verlauf und Notizen bleiben auf diesem Gerät gespeichert	Log out of VRChat? Friends, history and notes stay saved on this device	Se déconnecter de VRChat ? Amis, historique et notes restent enregistrés sur cet appareil	VRChatからログアウトしますか？フレンド・履歴・メモはこの端末に保存されたままです
+💓 Puls	💓 Heart rate	💓 Fréquence cardiaque	💓 心拍
+Noch keine Kurve	No graph yet	Pas encore de courbe	まだグラフがありません
+letzte 10 Minuten	last 10 minutes	10 dernières minutes	直近10分
+⏸ Aus	⏸ Off	⏸ Désactivé	⏸ オフ
+💗 Pulsoid	💗 Pulsoid	💗 Pulsoid	💗 Pulsoid
+💜 HypeRate	💜 HypeRate	💜 HypeRate	💜 HypeRate
+⌚ OSC / Smartwatch	⌚ OSC / smartwatch	⌚ OSC / montre connectée	⌚ OSC / スマートウォッチ
+HypeRate-ID	HypeRate ID	ID HypeRate	HypeRate ID
+HypeRate-API-Schlüssel	HypeRate API key	Clé API HypeRate	HypeRate APIキー
+Eingehende Parameter	Incoming parameters	Paramètres entrants	受信パラメーター
+An den Avatar senden	Send to avatar	Envoyer à l’avatar	アバターに送信
+Avatar-Parameter senden	Send avatar parameters	Envoyer les paramètres d’avatar	アバターパラメーターを送信
+Eigener Name	Custom name	Nom personnalisé	カスタム名
+Bereich (bpm)	Range (bpm)	Plage (bpm)	範囲（bpm）
+keine Quelle	no source	aucune source	ソースなし
+Puls →	Heart rate →	Fréquence cardiaque →	心拍 →
+💓 Puls einrichten →	💓 Set up heart rate →	💓 Configurer la fréquence cardiaque →	💓 心拍を設定 →
+Live-Puls mit Kurve der letzten 10 Minuten	Live heart rate with a graph of the last 10 minutes	Fréquence cardiaque en direct avec courbe des 10 dernières minutes	直近10分のグラフ付きライブ心拍
+Noch keine Puls-Quelle eingerichtet.	No heart rate source set up yet.	Aucune source de fréquence cardiaque configurée.	心拍ソースがまだ設定されていません。
+•••••• gespeichert – neu eingeben zum Ändern	•••••• saved – enter again to change	•••••• enregistré – saisir à nouveau pour modifier	•••••• 保存済み – 変更するには再入力
+Token von pulsoid.net → Integrationen	Token from pulsoid.net → Integrations	Jeton sur pulsoid.net → Intégrations	pulsoid.net → 連携 のトークン
+z. B. a1b2c3 (aus deinem Widget-Link)	e.g. a1b2c3 (from your widget link)	ex. a1b2c3 (depuis ton lien de widget)	例：a1b2c3（ウィジェットのリンクから）
+Schlüssel von hyperate.io (Entwickler)	Key from hyperate.io (developers)	Clé sur hyperate.io (développeurs)	hyperate.io（開発者）のキー
+Für Smartwatch-Apps, die den Puls schon als Avatar-Parameter an VRChat schicken. Groß/Klein und Sonderzeichen sind egal; Float 0…1 wird als 0…255 gelesen.	For smartwatch apps that already send your heart rate to VRChat as an avatar parameter. Case and special characters don’t matter; a float 0…1 is read as 0…255.	Pour les applis de montre qui envoient déjà la fréquence cardiaque à VRChat comme paramètre d’avatar. Majuscules et caractères spéciaux sans importance ; un float 0…1 est lu comme 0…255.	心拍をアバターパラメーターとしてVRChatに送るスマートウォッチアプリ向け。大文字小文字や記号は無視されます。0…1のfloatは0…255として読み取ります。
+Gesendet werden HR, HRPercent, isHRActive, isHRConnected, onesHR, tensHR, hundredsHR und der eigene Name (Int + Float) – passt zu gängigen Puls-Anzeigen auf Avataren.	Sends HR, HRPercent, isHRActive, isHRConnected, onesHR, tensHR, hundredsHR and your custom name (int + float) – works with common heart rate displays on avatars.	Envoie HR, HRPercent, isHRActive, isHRConnected, onesHR, tensHR, hundredsHR et ton nom personnalisé (int + float) – compatible avec les affichages cardiaques courants sur les avatars.	HR、HRPercent、isHRActive、isHRConnected、onesHR、tensHR、hundredsHR とカスタム名（int + float）を送信 – アバターの一般的な心拍表示に対応。
+Platzhalter für Chatbox, Rotator, Makros und Stream Deck:	Placeholders for chatbox, rotator, macros and Stream Deck:	Variables pour chatbox, rotateur, macros et Stream Deck :	チャットボックス・ローテーター・マクロ・Stream Deck用のプレースホルダー：
+SteamVR-HUD: „puls“ unter Einstellungen → VR → Infos.	SteamVR HUD: “puls” under Settings → VR → Info.	HUD SteamVR : « puls » dans Paramètres → VR → Infos.	SteamVR HUD：設定 → VR → 情報 に「puls」。
+Die Puls-Quelle (Pulsoid, HypeRate oder OSC/Smartwatch) und die Avatar-Parameter stellst du an einer Stelle ein.	You set up the heart rate source (Pulsoid, HypeRate or OSC/smartwatch) and the avatar parameters in one place.	Tu configures la source cardiaque (Pulsoid, HypeRate ou OSC/montre) et les paramètres d’avatar au même endroit.	心拍ソース（Pulsoid、HypeRate、OSC/スマートウォッチ）とアバターパラメーターは1か所で設定します。
+Dein Puls in der Chatbox – Quelle (Pulsoid, HypeRate oder OSC/Smartwatch) unter Spiel & OSC → 💓 Puls.	Your heart rate in the chatbox – source (Pulsoid, HypeRate or OSC/smartwatch) under Game & OSC → 💓 Heart rate.	Ta fréquence cardiaque dans la chatbox – source (Pulsoid, HypeRate ou OSC/montre) dans Jeu & OSC → 💓 Fréquence cardiaque.	チャットボックスに心拍を表示 – ソース（Pulsoid、HypeRate、OSC/スマートウォッチ）は ゲーム＆OSC → 💓 心拍 で設定。
+Kein Pulsoid-Token	No Pulsoid token	Aucun jeton Pulsoid	Pulsoidトークンなし
+Pulsoid: noch kein Messwert	Pulsoid: no reading yet	Pulsoid : pas encore de mesure	Pulsoid：まだ測定値がありません
+Pulsoid: kein aktueller Messwert	Pulsoid: no current reading	Pulsoid : pas de mesure récente	Pulsoid：最新の測定値がありません
+Pulsoid nicht erreichbar	Pulsoid unreachable	Pulsoid injoignable	Pulsoidに接続できません
+HypeRate-ID fehlt	HypeRate ID missing	ID HypeRate manquant	HypeRate IDがありません
+HypeRate-API-Schlüssel fehlt	HypeRate API key missing	Clé API HypeRate manquante	HypeRate APIキーがありません
+HypeRate nicht erreichbar	HypeRate unreachable	HypeRate injoignable	HypeRateに接続できません
+HypeRate: Beitritt abgelehnt (ID/Schlüssel prüfen)	HypeRate: join refused (check ID/key)	HypeRate : connexion refusée (vérifier ID/clé)	HypeRate：参加が拒否されました（ID/キーを確認）
+HypeRate-Schlüssel gespeichert (verschlüsselt).	HypeRate key saved (encrypted).	Clé HypeRate enregistrée (chiffrée).	HypeRateキーを保存しました（暗号化）。
+Unbekannte Puls-Quelle.	Unknown heart rate source.	Source cardiaque inconnue.	不明な心拍ソースです。
+Den Puls gibt es nur in der Windows-App.	Heart rate is only available in the Windows app.	La fréquence cardiaque n’est disponible que dans l’appli Windows.	心拍はWindowsアプリでのみ利用できます。

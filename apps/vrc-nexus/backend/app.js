@@ -62,6 +62,7 @@ class NexusApp {
         this.osclog = new OscLog(this);
         this.stream = opts.mobile ? null : new StreamBot(this, opts.crypt);
         this.backup = new CloudBackup(this, opts.crypt);
+        this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = opts.mobile ? null : new ChatMods(this, opts.crypt);
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
         this.nsfw = new (require('./nsfw').Nsfw)(this, opts.crypt);
@@ -189,6 +190,7 @@ class NexusApp {
             if (act === 'about') return this.about(input);
             if (act === 'about_supporters') return await this.liveSupporters();
             if (act.startsWith('tts_')) { if (!this.tts) throw new UserError('Die Sprachausgabe gibt es nur in der Windows-App.'); return await this.tts.action(act, input); }
+            if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }
             if (act.startsWith('backup_')) return await this.backup.action(act, input);
             if (act.startsWith('stream_')) { if (!this.stream) throw new UserError('Der Stream-Bot läuft nur in der Windows-App.'); return await this.stream.action(act, input); }
@@ -264,7 +266,7 @@ class NexusApp {
         const s = this.settings.all(), v = this.game.values();
         let fr = 0; try { fr = this.vrc.friendList().filter(f => f.state === 'online').length; } catch (e) { /* ohne Konto */ }
         const ALL = { zeit: ['🕒', v.zeit, ''], welt: ['🌐', v.welt, ''], spieler: ['👥', v.spieler, 'Spieler'], dauer: ['⏱', v.dauer, ''], musik: ['🎵', v.musik || '', ''],
-            freunde: ['🟢', String(fr), 'Freunde online'], avatar: ['🎭', v.avatar, ''], region: ['📍', v.region, ''] };
+            freunde: ['🟢', String(fr), 'Freunde online'], avatar: ['🎭', v.avatar, ''], region: ['📍', v.region, ''], puls: ['💓', v.puls ? v.puls : '', 'bpm'] };
         const items = str(s['vr.overlay_hud_items']).split(/[\s,;]+/).filter(k => ALL[k] && ALL[k][1] && ALL[k][1] !== '–').map(k => ({ key: k, icon: ALL[k][0], value: cut(ALL[k][1], 60), label: ALL[k][2] }));
         const subs = this.subs, now = Date.now();
         const lines = s['vr.overlay_hud_subs'] !== false && subs ? subs.recent().filter(l => now - l.t < 30000).slice(-3) : [];

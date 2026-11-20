@@ -39,6 +39,7 @@
         ['stream', '📺 Stream-Bot', true, 'm', 'smlx', 'Twitch/YouTube: Status, Chat, Punkte, Umfrage'],
         ['osclog', '📜 OSC-Live', true, 's', 'sml', 'Die letzten Parameter-Änderungen'],
         ['rules', '🤖 Automatik', true, 's', 'sm', 'Regeln an/aus schalten'],
+        ['heart', '💓 Puls', true, 's', 'sml', 'Live-Puls mit Kurve der letzten 10 Minuten'],
     ].filter(w => !(MOBILE && w[2]));
     const SIZES = { s: ['S', 'Klein'], m: ['M', 'Mittel'], l: ['L', 'Groß'], x: ['XL', 'Extrem – ganze Breite'] };
     const DEF = MOBILE ? ['me', 'friends', 'notifs', 'events', 'feed', 'anniv', 'clock', 'notes']
@@ -270,6 +271,15 @@
             if (!l.length) return empty(data.osc && data.osc.active ? 'Noch keine Änderungen.' : 'OSC ist nicht aktiv.') + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="osclog">OSC-Log →</button>';
             return '<div class="hm-log">' + l.map(e => '<div><span class="muted">' + new Date(e.t).toLocaleTimeString(nxLoc()) + '</span> ' + (e.d === 'out' ? '↗' : '↘') + ' <code>' + esc(e.a.replace(/^\/avatar\/parameters\//, '')) + '</code> = <b>' + esc(JSON.stringify(e.v).slice(0, 40)) + '</b></div>').join('') + '</div>'
                 + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="osclog">OSC-Log →</button>';
+        },
+        heart: z => {
+            const h = data.heart;
+            if (!h || !h.on) return empty('Noch keine Puls-Quelle eingerichtet.') + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="heart">💓 Puls einrichten →</button>';
+            return '<div class="hm-hr' + (h.active ? ' on' : '') + '"><span class="hr-heart">💓</span><b>' + (h.active ? h.bpm : '–') + '</b><small>bpm</small>'
+                + (h.stats && h.stats.max ? '<span class="muted small">⬇ ' + h.stats.min + ' · ⌀ ' + h.stats.avg + ' · ⬆ ' + h.stats.max + '</span>' : '') + '</div>'
+                + (window.NexusHeart ? window.NexusHeart.spark(h.hist, z === 'l' ? 520 : 260, z === 's' ? 40 : 60) : '')
+                + (h.error && !h.active ? '<div class="vx-error small">⚠ ' + esc(h.error) + '</div>' : '')
+                + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="heart">Puls →</button>';
         },
         rules: () => (data.rules || []).length ? '<div class="hm-btns">' + data.rules.map(r => '<button type="button" class="chip' + (r.on ? ' on' : '') + '" data-h="rule" data-v="' + esc(r.id) + '" title="' + (r.on ? 'aktiv – klicken zum Ausschalten' : 'aus – klicken zum Einschalten') + '">' + (r.on ? '●' : '○') + ' ' + esc(r.name) + '</button>').join('') + '</div>'
             : empty('Noch keine Regeln.') + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="auto">Automatik →</button>',

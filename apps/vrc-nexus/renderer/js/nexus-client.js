@@ -50,6 +50,7 @@
                 <button type="button" class="chip" data-sub="osclog">📜 OSC-Log</button>
                 <button type="button" class="chip" data-sub="osctools">🧰 OSC-Werkzeuge</button>
                 <button type="button" class="chip" data-sub="mods">🧩 Chatbox-Module</button>
+                <button type="button" class="chip" data-sub="heart">💓 Puls</button>
                 <button type="button" class="chip" data-sub="cam">📷 Kamera</button>
                 <button type="button" class="chip" data-sub="macros">⚡ Makros</button>
                 <button type="button" class="chip" data-sub="auto">🤖 Automatik</button>
@@ -107,6 +108,7 @@
                 <div class="muted small" id="ncPInfo"></div>
                 <div class="nc-pgrid" id="ncPList"></div>
             </div>
+            <div class="nc-pane" data-p="heart" hidden><div id="hrBox" class="hr-box"></div></div>
             <div class="nc-pane" data-p="mods" hidden><div id="cmBox"></div>
                 <section class="cm-row nc-rotrow" id="ncRotRow"><span class="cm-ic">🔁</span>
                     <div class="cm-txt"><b>Chatbox-Rotator</b> <small class="cm-note" id="ncRotNote"></small><p>Eigene Texte im Wechsel in die Chatbox – mit Platzhaltern wie {zeit}, {welt}, {spieler}. Läuft, wenn die Module oben aus sind.</p></div>
@@ -351,6 +353,7 @@
         if (name === 'osclog') loadOscLog();
         if (name === 'live' && window.NexusOscTools) window.NexusOscTools.chat();
         if (name === 'osctools' && window.NexusOscTools) window.NexusOscTools.open();
+        if (name === 'heart' && window.NexusHeart) window.NexusHeart.open(document.getElementById('hrBox'));
         if (name === 'mods' && window.NexusChatMods) window.NexusChatMods.open(document.getElementById('cmBox'));
         if (name === 'tts' && window.NexusTts) window.NexusTts.open(document.getElementById('ttsBox'));
         if (name === 'debug' && window.NexusOscDebug) window.NexusOscDebug.open(document.getElementById('odBox'));

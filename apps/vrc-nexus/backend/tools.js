@@ -140,12 +140,13 @@ class Tools {
         if (this.app.insights) this.app.insights.start();
         if (this.app.stream) this.app.stream.apply();
         if (this.app.backup) this.app.backup.start();
+        if (this.app.heart) this.app.heart.start();
         if (this.app.chatmods) this.app.chatmods.start();
         if (this.app.media && this.settings.get('media.smtc') !== false) this.app.media.start();
         if (this.app.osctools) this.app.osctools.start();
         if (this.app.osclog && !this.oscLogOn) { this.oscLogOn = true; this.app.osclog.attach(this.app.game.osc); }
     }
-    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; if (this.app.auto) this.app.auto.stop(); if (this.app.insights) this.app.insights.stop(); if (this.app.osclog) this.app.osclog.stop(); if (this.app.stream) this.app.stream.stop(); if (this.app.chatmods) this.app.chatmods.stop(); if (this.app.media) this.app.media.stop(); if (this.app.osctools) this.app.osctools.stop(); this.api.stop(); this.rpc.close(); }
+    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; if (this.app.auto) this.app.auto.stop(); if (this.app.insights) this.app.insights.stop(); if (this.app.osclog) this.app.osclog.stop(); if (this.app.stream) this.app.stream.stop(); if (this.app.chatmods) this.app.chatmods.stop(); if (this.app.heart) this.app.heart.stop(); if (this.app.media) this.app.media.stop(); if (this.app.osctools) this.app.osctools.stop(); this.api.stop(); this.rpc.close(); }
     applySettings(changed) {
         const all = changed.includes('*');
         if (all || changed.some(k => k.startsWith('int.api') || k === 'int.obs')) this.api.apply();
@@ -1091,6 +1092,7 @@ class Tools {
             quick: this.app.osctools ? (() => { const c = this.app.osctools.cbx(); return { list: c.quick.map(q => ({ id: q.id, name: q.label || q.text.slice(0, 24) })), last: c.hist[0] ? c.hist[0].text.slice(0, 40) : '' }; })() : null,
             scenes: this.app.osctools ? this.app.osctools.scenes().map(x => ({ id: x.id, name: x.name })) : [],
             recs: this.app.osctools ? (() => { const t = this.app.osctools.status(); return { list: t.recs.map(r => ({ id: r.id, name: r.name, dur: r.dur })), recording: t.recording, playing: t.playing }; })() : null,
+            heart: this.app.heart ? (() => { const h = this.app.heart.status(); return { on: h.cfg.source !== 'off', bpm: h.bpm, active: h.active, min: h.stats.min, max: h.stats.max, hist: h.hist.slice(-30).map(x => x[1]) }; })() : null,
             chatmods: this.app.chatmods ? (() => { const c = this.app.chatmods.cfg(); return { on: !!c.on, mods: Object.fromEntries(Object.entries(c.mods).map(([k, m]) => [k, !!m.on])) }; })() : null,
             vars: (() => { try { const v = this.app.game.values(); return Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === 'string' || typeof x === 'number').slice(0, 150).map(([k, x]) => [k, String(x).slice(0, 80)])); } catch (e) { return {}; } })() };
     }

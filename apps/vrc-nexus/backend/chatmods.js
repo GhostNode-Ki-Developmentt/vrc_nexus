@@ -23,7 +23,7 @@ const MODULES = {
     system: ['🖥', 'Rechner', 'CPU, GPU, RAM und VRAM – Auslastung und GPU-Temperatur (NVIDIA über nvidia-smi, AMD/Intel über Windows).', '💻 CPU {cpu}% · GPU {gpu}% · RAM {ram}', 'both'],
     network: ['📶', 'Netzwerk', 'Download/Upload gerade, Spitze und Summe der Sitzung – Beweis, dass die Welt laggt, nicht du.', '📶 ↓{netz_down} ↑{netz_up}', 'desktop'],
     twitch: ['🟣', 'Twitch', 'Live-Status, Zuschauer und Kategorie deines Kanals (öffentliche Daten über decapi.me).', '🔴 LIVE · 👀 {twitch_zuschauer} · {twitch_spiel}', 'both'],
-    heart: ['💓', 'Herzfrequenz', 'Dein Puls in der Chatbox und als Avatar-Parameter – über Pulsoid (eigenes Token).', '💓 {puls} bpm', 'both'],
+    heart: ['💓', 'Herzfrequenz', 'Dein Puls in der Chatbox – Quelle (Pulsoid, HypeRate oder OSC/Smartwatch) unter Spiel & OSC → 💓 Puls.', '💓 {puls} bpm', 'both'],
     countdown: ['⏳', 'Countdown', 'Zeit bis zu einem Termin, den du festlegst – Stream, Geburtstag, Event.', '⏳ {countdown_name} in {countdown_rest}', 'both'],
     friends: ['👥', 'Freunde', 'Wie viele deiner Freunde gerade im Spiel und online sind.', '👥 {freunde_im_spiel} im Spiel · {freunde_online_web} online', 'both'],
     marquee: ['📜', 'Laufschrift', 'Ein längerer Text läuft Stück für Stück durch – jede Nachricht zeigt den nächsten Ausschnitt.', '📜 {laufschrift}', 'both'],
@@ -97,8 +97,8 @@ class ChatMods {
         if (input.only_game !== undefined) c.only_game = b(input.only_game);
         if (input.private !== undefined) c.private = cut(str(input.private), 500);
         if (input.twitch !== undefined) c.twitch = str(input.twitch).trim().replace(/^.*twitch\.tv\//i, '').replace(/[^\w]/g, '').slice(0, 30);
-        if (input.hr_param !== undefined) c.hr_param = str(input.hr_param).replace(/[^\w/\-.]/g, '').slice(0, 64) || 'HeartRate';
-        if (input.hr_osc !== undefined) c.hr_osc = b(input.hr_osc);
+        if (input.hr_param !== undefined) { c.hr_param = str(input.hr_param).replace(/[^\w/\-.]/g, '').slice(0, 64) || 'HeartRate'; if (this.app.heart) this.app.heart.save({ param: c.hr_param }); }
+        if (input.hr_osc !== undefined) { c.hr_osc = b(input.hr_osc); if (this.app.heart) this.app.heart.save({ send_osc: c.hr_osc ? '1' : '0' }); }
         if (input.cd_name !== undefined) c.cd_name = cut(str(input.cd_name).trim(), 40);
         if (input.cd_at !== undefined) { const v = str(input.cd_at).trim(); if (v && isNaN(Date.parse(v))) throw new UserError('Datum/Uhrzeit ungültig.'); c.cd_at = v; }
         if (input.mq_text !== undefined) { c.mq_text = cut(str(input.mq_text).replace(/\s+/g, ' ').trim(), 500); this.mqPos = 0; }
@@ -116,12 +116,10 @@ class ChatMods {
         return c;
     }
     // ---------- Pulsoid-Token (verschlüsselt) ----------
-    hrToken() { try { return this.crypt.decrypt(this.app.db.setting('chatmods_hr', '')) || ''; } catch (e) { return ''; } }
-    setHrToken(t) {
-        t = str(t).trim();
-        if (t && !/^[\w-]{20,200}$/.test(t)) throw new UserError('Das sieht nicht wie ein Pulsoid-Token aus.');
-        this.app.db.setSetting('chatmods_hr', t ? this.crypt.encrypt(t) : '');
-    }
+    // (seit 3.0 in heart.js – eine gemeinsame Puls-Quelle für die ganze App)
+    hrToken() { return this.app.heart ? this.app.heart.pulsoidToken() : ''; }
+    hrSource() { return this.app.heart ? this.app.heart.cfg().source : 'off'; }
+    setHrToken(t) { if (this.app.heart) this.app.heart.setPulsoidToken(t); }
 
     start() { this.apply(); }
     apply() {
@@ -142,7 +140,7 @@ class ChatMods {
         if (on('network') && t - this.last.net >= 2000) { this.last.net = t; jobs.push(this.readNet()); }
         if (on('weather') && c.lat !== null && t - this.last.weather >= 15 * 60000) { this.last.weather = t; jobs.push(this.readWeather(c)); }
         if (on('twitch') && (c.twitch || this.twitchChannel()) && t - this.last.twitch >= 60000) { this.last.twitch = t; jobs.push(this.readTwitch(c)); }
-        if (on('heart') && t - this.last.heart >= 3000 && this.hrToken()) { this.last.heart = t; jobs.push(this.readHeart(c)); }
+        if (on('heart') && t - this.last.heart >= 3000 && this.hrSource() !== 'off') { this.last.heart = t; jobs.push(this.readHeart(c)); }
         if (on('battery') && t - this.last.bat >= 60000) { this.last.bat = t; jobs.push(this.readBattery()); }
         if (on('fps')) this.readFps();
         if (on('ping') && t - this.last.ping >= 30000) { this.last.ping = t; jobs.push(this.readPing()); }
@@ -286,18 +284,12 @@ class ChatMods {
         if (live) { this.v.twitch_zuschauer = await get('viewercount'); this.v.twitch_spiel = await get('game'); }
         else { this.v.twitch_zuschauer = ''; this.v.twitch_spiel = ''; }
     }
-    async readHeart(c) {
-        const r = await fetch(base('NEXUS_PULSOID_BASE', 'https://dev.pulsoid.net') + '/api/v1/data/heart_rate/latest', { headers: { Authorization: 'Bearer ' + this.hrToken() }, signal: AbortSignal.timeout(8000) });
-        if (!r.ok) { this.v.puls = ''; this.hrError = r.status === 401 || r.status === 403 ? 'Pulsoid-Token ungültig' : 'Pulsoid: HTTP ' + r.status; return; }
-        const j = await r.json();
-        const bpm = int((j.data || {}).heart_rate);
-        this.hrError = '';
-        if (!bpm || Date.now() - int(j.measured_at) > 60000 && j.measured_at) { this.v.puls = ''; return; }
-        this.v.puls = String(bpm);
-        if (c.hr_osc && c.hr_param) {
-            this.app.game.osc.send('/avatar/parameters/' + c.hr_param, bpm).catch(() => {});
-            this.app.game.osc.send('/avatar/parameters/' + c.hr_param + 'Float', { float: Math.min(1, bpm / 255) }).catch(() => {});
-        }
+    async readHeart() {
+        const h = this.app.heart;
+        if (!h) return;
+        await h.refresh();
+        this.v.puls = h.vars().puls;
+        this.hrError = h.active ? '' : h.error;
     }
     async readVr() {
         if (process.env.NEXUS_FAKE_VR !== undefined) { this.vr = process.env.NEXUS_FAKE_VR === '1'; return; }
@@ -335,7 +327,7 @@ class ChatMods {
         const a = this.app.auto;
         const afk = a && a.afkSince ? Math.round((Date.now() - a.afkSince) / 60000) : 0;
         return Object.assign({ zone, zeitzone: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''), modus: this.vr ? 'VR' : 'Desktop', vr: this.vr ? '🥽' : '🖥',
-            afk_text: a && a.afkSince ? '💤 AFK seit ' + afk + ' min' : '' }, (() => { try { return this.localVars(this.cfg(), false); } catch (e) { return {}; } })(), this.v);
+            afk_text: a && a.afkSince ? '💤 AFK seit ' + afk + ' min' : '' }, (() => { try { return this.localVars(this.cfg(), false); } catch (e) { return {}; } })(), this.v, this.app.heart ? this.app.heart.vars() : {});
     }
     statusText() {
         const a = this.app.auto;
@@ -401,7 +393,7 @@ class ChatMods {
                 const c = this.cfg();
                 await this.refresh(c, input.refresh === '1');
                 const prev = this.compose(c, false);
-                return { cfg: c, modules: MODULES, values: this.vars(), preview: prev, vr: this.vr, gpu: !this.gpuMissing, gpu_win: !!this.gpuWin, battery: this.v.akku !== undefined, has_hr: !!this.hrToken(), hr_error: this.hrError || '',
+                return { cfg: c, modules: MODULES, values: this.vars(), preview: prev, vr: this.vr, gpu: !this.gpuMissing, gpu_win: !!this.gpuWin, battery: this.v.akku !== undefined, has_hr: this.hrSource() !== 'off', hr_source: this.hrSource(), hr_error: this.hrError || '',
                     twitch_default: this.twitchChannel(), windows: process.platform === 'win32', rotator_on: !!this.app.game.cfg().rotator_enabled };
             }
             case 'cm_save': { const c = this.save(input); return { cfg: c, msg: input.quiet ? '' : 'Gespeichert.' }; }

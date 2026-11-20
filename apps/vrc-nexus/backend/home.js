@@ -37,6 +37,7 @@ class Home {
             music: a.auto.music, media: a.media ? safe(() => a.media.now(), null) : null, media_on: !!(a.media && a.media.proc), media_err: a.media ? a.media.error : '', media_wait: !!(a.media && a.media.proc && !a.media.at), afk: !!a.auto.afkSince,
             rotator: safe(() => { const c = g.cfg(); return { on: !!c.rotator_enabled, text: g.rotatorText(g.rotatorNext ? (str(c.rotator_texts).split('\n').filter(x => x.trim())[0] || c.rotator_text) : c.rotator_text) }; }, null),
             osc: { active: g.osc.active, avatar: g.osc.avatarId },
+            heart: a.heart ? safe(() => { const h = a.heart.status(); return { on: h.cfg.source !== 'off', source: h.cfg.source, bpm: h.bpm, active: h.active, error: h.error, stats: h.stats, hist: h.hist }; }, null) : null,
             params: safe(() => { const l = a.params.list(''); return l.params.filter(p => p.fav && p.input).slice(0, 16); }, []),
             cam: { mode: (g.osc.cam || {}).Mode ?? null, burst: !!a.cam.burstRun, presets: a.cam.presets().map(p => p.name).slice(0, 8) },
             overlay: a.tools.host.overlayState ? safe(() => a.tools.host.overlayState(), null) : null,
