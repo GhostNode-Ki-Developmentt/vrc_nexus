@@ -197,7 +197,7 @@
             }
             if (f.matches('.cm-pform')) return api('comm_profile_save', { bio: f.bio.value, pronouns: f.pronouns.value, languages: f.languages.value, interests: f.interests.value, links: f.links.value.split(',').map(x => x.trim()).filter(Boolean), nsfw_bio: f.nsfw_bio ? f.nsfw_bio.value : '', avatar: prof.avatar || '', banner: prof.banner || '' })
                 .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; profEdit = false; render(); }).catch(x => toast(x.message, true));
-            if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^usr_[0-9a-f-]{36}$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
+            if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
             if (f.matches('.ch-comp')) { const text = f.text.value; if (!text.trim()) return; busy = true; return api('chat_send', { uid: chat.uid, text }).then(d => { chat.open = d; f.reset(); }).catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); }); }
             if (f.matches('.cm-sform')) return api('comm_mod', { do: 'mute', vrc_id: f.vrc.value.trim(), hours: f.hours.value }).then(d => { toast(d.msg); loadMod(); }).catch(x => toast(x.message, true));
         });

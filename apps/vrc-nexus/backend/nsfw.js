@@ -118,7 +118,7 @@ class Nsfw {
     async issue(input) {
         if (!this.isOwner()) throw new UserError('Nur für den Besitzer.');
         const uid = str(input.uid).trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1');
-        if (!/^usr_[0-9a-f-]{36}$/i.test(uid)) throw new UserError('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.');
+        if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(uid)) throw new UserError('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.');
         let name = cut(str(input.name).trim(), 60);
         if (!name) { try { const u = await this.app.tools.call('GET', '/users/' + encodeURIComponent(uid)); name = str(u && u.displayName); } catch (e) { /* ohne Namen */ } }
         const days = int(input.days);

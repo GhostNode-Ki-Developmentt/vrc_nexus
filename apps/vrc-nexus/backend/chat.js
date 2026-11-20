@@ -12,7 +12,7 @@ const E = require('./e2ee');
 const { str, int, cut, now, UserError } = require('./util');
 
 const BASE = () => (process.env.NEXUS_CHAT_BASE || process.env.NEXUS_ACCT_BASE || process.env.NEXUS_RELAY_BASE || 'https://privat.sylvanclub.eu').replace(/\/+$/, '');
-const UID = /^usr_[0-9a-f-]{36}$/;
+const UID = /^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/;   // auch kurze IDs älterer Konten
 const KEEP = 500;   // Nachrichten je Unterhaltung auf dem Gerät
 
 class Chat {

@@ -108,12 +108,25 @@ class Account {
         this.notifyAccess();
         return { account: (this.current() || {}).account || d.account, msg: '🪪 Nexus-Konto verbunden.' };
     }
-    /** Altersstatus des EIGENEN Kontos bei VRChat: /ageVerification/status, sonst ageVerificationStatus aus /auth/user. null = nicht erreichbar */
+    /** Altersstatus des EIGENEN Kontos bei VRChat (seit 3.0.4 zuerst /auth/user):
+     *  ageVerified = true oder ageVerificationStatus „18+“/„verified“ → „18+“ (VRChat prüft das Alter nur ab 18; „verified“ = bestätigt, Abzeichen ausgeblendet).
+     *  Zusätzlich /ageVerification/status, falls /auth/user nichts sagt. null = VRChat nicht erreichbar */
     async vrcAgeStatus() {
-        const t = this.app.tools;
-        try { const r = await t.call('GET', '/ageVerification/status'); if (r && (r.status !== undefined || r.ageVerificationStatus !== undefined)) return str(r.status !== undefined ? r.status : r.ageVerificationStatus); } catch (e) { /* weiter mit /auth/user */ }
-        try { const me = await t.call('GET', '/auth/user'); if (me && me.id) return str(me.ageVerificationStatus); } catch (e) { /* nicht erreichbar */ }
-        return null;
+        const t = this.app.tools, ok = s => ['18+', 'verified', 'plus18', '18plus'].includes(str(s).toLowerCase().trim());
+        let seen = null;
+        try {
+            const me = await t.call('GET', '/auth/user');
+            if (me && me.id) {
+                seen = str(me.ageVerificationStatus);
+                if (me.ageVerified === true || ok(me.ageVerificationStatus)) return '18+';
+            }
+        } catch (e) { /* weiter mit /ageVerification/status */ }
+        try {
+            const r = await t.call('GET', '/ageVerification/status');
+            const s = r && typeof r === 'object' ? (r.status !== undefined ? r.status : r.ageVerificationStatus !== undefined ? r.ageVerificationStatus : r.verified === true || r.ageVerified === true ? '18+' : undefined) : r;
+            if (s !== undefined && s !== null) return ok(s) || s === true ? '18+' : str(s) || (seen === null ? '' : seen);
+        } catch (e) { /* nicht erreichbar */ }
+        return seen;
     }
     /** prüfen und an GhostNode melden → Konto (oder null, wenn VRChat nicht erreichbar war) */
     async checkAge(o) {

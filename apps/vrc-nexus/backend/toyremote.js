@@ -19,7 +19,7 @@ const http = require('http');
 const dgram = require('dgram');
 const { str, int, cut, arr, now, UserError } = require('./util');
 
-const UIDRE = /^usr_[0-9a-f-]{36}$/i;
+const UIDRE = /^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i;
 const DEF = { recv_on: false, allow: [], max: 60, lan: true, web: true, pub: false, web_url: '', code: '', lan_port: 17872, t_uid: '', t_via: 'auto', t_addr: '', t_url: '', t_code: '' };
 const VIAS = ['auto', 'lan', 'web', 'pub'];
 const CMDS = ['ping', 'set', 'pattern', 'surprise', 'stop'];

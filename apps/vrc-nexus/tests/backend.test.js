@@ -2071,6 +2071,29 @@ test('3.0.3: Nexus-Knöpfe – alle Stream-Deck-Aktionen über „Nexus-Aktion�
     assert.ok(FIELDS.camera.length === 2);
 });
 
+test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
+    const { NexusApp } = require('../backend/app');
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    let me = {}, statusApi = null;
+    app.tools.call = async (m, p) => {
+        if (p === '/auth/user') return me;
+        if (p === '/ageVerification/status') { if (statusApi === null) throw new Error('404'); return statusApi; }
+        return {};
+    };
+    me = { id: '8JoV9XEdpo', ageVerificationStatus: 'verified', ageVerified: true };
+    assert.strictEqual(await app.account.vrcAgeStatus(), '18+', 'verified + ageVerified');
+    me = { id: '8JoV9XEdpo', ageVerificationStatus: 'hidden', ageVerified: true };
+    assert.strictEqual(await app.account.vrcAgeStatus(), '18+', 'Abzeichen ausgeblendet, aber bestätigt');
+    me = { id: '8JoV9XEdpo', ageVerificationStatus: 'hidden', ageVerified: false };
+    assert.strictEqual(await app.account.vrcAgeStatus(), 'hidden', 'nicht bestätigt, Status-API fehlt');
+    statusApi = { status: '18+' };
+    assert.strictEqual(await app.account.vrcAgeStatus(), '18+', 'zweiter Weg');
+    me = null; statusApi = null;
+    assert.strictEqual(await app.account.vrcAgeStatus(), null, 'nicht erreichbar → nichts melden');
+    // kurze IDs: Chat & Warnliste lehnen sie nicht mehr ab
+    assert.ok(/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/.test('8jov9xedpo'));
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {

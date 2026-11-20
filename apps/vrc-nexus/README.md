@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.4 – Account fixes and a smarter friends bar
+
+- 🪪 **Nexus account:** older VRChat accounts with a short user ID can now connect (no more "invalid VRChat user ID").
+- ✔ **Age check:** the app now reads your own VRChat profile first and also recognises accounts that are verified with the 18+ badge hidden; the status endpoint is only used as a second source.
+- 👥 **Friends bar:** right-click menu (open profile, join, view instance, request invite, invite to my instance, copy ID), a "Just online" section for friends who came online in the last 10 minutes, sorting (A–Z, recently active, by world), long lists load in steps and stay smooth, and group instances can be joined straight from the list.
+
 ### New in 3.0.3 – Every Stream Deck action on your phone
 
 - 🎛 **Nexus buttons (Android):** all Stream Deck plugin actions are now available as buttons – avatar parameter steps, chatbox rotator, launch VRChat, rejoin, open VRC Nexus, camera, macros, switch avatar, friends (join/invite/request), SteamVR overlay, voice input, media, quick texts, parameter scenes, recording, chatbox modules, read aloud and create instance + invite. They run on your PC through the dashboard connection, just like a Stream Deck key.
