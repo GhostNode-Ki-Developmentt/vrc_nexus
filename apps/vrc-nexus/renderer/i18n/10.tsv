@@ -645,3 +645,11 @@ HypeRate: Beitritt abgelehnt (ID/Schlüssel prüfen)	HypeRate: join refused (che
 HypeRate-Schlüssel gespeichert (verschlüsselt).	HypeRate key saved (encrypted).	Clé HypeRate enregistrée (chiffrée).	HypeRateキーを保存しました（暗号化）。
 Unbekannte Puls-Quelle.	Unknown heart rate source.	Source cardiaque inconnue.	不明な心拍ソースです。
 Den Puls gibt es nur in der Windows-App.	Heart rate is only available in the Windows app.	La fréquence cardiaque n’est disponible que dans l’appli Windows.	心拍はWindowsアプリでのみ利用できます。
+Live	Live	En direct	ライブ
+Minimum	Minimum	Minimum	最小
+Maximum	Maximum	Maximum	最大
+Verwenden	Use	Utiliser	使い方
+Kein Puls	No heart rate	Pas de fréquence cardiaque	心拍なし
+Brustgurt oder Uhr über die Pulsoid-App	Chest strap or watch via the Pulsoid app	Ceinture ou montre via l’appli Pulsoid	Pulsoidアプリ経由の胸ベルトまたはウォッチ
+Uhr oder Gurt über HypeRate	Watch or strap via HypeRate	Montre ou ceinture via HypeRate	HypeRate経由のウォッチまたはベルト
+App schickt den Puls schon an VRChat	App already sends heart rate to VRChat	L’appli envoie déjà la fréquence à VRChat	アプリが既にVRChatへ心拍を送信

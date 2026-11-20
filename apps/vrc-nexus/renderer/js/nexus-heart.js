@@ -4,38 +4,53 @@
     const UI = window.NexusUI;
     if (!UI) return;
     const esc = UI.esc, api = (a, d) => UI.api(a, d), toast = (m, bad) => UI.toast(m, bad);
-    const SRC = [['off', '⏸ Aus'], ['pulsoid', '💗 Pulsoid'], ['hyperate', '💜 HypeRate'], ['osc', '⌚ OSC / Smartwatch']];
+    const SRC = [['off', '⏸ Aus', 'Kein Puls'], ['pulsoid', '💗 Pulsoid', 'Brustgurt oder Uhr über die Pulsoid-App'], ['hyperate', '💜 HypeRate', 'Uhr oder Gurt über HypeRate'], ['osc', '⌚ OSC / Smartwatch', 'App schickt den Puls schon an VRChat']];
     let box = null, d = null, timer = null;
 
     /** kleine Kurve: hist = [[sekunden_vor_jetzt (≤0), bpm], …] */
     function spark(hist, w, h) {
         w = w || 260; h = h || 54;
         if (!hist || hist.length < 2) return '<div class="hr-spark empty muted small">' + esc(window.t ? t('Noch keine Kurve') : 'Noch keine Kurve') + '</div>';
-        const span = Math.max(60, -hist[0][0]), vs = hist.map(x => x[1]), lo = Math.min(...vs) - 5, hi = Math.max(...vs) + 5;
+        const span = Math.max(20, -hist[0][0]), vs = hist.map(x => x[1]), lo = Math.min(...vs) - 5, hi = Math.max(...vs) + 5;
         const pt = ([s, v]) => ((span + s) / span * w).toFixed(1) + ',' + (h - (v - lo) / (hi - lo) * h).toFixed(1);
         const line = hist.map(pt).join(' ');
         return '<svg class="hr-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + line + '" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
     }
 
     function render() {
-        const c = d.cfg, s = d.stats;
-        box.innerHTML = '<div class="hr-head"><div class="hr-big' + (d.active ? ' on' : '') + '"><span class="hr-heart">💓</span><b>' + (d.active ? d.bpm : '–') + '</b><small>bpm</small></div>'
-            + '<div class="hr-kpi">' + (s.max ? '<span>⬇ ' + s.min + '</span><span>⌀ ' + s.avg + '</span><span>⬆ ' + s.max + '</span>' : '') + '<span class="muted small">' + esc(t('letzte 10 Minuten')) + '</span></div>'
-            + spark(d.hist) + '</div>'
-            + (d.error && c.source !== 'off' ? '<div class="vx-error small">⚠ ' + esc(t(d.error)) + '</div>' : '')
-            + '<div class="hr-src">' + SRC.map(([k, l]) => '<button type="button" class="chip' + (c.source === k ? ' on' : '') + '" data-src="' + k + '">' + esc(t(l)) + '</button>').join('') + '</div>'
-            + (c.source === 'pulsoid' ? '<form class="cm-f" data-f="pulsoid"><label>' + esc(t('Pulsoid-Token')) + '</label><input name="token" type="password" autocomplete="off" placeholder="' + esc(t(d.has_pulsoid ? '•••••• gespeichert – neu eingeben zum Ändern' : 'Token von pulsoid.net → Integrationen')) + '"><button class="btn btn-sm">' + esc(t('Speichern')) + '</button></form>' : '')
-            + (c.source === 'hyperate' ? '<form class="cm-f" data-f="hyperate"><label>' + esc(t('HypeRate-ID')) + '</label><input name="hyperate_id" value="' + esc(c.hyperate_id) + '" placeholder="' + esc(t('z. B. a1b2c3 (aus deinem Widget-Link)')) + '"><button class="btn btn-sm">' + esc(t('Speichern')) + '</button></form>'
-                + '<form class="cm-f" data-f="hrkey"><label>' + esc(t('HypeRate-API-Schlüssel')) + '</label><input name="token" type="password" autocomplete="off" placeholder="' + esc(t(d.has_hyperate ? '•••••• gespeichert – neu eingeben zum Ändern' : 'Schlüssel von hyperate.io (Entwickler)')) + '"><button class="btn btn-sm">' + esc(t('Speichern')) + '</button></form>' : '')
-            + (c.source === 'osc' ? '<form class="cm-f" data-f="oscin"><label>' + esc(t('Eingehende Parameter')) + '</label><input name="osc_in" value="' + esc(c.osc_in) + '"><button class="btn btn-sm">' + esc(t('Speichern')) + '</button></form>'
-                + '<div class="muted small">' + esc(t('Für Smartwatch-Apps, die den Puls schon als Avatar-Parameter an VRChat schicken. Groß/Klein und Sonderzeichen sind egal; Float 0…1 wird als 0…255 gelesen.')) + '</div>' : '')
-            + (c.source !== 'off' && c.source !== 'osc' ? '<h4 class="hr-h">' + esc(t('An den Avatar senden')) + '</h4><form class="cm-f" data-f="out">'
-                + '<label class="cm-inl"><input type="checkbox" name="send_osc"' + (c.send_osc ? ' checked' : '') + '> ' + esc(t('Avatar-Parameter senden')) + '</label>'
-                + '<label>' + esc(t('Eigener Name')) + '</label><input name="param" value="' + esc(c.param) + '" style="max-width:160px">'
-                + '<label>' + esc(t('Bereich (bpm)')) + '</label><input name="min" type="number" min="20" max="150" value="' + c.min + '" style="width:70px"><input name="max" type="number" min="30" max="250" value="' + c.max + '" style="width:70px">'
-                + '<button class="btn btn-sm">' + esc(t('Speichern')) + '</button></form>'
-                + '<div class="muted small">' + esc(t('Gesendet werden HR, HRPercent, isHRActive, isHRConnected, onesHR, tensHR, hundredsHR und der eigene Name (Int + Float) – passt zu gängigen Puls-Anzeigen auf Avataren.')) + '</div>' : '')
-            + '<div class="muted small hr-ph">' + esc(t('Platzhalter für Chatbox, Rotator, Makros und Stream Deck:')) + ' <code>{puls}</code> <code>{puls_min}</code> <code>{puls_max}</code> <code>{puls_schnitt}</code> · ' + esc(t('SteamVR-HUD: „puls“ unter Einstellungen → VR → Infos.')) + '</div>';
+        if (box.contains(document.activeElement) && document.activeElement.matches('input:not([type=checkbox])')) return;   // nicht beim Tippen neu zeichnen
+        const c = d.cfg, s = d.stats, inp = (n, v, ph, type, w) => '<input type="' + (type || 'text') + '" name="' + n + '" value="' + esc(v == null ? '' : v) + '"' + (ph ? ' placeholder="' + esc(t(ph)) + '"' : '') + (w ? ' style="width:' + w + '"' : ' style="flex:1"') + ' autocomplete="off">';
+        const row = (label, html) => '<div class="nc-row"><span class="small">' + esc(t(label)) + '</span>' + html + '</div>';
+        let src = '';
+        if (c.source === 'pulsoid') src = '<form data-f="pulsoid">' + row('Pulsoid-Token', inp('token', '', d.has_pulsoid ? '•••••• gespeichert – neu eingeben zum Ändern' : 'Token von pulsoid.net → Integrationen', 'password') + '<button class="btn btn-sm">' + esc(t('Speichern')) + '</button>') + '</form>';
+        if (c.source === 'hyperate') src = '<form data-f="hyperate">' + row('HypeRate-ID', inp('hyperate_id', c.hyperate_id, 'z. B. a1b2c3 (aus deinem Widget-Link)') + '<button class="btn btn-sm">' + esc(t('Speichern')) + '</button>') + '</form>'
+            + '<form data-f="hrkey">' + row('HypeRate-API-Schlüssel', inp('token', '', d.has_hyperate ? '•••••• gespeichert – neu eingeben zum Ändern' : 'Schlüssel von hyperate.io (Entwickler)', 'password') + '<button class="btn btn-sm">' + esc(t('Speichern')) + '</button>') + '</form>';
+        if (c.source === 'osc') src = '<form data-f="oscin">' + row('Eingehende Parameter', inp('osc_in', c.osc_in) + '<button class="btn btn-sm">' + esc(t('Speichern')) + '</button>') + '</form>'
+            + '<p class="small muted">' + esc(t('Für Smartwatch-Apps, die den Puls schon als Avatar-Parameter an VRChat schicken. Groß/Klein und Sonderzeichen sind egal; Float 0…1 wird als 0…255 gelesen.')) + '</p>';
+        box.innerHTML = '<div class="nc-grid">'
+            // Live
+            + '<div class="nc-card"><h4>💓 ' + esc(t('Live')) + '</h4>'
+            + '<div class="hr-live' + (d.active ? ' on' : '') + '"><span class="hr-heart">💓</span><b>' + (d.active ? d.bpm : '–') + '</b><small>bpm</small></div>'
+            + spark(d.hist)
+            + '<div class="vx-kpis sm"><div><b>' + (s.min || '–') + '</b><span>' + esc(t('Minimum')) + '</span></div><div><b>' + (s.avg || '–') + '</b><span>' + esc(t('Durchschnitt')) + '</span></div><div><b>' + (s.max || '–') + '</b><span>' + esc(t('Maximum')) + '</span></div></div>'
+            + '<p class="small muted">' + esc(t('letzte 10 Minuten')) + '</p>'
+            + (d.error && c.source !== 'off' ? '<p class="small bad">⚠ ' + esc(t(d.error)) + '</p>' : '') + '</div>'
+            // Quelle
+            + '<div class="nc-card"><h4>📡 ' + esc(t('Quelle')) + '</h4>'
+            + '<div class="tts-prov">' + SRC.map(([k, l, sub]) => '<button type="button" data-src="' + k + '" class="' + (c.source === k ? 'on' : '') + '"><b>' + esc(t(l)) + '</b><small>' + esc(t(sub)) + '</small></button>').join('') + '</div>'
+            + src + '</div>'
+            // Avatar
+            + (c.source !== 'off' && c.source !== 'osc' ? '<form class="nc-card" data-f="out"><h4>🎭 ' + esc(t('An den Avatar senden')) + '</h4>'
+                + '<label class="check"><input type="checkbox" name="send_osc"' + (c.send_osc ? ' checked' : '') + '> ' + esc(t('Avatar-Parameter senden')) + '</label>'
+                + row('Eigener Name', inp('param', c.param, '', 'text', '180px'))
+                + row('Bereich (bpm)', inp('min', c.min, '', 'number', '80px') + '–' + inp('max', c.max, '', 'number', '80px'))
+                + '<div class="nc-row"><button class="btn btn-sm btn-gold">' + esc(t('Speichern')) + '</button></div>'
+                + '<p class="small muted">' + esc(t('Gesendet werden HR, HRPercent, isHRActive, isHRConnected, onesHR, tensHR, hundredsHR und der eigene Name (Int + Float) – passt zu gängigen Puls-Anzeigen auf Avataren.')) + '</p></form>' : '')
+            // Nutzen
+            + '<div class="nc-card"><h4>🧩 ' + esc(t('Verwenden')) + '</h4>'
+            + '<p class="small">' + esc(t('Platzhalter für Chatbox, Rotator, Makros und Stream Deck:')) + '</p><div class="nc-row"><code>{puls}</code><code>{puls_min}</code><code>{puls_max}</code><code>{puls_schnitt}</code></div>'
+            + '<div class="tts-help">' + esc(t('SteamVR-HUD: „puls“ unter Einstellungen → VR → Infos.')) + '</div></div>'
+            + '</div>';
     }
     function load(refresh) { return api('hr_get', refresh ? { refresh: '1' } : {}).then(r => { d = r; if (box) render(); }).catch(e => { if (box) box.innerHTML = '<div class="vx-error">⚠ ' + esc(e.message) + '</div>'; }); }
     const save = data => api('hr_save', data).then(r => { d = r; render(); if (r.msg) toast(r.msg); }).catch(e => toast('⚠ ' + e.message, true));

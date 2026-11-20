@@ -275,8 +275,8 @@
         heart: z => {
             const h = data.heart;
             if (!h || !h.on) return empty('Noch keine Puls-Quelle eingerichtet.') + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="heart">💓 Puls einrichten →</button>';
-            return '<div class="hm-hr' + (h.active ? ' on' : '') + '"><span class="hr-heart">💓</span><b>' + (h.active ? h.bpm : '–') + '</b><small>bpm</small>'
-                + (h.stats && h.stats.max ? '<span class="muted small">⬇ ' + h.stats.min + ' · ⌀ ' + h.stats.avg + ' · ⬆ ' + h.stats.max + '</span>' : '') + '</div>'
+            return '<div class="hr-live' + (h.active ? ' on' : '') + '"><span class="hr-heart">💓</span><b>' + (h.active ? h.bpm : '–') + '</b><small>bpm</small></div>'
+                + (h.stats && h.stats.max ? '<div class="hm-kpis"><span><b>' + h.stats.min + '</b> min</span><span><b>' + h.stats.avg + '</b> ⌀</span><span><b>' + h.stats.max + '</b> max</span></div>' : '')
                 + (window.NexusHeart ? window.NexusHeart.spark(h.hist, z === 'l' ? 520 : 260, z === 's' ? 40 : 60) : '')
                 + (h.error && !h.active ? '<div class="vx-error small">⚠ ' + esc(h.error) + '</div>' : '')
                 + '<button type="button" class="nc-link" data-h="tab" data-v="client" data-sub="heart">Puls →</button>';
