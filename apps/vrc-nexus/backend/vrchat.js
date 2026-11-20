@@ -229,6 +229,7 @@ class Vrc {
                 const row = { name: str(f.displayName), state, status: str(f.status), sd: str(f.statusDescription), loc, pf: str(f.last_platform || f.platform), img: U.userImage(f),
                     av: str(f.currentAvatarThumbnailImageUrl), tags: arr(f.tags).join(' '), bio: cut(f.bio, 2000), ll: str(f.last_login) };
                 const o = old[id];
+                if (!row.img && o && o.image) row.img = o.image;          // 3.2: bekanntes Profilbild nicht durch „leer“ ersetzen
                 if (o && loc.startsWith('traveling') && o.state === 'online') row.loc = loc = o.location;
                 let since = o ? int(o.since) : t;
                 if (o) {

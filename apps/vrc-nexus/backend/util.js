@@ -26,6 +26,9 @@ function userImage(u) {
     for (const k of ['userIcon', 'profilePicOverrideThumbnail', 'profilePicOverride', 'currentAvatarThumbnailImageUrl', 'thumbnailUrl', 'currentAvatarImageUrl', 'imageUrl']) {
         if (u && u[k] && /^https:\/\//.test(u[k])) return u[k];
     }
+    // 3.2: manche Antworten haben die Bilder nur im „presence“-Teil
+    const p = u && u.presence && typeof u.presence === 'object' ? u.presence : null;
+    if (p) for (const k of ['userIcon', 'profilePicOverride', 'avatarThumbnail', 'currentAvatarThumbnailImageUrl', 'avatarImageUrl']) if (p[k] && /^https:\/\//.test(p[k])) return p[k];
     return '';
 }
 

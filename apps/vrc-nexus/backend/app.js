@@ -418,7 +418,7 @@ class NexusApp {
                 const n = v.note(id);
                 const deco = this.deco ? this.deco.resolve(this.deco.remember(u.id, u)) : null;
                 if (deco) await this.deco.catalog().catch(() => null);
-                return { user: { deco: deco ? this.deco.resolve(this.deco.remember(u.id, u)) : null, nexus_admin: !!(this.nsfw && this.nsfw.isOwner(str(u.id))), id: u.id, name: str(u.displayName), image: U.userImage(u), status: str(u.status), status_desc: str(u.statusDescription), bio_html: U.formatText(u.bio),
+                return { user: { deco: deco ? this.deco.resolve(this.deco.remember(u.id, u)) : null, nexus_admin: !!(this.nsfw && this.nsfw.isOwner(str(u.id))), id: u.id, name: str(u.displayName), image: U.userImage(u) || ((v.friendList() || []).find(f => f.id === u.id) || {}).image || U.userImage(this.tools.cached(u.id) || {}), status: str(u.status), status_desc: str(u.statusDescription), bio_html: U.formatText(u.bio),
                     links: arr(u.bioLinks).filter(l => /^https?:\/\//.test(str(l))), pronouns: str(u.pronouns), trust: U.trust(u.tags), platform: U.VRC_PLATFORM[u.last_platform] || str(u.last_platform),
                     is_friend: !!u.isFriend, joined: str(u.date_joined), last_login: str(u.last_login), last_activity: str(u.last_activity), loc, note: n.note, favorite: !!n.favorite,
                     stats: v.friendStats(id), lists: str(n.tags), watch: !!n.watch, warn: this.warn ? this.warn.get(id) : null,

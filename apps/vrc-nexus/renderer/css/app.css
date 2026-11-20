@@ -2,8 +2,11 @@
 html, body { background: var(--bg-color); }
 .wrapper { padding-top: 18px; }
 .vx-head h1 { font-size: 2.4rem; }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.25); border-radius: 6px; }
+/* 3.2: schmale, dezente Scrollleisten (kein farbiger Balken) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb), 0.16); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--ink-rgb), 0.3); }
+::-webkit-scrollbar-corner { background: transparent; }
 ::-webkit-scrollbar-track { background: transparent; }
 #ncCfg input[type=text] { width: 100%; box-sizing: border-box; }
 
@@ -510,7 +513,7 @@ body.mobile .vx-hdirect kbd { display: none; }
 .vx-subnav[hidden] { display: none !important; }
 body.nav-side { --nav-w: 232px; padding-left: calc(var(--nav-w) + 20px); }
 body.nav-side .vx-menu { position: fixed !important; top: 0; left: 0; bottom: 0; width: var(--nav-w); margin: 0; padding: 14px 8px 20px; flex-direction: column; flex-wrap: nowrap; gap: 1px;
-    overflow-y: auto; border: 0; border-right: 1px solid var(--border-color); z-index: 60; scrollbar-width: thin; }
+    overflow-y: auto; border: 0; border-right: 1px solid var(--border-color); z-index: 60; }
 body.nav-side .vx-sidebrand { display: block; padding: 4px 12px 14px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); font-size: 1.05rem; }
 body.nav-side .vx-sidebrand b { color: var(--accent-cyan); }
 body.nav-side .vx-menu .vx-tabbtn, body.nav-side .vx-mtop { width: 100%; justify-content: flex-start; padding: 8px 12px; font-size: 0.86rem; gap: 10px; }
@@ -564,7 +567,7 @@ body.nav-side.fside-on .vx-fside { display: flex; flex-direction: column; positi
 .fs-tabs button.on { color: var(--text-strong, var(--text-main)); border-bottom-color: var(--accent-cyan); }
 .fs-tabs small { font-weight: 400; color: var(--text-muted); }
 .fs-q { margin: 8px 10px; width: auto; padding: 6px 10px; }
-#fsBody { flex: 1; overflow-y: auto; padding: 0 6px 16px; scrollbar-width: thin; }
+#fsBody { flex: 1; overflow-y: auto; padding: 0 6px 16px; }
 .fs-head { display: flex; align-items: center; gap: 6px; width: 100%; background: transparent; border: 0; color: var(--text-main); font: inherit; font-size: 0.78rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 8px 6px 4px; cursor: pointer; text-align: left; }
 .fs-head i { font-style: normal; width: 12px; color: var(--text-muted); }
 .fs-head small { color: var(--text-muted); font-weight: 400; }
@@ -657,7 +660,7 @@ body.nav-mini .i18n-fab { flex: none; height: 32px; }
 .nc-rotrow .cm-edit > .btn, .nc-rotrow .cm-edit .nc-row { align-self: flex-start; }
 /* ---------- Übersetzer „VRChat → Text“ & Sprachbefehle ---------- */
 .sb-live { grid-column: 1 / -1; }
-.sb-lines { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 6px 2px; scrollbar-width: thin; }
+.sb-lines { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 6px 2px; }
 .sb-line { padding: 6px 10px; border-left: 3px solid var(--accent-cyan); background: rgba(var(--accent-rgb), 0.05); font-size: 0.95rem; }
 .sb-line.me { border-left-color: var(--accent-gold); }
 .sb-line.unsure { opacity: 0.6; border-left-style: dashed; }
@@ -902,3 +905,8 @@ body.own-frame.sticky-menu .vx-menu:not(body.nav-side .vx-menu), body.own-frame.
 html[data-theme="beach"] body.own-frame .vx-wintitle { background: #1f0d31; }
 html[data-theme="beach"] body.own-frame .vx-wintitle b { background: var(--beach-grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; }
 html[data-theme="beach"] body.own-frame .vx-wintitle b i { color: inherit; }
+
+/* 3.2: Seitenleisten – nur ein feiner Strich, sichtbar beim Überfahren */
+body.nav-side .vx-menu::-webkit-scrollbar, #fsBody::-webkit-scrollbar { width: 3px; }
+body.nav-side .vx-menu::-webkit-scrollbar-thumb, #fsBody::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+body.nav-side .vx-menu:hover::-webkit-scrollbar-thumb, #fsBody:hover::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb), 0.22); }

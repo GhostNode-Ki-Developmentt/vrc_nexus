@@ -2136,6 +2136,14 @@ test('3.1: Profil-Dekorationen – Felder lesen (auch presence), Katalog-ID / Na
     app.tools.stop();
 });
 
+test('3.2: Profilbild – auch aus presence, sonst leer', () => {
+    const U = require('../backend/util');
+    assert.strictEqual(U.userImage({ userIcon: 'https://a/x.png' }), 'https://a/x.png');
+    assert.strictEqual(U.userImage({ userIcon: '', currentAvatarThumbnailImageUrl: '', presence: { avatarThumbnail: 'https://a/t.png' } }), 'https://a/t.png');
+    assert.strictEqual(U.userImage({ presence: { userIcon: 'javascript:x' } }), '');
+    assert.strictEqual(U.userImage(null), '');
+});
+
 (async () => {
     let ok = 0;
     for (const [name, fn] of tests) {
