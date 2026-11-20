@@ -1,4 +1,4 @@
-# Release 3.0.0 – wartet auf die Webseite
+# Release 3.0.0 – veröffentlicht am 20.11.2026 (Patch bleibt zur Nachvollziehbarkeit)
 
 `3.0.0.patch` enthält Versionssprung (2.15.3 → 3.0.0), README-/NSFW-Changelog und gebaute changelog*.json.
 Ein Push davon startet sofort Build + Release + Auto-Update. Erst anwenden, wenn

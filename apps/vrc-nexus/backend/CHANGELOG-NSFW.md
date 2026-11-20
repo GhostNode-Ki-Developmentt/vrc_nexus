@@ -2,6 +2,13 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.0.0 – NSFW overhaul: Verified 18+
+
+- 🔞 **NSFW now only with “Verified 18+”:** your VRChat age verification (`18+`) must be completed and **visible** on your profile. The GhostNode website checks it itself (never the app), re-checks it every 7 days and one day before it expires; if the status disappears, NSFW is locked immediately and you get a single notice.
+- 🎚 **NSFW is off by default** and must be switched on deliberately (Settings → Advanced → Nexus account) – it can be switched off any time. Unlock keys (NXK1) no longer unlock NSFW – for everyone, including the owner.
+- 🫂 **Separate NSFW feed** in the Community: NSFW posts, replies, images and the 18+ profile section only for Verified 18+ with NSFW on – never in the normal timeline. NSFW images appear only after a moderator approves them; moderators can move posts that were wrongly marked SFW into the NSFW feed.
+- 🌐 **Toy remote control:** the receiver now asks GhostNode whether the sender is Verified 18+ with NSFW on (only possible if you are cleared yourself) – no unlock key needed anymore.
+
 ### Neu in 2.12.1 – Selbsttest der Fernsteuerung
 
 - 🧪 **Selbsttest der Fernsteuerung:** Unter „🎮 Partner steuern“ die eigene ID eintragen (oder auf „🧪 Ich“ klicken) – dann steuert die App dein eigenes Spielzeug direkt auf diesem PC, ohne Freigabeliste. „Fernsteuerung empfangen“ muss dafür an sein; die Höchststärke von außen gilt auch hier.

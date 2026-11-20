@@ -22,6 +22,19 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.0.0 – Community, encrypted chat, heart rate & warning list
+
+- 🪪 **Nexus account:** one account for all online features, tied to your VRChat ID – no extra password. To verify, Nexus briefly writes a code into your VRChat bio and restores it afterwards. Online services are **opt-in**; without an account the app works as before. (Settings → Advanced)
+- 🫂 **Community** (new menu item): feed with replies, reactions and images, your own profile (bio, pronouns, languages, interests, links, picture, banner), reporting. Everything is checked on the server.
+- 💬 **End-to-end encrypted private chat** (Community → Chat): own implementation of the published Signal protocols (X3DH + Double Ratchet). Only you and the other person can read messages – not even the GhostNode website. Multiple devices, safety numbers and a clear warning when someone’s keys change. Windows app first; Android follows.
+- 🛡 **Moderator role:** the owner appoints moderators (unlock key with “🛡 Moderator”). Moderators get a queue for reports and pending posts, can hide, delete, reclassify, mute or ban – everything is logged.
+- ⚠ **Shared warning list** for crashers, rippers and trolls (Social → Warning list), stored on the GhostNode website: evidence required, visible only after several independent reports, entries expire, appeals possible. Red badge in profiles, the player list and the friends bar, plus a notice when someone on the list joins your instance – never in the chatbox.
+- 💓 **Heart rate:** one source for the whole app – Pulsoid, HypeRate or OSC/smartwatch. Sent as avatar parameters (HR, HRPercent, isHRActive …), placeholders `{puls}` for chatbox, rotator, macros and Stream Deck, SteamVR HUD and a home widget with a live graph. (Game & OSC → Heart rate)
+- 🎛 **Nexus buttons (Android):** a local Stream Deck alternative as its own tab – freely arranged buttons on pages with icon, label and colour; chatbox, inputs, avatar parameters on the PC, VRChat status or open an app area. No Stream Deck needed. Idea by Natsu 💡
+- 🔑 **Unlock keys** are now only for roles (💖 supporter, 🛡 moderator).
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+- 🧰 Fixes: the Patreon supporter update works again.
+
 ### New in 2.15.3 – New repository location
 
 - 🏠 **New home:** the repository moved to **ghostnode-labs/vrc_nexus**. Updater, links in “About”, the supporters list and Discord images now point there directly (older versions still work via GitHub’s redirect).
