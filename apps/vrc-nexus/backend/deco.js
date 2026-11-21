@@ -5,6 +5,7 @@
  * auch im „presence“-Teil). Was in den Feldern steht, ist nicht dokumentiert: eine Katalog-ID (invt_…), ein Name oder eine Bild-URL.
  * Darum wird jeder Wert über den öffentlichen Katalog GET /cosmetics/index/{Typ} aufgelöst (ID oder Name → Bild, Farbverlauf);
  * eine https-URL wird direkt genommen. Katalog wird 24 h zwischengespeichert.
+ * 3.5.2: ohne Banner gibt es ein Ersatz-Banner – mit VRC+ das eigene Profilbild, sonst das Bild des aktuellen Avatars.
  */
 const { str, int, now, cut } = require('./util');
 
@@ -23,8 +24,14 @@ function extract(u) {
     // „avatarBanner“: VRChat nimmt das Bild des aktuellen Avatars als Banner (meist ohne eigene bannerUrl)
     const av = url(u.currentAvatarImageUrl || p.avatarImageUrl || u.currentAvatarThumbnailImageUrl || p.avatarThumbnail);
     for (const k of Object.keys(d)) if (['', 'none', 'null', 'default'].includes(d[k].toLowerCase())) d[k] = '';
-    if (!Object.values(d).some(Boolean)) return null;
+    // 3.5.2 Ersatz-Banner, wenn kein Banner gesetzt ist: VRC+ → eigenes Profilbild (VRC+-Funktion), sonst das Avatar-Bild
+    const vrcPlus = [].concat(u.tags || []).includes('system_supporter');
+    const thumb = url(u.currentAvatarThumbnailImageUrl || p.avatarThumbnail) || av;
+    const fb = (vrcPlus && url(u.profilePicOverride || p.profilePicOverride)) || thumb;
+    if (!Object.values(d).some(Boolean)) return fb || vrcPlus ? Object.assign(fb ? { banner_fb: fb } : {}, vrcPlus ? { vrcplus: true } : {}) : null;
     if (/avatar/i.test(d.banner_type) && !d.banner_url && av) d.banner_avatar = av;
+    if (fb) d.banner_fb = fb;
+    if (vrcPlus) d.vrcplus = true;   // 3.5.2: VRC+-Abzeichen
     return d;
 }
 
@@ -89,7 +96,8 @@ class Deco {
             ring: f && f.g1 ? [f.g1, f.g2 || f.g1] : null,
             name_grad: n && n.g1 ? [n.g1, n.g2 || n.g1] : null,
             effect: e ? e.img : '', effect_grad: e && e.g1 ? [e.g1, e.g2 || e.g1] : null,
-            color: d.banner_color, banner: d.banner_url || (bg ? bg.img : '') || d.banner_avatar || '',
+            color: d.banner_color, banner: d.banner_url || (bg ? bg.img : '') || d.banner_avatar || d.banner_fb || '',
+            vrcplus: !!d.vrcplus,
         };
         // ohne Bild, aber mit Rahmen-Wert: Ring in der Banner-Farbe (damit „Rahmen gesetzt“ trotzdem sichtbar ist)
         if (!r.frame && !r.ring && d.frame && d.banner_color) r.ring = [d.banner_color, d.banner_color];

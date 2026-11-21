@@ -29,6 +29,9 @@ const AVATAR_PROVIDERS_DEFAULT = ['https://api.avtrdb.com/v3/avatar/search/vrcx'
     'https://aviseek.vrchatlegends.com/api'];                      // 3.5.1: AviSeek (eigene JSON-API, ohne Schlüssel)
 /** neue Standard-Anbieter, die bestehenden Listen einmalig hinzugefügt werden */
 const AVATAR_PROVIDERS_ADDED = { 'v322': ['https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'], 'v351': ['https://aviseek.vrchatlegends.com/api'] };
+/** 3.5.2 Avatar-Datenbanken (z. B. avtrDB) verlangen App-Name, Version und eine erreichbare Kontaktangabe im User-Agent
+ *  (Kontakt von der Besitzerin festgelegt, 21.11.). Gilt nur für Anfragen an Avatar-Datenbanken, nicht für die VRChat-API. */
+const AVATAR_DB_UA = () => 'VRC-Nexus/' + require('./vrchat').VERSION + ' (mail@xxloonaxx.de)';
 /** 3.5.1 AviSeek: keine VRCX-Schnittstelle, sondern /avatars/search, /avatars/{id}, /avatars/creators/{usr} */
 const isAviSeek = u => { try { return new URL(u).hostname.toLowerCase() === 'aviseek.vrchatlegends.com'; } catch (e) { return false; } };
 function aviSeekUrl(base, q) {
@@ -455,7 +458,7 @@ class Extra {
         else params = { search: cut(q, 100), n: 500 };
         const avi = isAviSeek(list[provider]);
         let res;
-        try { res = await fetch(avi ? aviSeekUrl(list[provider], q) : list[provider] + '?' + new URLSearchParams(params), { headers: { Accept: 'application/json', 'User-Agent': this.vrc.userAgent() }, redirect: 'error', signal: AbortSignal.timeout(20000) }); }
+        try { res = await fetch(avi ? aviSeekUrl(list[provider], q) : list[provider] + '?' + new URLSearchParams(params), { headers: { Accept: 'application/json', 'User-Agent': AVATAR_DB_UA() }, redirect: 'error', signal: AbortSignal.timeout(20000) }); }
         catch (e) { throw new UserError('Provider nicht erreichbar: ' + (e.cause && e.cause.code || e.message)); }
         if (res.status === 404) return [];
         if (res.status !== 200) throw new UserError('Provider antwortet mit HTTP ' + res.status + '.');

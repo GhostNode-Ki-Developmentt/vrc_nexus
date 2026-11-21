@@ -2466,9 +2466,10 @@ test('3.5.1: AviSeek als Avatar-Datenbank – eigene JSON-API (Suche, Ersteller,
     db.setSetting('vrc_avatar_providers_v322', '1');
     assert.ok(ex.avatarProviders().includes(B), 'eigene Liste einmalig ergänzt');
     const orig = global.fetch; let asked = '';
-    global.fetch = async u => { asked = String(u); return { status: 200, json: async () => ({ total: 1, avatars: [a] }) }; };
+    let ua = ''; global.fetch = async (u, o) => { asked = String(u); ua = o.headers['User-Agent']; return { status: 200, json: async () => ({ total: 1, avatars: [a] }) }; };
     try {
         const r = await ex.avatarDbSearch(ex.avatarProviders().indexOf(B), 'proto');
+        assert.ok(/^VRC-Nexus\/\d+\.\d+\.\d+ \(\S+@\S+\)$/.test(ua), 'Avatar-Datenbanken bekommen Name, Version und Kontakt');
         assert.ok(asked.startsWith(B + '/avatars/search?q=proto'));
         assert.deepStrictEqual([r[0].name, r[0].platforms, r[0].thumb], ['Proto', ['Quest / Android', 'PC'], 'https://x.test/a.png']);
     } finally { global.fetch = orig; app.tools.stop(); }
@@ -2525,6 +2526,15 @@ test('3.1: Profil-Dekorationen – Felder lesen (auch presence), Katalog-ID / Na
     assert.ok(!m.usr_d);
     assert.strictEqual(m.usr_e.frame, 'https://x.test/frame-only.png', 'Rahmen-Asset statt Vorschau mit Platzhalter');
     assert.strictEqual(m.usr_e.banner, 'https://x.test/avatar.png', 'avatarBanner = Bild des aktuellen Avatars');
+    // 3.5.2 Ersatz-Banner ohne Deko: VRC+ → eigenes Profilbild, sonst Avatar-Bild
+    assert.deepStrictEqual(extract({ tags: ['system_supporter'], profilePicOverride: 'https://x.test/pp.png', currentAvatarThumbnailImageUrl: 'https://x.test/t.png' }), { banner_fb: 'https://x.test/pp.png', vrcplus: true });
+    assert.deepStrictEqual(extract({ tags: [], profilePicOverride: 'https://x.test/pp.png', currentAvatarThumbnailImageUrl: 'https://x.test/t.png' }), { banner_fb: 'https://x.test/t.png' }, 'ohne VRC+ das Avatar-Bild');
+    assert.strictEqual(extract({ tags: ['system_supporter'], bannerUrl: 'https://x.test/vb.png', profilePicOverride: 'https://x.test/pp.png' }).banner_url, 'https://x.test/vb.png', 'eigenes Banner geht vor');
+    app.deco.remember('usr_f', { currentAvatarThumbnailImageUrl: 'https://x.test/t.png' });
+    assert.strictEqual((await app.post({ act: 'deco_map' }, {})).deco.usr_f.banner, 'https://x.test/t.png');
+    app.deco.remember('usr_g', { tags: ['system_supporter'] });
+    const m2 = (await app.post({ act: 'deco_map' }, {})).deco;
+    assert.ok(m2.usr_g.vrcplus && !m2.usr_f.vrcplus, 'VRC+-Abzeichen nur mit VRC+');
     const n = calls; await app.post({ act: 'deco_map' }, {}); assert.strictEqual(calls, n, 'Katalog zwischengespeichert');
     // entfernt → gelöscht
     app.deco.remember('usr_a', { iconFrame: '' });

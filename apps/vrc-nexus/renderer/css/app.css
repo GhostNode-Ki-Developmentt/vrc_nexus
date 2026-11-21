@@ -1103,3 +1103,7 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 .ch-gnew input[type=text], .ch-gnew textarea { width: 100%; }
 .ch-gpick { display: flex; flex-wrap: wrap; gap: 4px 14px; max-height: 180px; overflow: auto; margin: 4px 0 10px; padding: 6px; border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 8px; }
 .ch-gmem .nc-row { margin: 2px 0; }
+
+/* 3.5.2 VRC+-Abzeichen */
+.dc-vrcp { display: inline-block; margin-left: 5px; padding: 0 5px; border-radius: 6px; font-size: 0.68em; font-weight: 700; line-height: 1.5; vertical-align: middle; letter-spacing: .02em;
+    color: #1b1300; background: linear-gradient(135deg, #ffd56b, #f0a52c); box-shadow: 0 0 6px rgba(240, 165, 44, .45); }

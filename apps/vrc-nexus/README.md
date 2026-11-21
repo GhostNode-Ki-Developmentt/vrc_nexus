@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.5.2 – Banner fallback, VRC+ badge, avtrDB fixed
+
+- 🎀 People without a profile decoration still get a card banner: VRC+ users their own profile picture, everyone else their current avatar image (a real banner always wins; decorations can still be turned off in Appearance).
+- ✨ VRC+ users get a small **VRC+** badge next to their name.
+- 🔎 avtrDB works again: avatar databases now receive the app name, version and a contact in the user agent, as avtrDB requires (also on the website's server search).
+
 ### New in 3.5.1 – AviSeek avatar search
 
 - 🔎 **AviSeek** is now one of the avatar databases in the avatar search (free, no key): search by name/tag, by creator (user ID or profile link) or by avatar ID, with platform (PC / Quest / iOS) and performance info. Existing provider lists get it added once. Results credit “Data from AviSeek”.

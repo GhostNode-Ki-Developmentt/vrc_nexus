@@ -18,6 +18,7 @@
         el.classList.remove('dc-card', 'dc-has-bg');
         ['--dc-c', '--dc-img'].forEach(k => el.style.removeProperty(k));
         el.querySelectorAll(':scope .dc-av').forEach(w => { if (w.closest('[data-user], .vx-u-head') === el) { const i = w.querySelector(AV); if (i) w.replaceWith(i); else w.remove(); } });
+        el.querySelectorAll('.dc-vrcp').forEach(b => { if (b.closest('[data-user], .vx-u-head') === el) b.remove(); });
         el.querySelectorAll('.dc-name').forEach(n => { n.classList.remove('dc-name'); n.style.removeProperty('--dc-n1'); n.style.removeProperty('--dc-n2'); });
         if (!d || !on) return;
         // Karte: Banner-Farbe als Verlauf von rechts, Banner-Bild dezent dahinter
@@ -39,6 +40,12 @@
         // genauester Treffer zuerst (Reihenfolge in NAME), damit z. B. der Status-Punkt nicht mit eingefärbt wird
         let nm = null;
         if (d.name_grad) for (const q of NAME.split(', ')) { nm = [...el.querySelectorAll(q)].find(x => x.closest('[data-user], .vx-u-head') === el); if (nm) break; }
+        // 3.5.2 VRC+-Abzeichen hinter dem Namen
+        if (d.vrcplus) {
+            let tn = nm;
+            if (!tn) for (const q of NAME.split(', ')) { tn = [...el.querySelectorAll(q)].find(x => x.closest('[data-user], .vx-u-head') === el); if (tn) break; }
+            if (tn) { const b = document.createElement('span'); b.className = 'dc-vrcp'; b.textContent = 'VRC+'; b.title = 'VRChat Plus'; tn.insertAdjacentElement('afterend', b); }
+        }
         if (nm) { nm.classList.add('dc-name'); nm.style.setProperty('--dc-n1', d.name_grad[0]); nm.style.setProperty('--dc-n2', d.name_grad[1]); }
     }
     function apply(root) {
