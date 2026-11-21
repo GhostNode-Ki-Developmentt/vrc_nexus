@@ -2,7 +2,8 @@
  * Interaktiver Graph aus echten Daten (Backend netgraph.js): Freunde als Knoten mit Profilbild, Linien = gemeinsame Freundschaften,
  * farbige Community-Cluster = gemeinsame VRChat-Gruppen. Eigene Canvas-Darstellung (keine externe Bibliothek – die App lädt nichts aus dem Netz):
  * Kräfte mit Raster (schnell auch bei mehreren hundert Knoten), Zeichnen nur bei Änderung.
- * Bedienung: Mausrad = Zoom, Ziehen = verschieben, Klick = auswählen, Doppelklick = Profil, Rechtsklick = Menü, Hover = Infos. */
+ * Bedienung: Mausrad = Zoom, Ziehen = verschieben, Klick = auswählen, Doppelklick = Profil, Rechtsklick = Menü, Hover = Infos.
+ * 3.8.2: ruhige Physik (stark gedämpft, kühlt ab), Communities an festen Plätzen am Rand, harte Kollision, gezogene Knoten bleiben fest (📌, Rechtsklick → lösen). */
 (function () {
     const UI = window.NexusUI;
     if (!UI) return;
@@ -14,7 +15,7 @@
     const V = { x: 0, y: 0, k: 1 };                  // Kamera
     const P = new Map();                              // Positionen je Knoten (bleiben beim Neuladen erhalten)
     const IMG = new Map();
-    let nodes = [], edges = [], byId = new Map(), alpha = 0, dirty = true, canvas = null, ctx = null, dpr = 1, W = 800, H = 600;
+    let lastSig = '', nodes = [], edges = [], byId = new Map(), alpha = 0, dirty = true, canvas = null, ctx = null, dpr = 1, W = 800, H = 600;
 
     const colorOf = gid => { const i = data ? data.groups.findIndex(g => g.id === gid) : -1; return i < 0 ? '#7b8794' : PAL[i % PAL.length]; };
     function img(url) {
@@ -36,47 +37,95 @@
             && (!S.groups.size || n.groups.some(g => S.groups.has(g))));
         byId = new Map(nodes.map(n => [n.id, n]));
         edges = data.edges.map(([a, b]) => [byId.get(a), byId.get(b)]).filter(e => e[0] && e[1]);
+        for (const n of nodes) { n.r = 11 + Math.min(13, Math.sqrt(n.deg) * 2.2); n.prim = n.groups[0] || ''; }
+        // 3.8.2: neue Knoten direkt beim Platz ihrer Community entstehen lassen (statt quer durchs Bild zu wandern)
+        const A = S.clusters ? anchors() : new Map();
+        let fresh = 0;
         for (const n of nodes) {
-            if (!P.has(n.id)) { const a = Math.random() * Math.PI * 2, r = 80 + Math.random() * 260; P.set(n.id, { x: Math.cos(a) * r, y: Math.sin(a) * r, vx: 0, vy: 0 }); }
-            n.p = P.get(n.id); n.r = 11 + Math.min(13, Math.sqrt(n.deg) * 2.2); n.prim = n.groups[0] || '';
+            if (!P.has(n.id)) { const t = (n.prim && A.get(n.prim)) || { x: 0, y: 0 }, a = Math.random() * Math.PI * 2, r = 20 + Math.random() * 70; P.set(n.id, { x: t.x + Math.cos(a) * r, y: t.y + Math.sin(a) * r, vx: 0, vy: 0 }); fresh++; }
+            n.p = P.get(n.id);
         }
-        alpha = Math.max(alpha, 0.9); dirty = true;
+        // nur neu anstoßen, wenn sich wirklich etwas geändert hat (sonst „backt“ das Bild bei jedem Nachladen neu)
+        const sig = nodes.length + ':' + edges.length + ':' + S.clusters;
+        if (fresh || sig !== lastSig) alpha = Math.max(alpha, fresh > nodes.length / 2 ? 0.8 : 0.35);
+        lastSig = sig; dirty = true;
     }
 
-    // ---------- Kräfte (Raster statt n²) ----------
+    // ---------- Kräfte (3.8.2: ruhiger, Communities an festen Plätzen am Rand, keine Überlappung, gezogene Knoten bleiben fest) ----------
+    /** Ankerplatz je Community: bis 4 in die Ecken, mehr gleichmäßig auf einem Rechteck-Rand; ohne Community → Mitte */
+    function anchors() {
+        const gs = data.groups.filter(g => nodes.some(n => n.prim === g.id)), A = new Map(), k = gs.length;
+        const R = 160 + Math.sqrt(nodes.length) * 34;
+        if (!k) return A;
+        if (k <= 4) { const C = [[-1, -1], [1, 1], [1, -1], [-1, 1]]; gs.forEach((g, i) => A.set(g.id, { x: C[i][0] * R, y: C[i][1] * R * 0.75 })); return A; }
+        gs.forEach((g, i) => {   // Umfang eines Rechtecks (Breite 2R, Höhe 1.5R) gleichmäßig aufteilen, bei den Ecken beginnend
+            const w = 2 * R, h = 1.5 * R, per = 2 * (w + h); let d = (i / k) * per;
+            let x, y;
+            if (d < w) { x = -R + d; y = -h / 2; } else if ((d -= w) < h) { x = R; y = -h / 2 + d; } else if ((d -= h) < w) { x = R - d; y = h / 2; } else { d -= w; x = -R; y = h / 2 - d; }
+            A.set(g.id, { x, y });
+        });
+        return A;
+    }
     function tick() {
-        if (!data || alpha < 0.005) return false;
-        const cell = 140, grid = new Map();
-        for (const n of nodes) { const k = Math.floor(n.p.x / cell) + ',' + Math.floor(n.p.y / cell); (grid.get(k) || grid.set(k, []).get(k)).push(n); }
+        if (!data || alpha < 0.01) return false;
+        const cell = 90, grid = new Map(), A = S.clusters ? anchors() : new Map();
+        for (const n of nodes) { const key = Math.floor(n.p.x / cell) + ',' + Math.floor(n.p.y / cell); (grid.get(key) || grid.set(key, []).get(key)).push(n); }
+        // kurze Abstoßung (nur Nachbarzellen)
         for (const n of nodes) {
             const cx = Math.floor(n.p.x / cell), cy = Math.floor(n.p.y / cell);
             for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
                 const list = grid.get((cx + i) + ',' + (cy + j)); if (!list) continue;
                 for (const m of list) {
                     if (m === n) continue;
-                    let dx = n.p.x - m.p.x, dy = n.p.y - m.p.y, d2 = dx * dx + dy * dy || 0.01;
-                    const min = n.r + m.r + 14, f = (1400 / d2) + (d2 < min * min ? 0.4 : 0);
-                    n.p.vx += dx * f * alpha * 0.05; n.p.vy += dy * f * alpha * 0.05;
+                    const dx = n.p.x - m.p.x, dy = n.p.y - m.p.y, d2 = dx * dx + dy * dy || 0.01;
+                    const f = 900 / d2 * alpha * 0.04;
+                    n.p.vx += dx * f; n.p.vy += dy * f;
                 }
             }
         }
+        // Linien: weiche Federn; zwischen verschiedenen Communities schwächer, damit die Gruppen getrennt bleiben
         for (const [a, b] of edges) {
-            const dx = b.p.x - a.p.x, dy = b.p.y - a.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1, f = (d - 90) * 0.006 * alpha;
-            a.p.vx += dx / d * f * 10; a.p.vy += dy / d * f * 10; b.p.vx -= dx / d * f * 10; b.p.vy -= dy / d * f * 10;
+            const dx = b.p.x - a.p.x, dy = b.p.y - a.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+            const same = !S.clusters || !a.prim || a.prim === b.prim, f = (d - (same ? 70 : 160)) * (same ? 0.02 : 0.004) * alpha;
+            a.p.vx += dx / d * f; a.p.vy += dy / d * f; b.p.vx -= dx / d * f; b.p.vy -= dy / d * f;
         }
-        if (S.clusters && data.groups.length) {   // zur Mitte der eigenen (ersten) Community ziehen
-            const cen = new Map();
-            for (const n of nodes) if (n.prim) { const c = cen.get(n.prim) || cen.set(n.prim, { x: 0, y: 0, n: 0 }).get(n.prim); c.x += n.p.x; c.y += n.p.y; c.n++; }
-            for (const n of nodes) { const c = n.prim && cen.get(n.prim); if (c && c.n > 1) { n.p.vx += (c.x / c.n - n.p.x) * 0.01 * alpha; n.p.vy += (c.y / c.n - n.p.y) * 0.01 * alpha; } }
-        }
+        // zum Platz der eigenen Community (oder zur Mitte)
         for (const n of nodes) {
-            if (n.drag) { n.p.vx = n.p.vy = 0; continue; }
-            n.p.vx += -n.p.x * 0.0015 * alpha; n.p.vy += -n.p.y * 0.0015 * alpha;
-            n.p.vx *= 0.78; n.p.vy *= 0.78;
-            n.p.x += Math.max(-12, Math.min(12, n.p.vx)); n.p.y += Math.max(-12, Math.min(12, n.p.vy));
+            const t = (n.prim && A.get(n.prim)) || { x: 0, y: 0 }, s2 = A.size && n.prim ? 0.03 : 0.008;
+            n.p.vx += (t.x - n.p.x) * s2 * alpha; n.p.vy += (t.y - n.p.y) * s2 * alpha;
         }
-        alpha *= 0.985;
+        // bewegen (stark gedämpft) – feste/gezogene Knoten bleiben stehen
+        for (const n of nodes) {
+            if (n.drag || n.p.fixed) { n.p.vx = n.p.vy = 0; continue; }
+            n.p.vx *= 0.55; n.p.vy *= 0.55;
+            n.p.x += Math.max(-8, Math.min(8, n.p.vx)); n.p.y += Math.max(-8, Math.min(8, n.p.vy));
+        }
+        collide(grid, cell);
+        alpha *= 0.965;
         return true;
+    }
+    /** harte Kollision: Kreise dürfen sich nicht überlappen (direkt auseinanderschieben, feste Knoten bewegen sich nicht) */
+    function collide(grid, cell) {
+        for (let pass = 0; pass < 2; pass++) {
+            for (const n of nodes) {
+                const cx = Math.floor(n.p.x / cell), cy = Math.floor(n.p.y / cell);
+                for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
+                    const list = grid.get((cx + i) + ',' + (cy + j)); if (!list) continue;
+                    for (const m of list) {
+                        if (m === n || m.id < n.id) continue;
+                        let dx = m.p.x - n.p.x, dy = m.p.y - n.p.y, d = Math.sqrt(dx * dx + dy * dy);
+                        const min = n.r + m.r + 6;
+                        if (d >= min) continue;
+                        if (d < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d = Math.sqrt(dx * dx + dy * dy); }
+                        const push = (min - d), ux = dx / d, uy = dy / d;
+                        const nf = n.drag || n.p.fixed, mf = m.drag || m.p.fixed;
+                        if (nf && mf) continue;
+                        const sn = nf ? 0 : mf ? 1 : 0.5, sm = mf ? 0 : nf ? 1 : 0.5;
+                        n.p.x -= ux * push * sn; n.p.y -= uy * push * sn; m.p.x += ux * push * sm; m.p.y += uy * push * sm;
+                    }
+                }
+            }
+        }
     }
 
     // ---------- Zeichnen ----------
@@ -94,14 +143,19 @@
         if (S.clusters) {
             for (const g of data.groups) {
                 if (S.groups.size && !S.groups.has(g.id)) continue;
-                const m = nodes.filter(n => n.groups.includes(g.id)); if (m.length < 2) continue;
+                const all = nodes.filter(n => n.groups.includes(g.id)); if (all.length < 2) continue;
+                const on0 = S.groups.has(g.id);
+                // 3.8.2: Kreis um den Kern der Community – festgepinnte Ausreißer und Mitglieder aus anderen Ecken blähen ihn nicht auf
+                let m = all.filter(n => !n.p.fixed && n.prim === g.id);
+                if (m.length < 2) { if (!on0) continue; m = all.filter(n => !n.p.fixed); if (m.length < 2) m = all; }   // ohne eigenen Kern kein Riesenkreis (außer als Filter gewählt)
                 const cx = m.reduce((s, n) => s + n.p.x, 0) / m.length, cy = m.reduce((s, n) => s + n.p.y, 0) / m.length;
-                const r = Math.max(...m.map(n => Math.hypot(n.p.x - cx, n.p.y - cy) + n.r)) + 18;
+                const ds = m.map(n => Math.hypot(n.p.x - cx, n.p.y - cy) + n.r).sort((x, y) => x - y), med = ds[Math.floor(ds.length / 2)];
+                const r = Math.min(ds[ds.length - 1], med * 2 + 40) + 18;
                 const c = colorOf(g.id), on = S.groups.has(g.id);
                 ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
                 ctx.fillStyle = c + (on ? '22' : '12'); ctx.fill();
                 ctx.strokeStyle = c + (on ? 'aa' : '44'); ctx.lineWidth = (on ? 2 : 1) / V.k; ctx.setLineDash([6 / V.k, 6 / V.k]); ctx.stroke(); ctx.setLineDash([]);
-                if (V.k > 0.45) { ctx.font = (12 / V.k) + 'px Segoe UI, sans-serif'; ctx.fillStyle = c; ctx.textAlign = 'center'; ctx.fillText(g.name + ' · ' + m.length, cx, cy - r - 6 / V.k); }
+                if (V.k > 0.45) { ctx.font = (12 / V.k) + 'px Segoe UI, sans-serif'; ctx.fillStyle = c; ctx.textAlign = 'center'; ctx.fillText(g.name + ' · ' + all.length, cx, cy - r - 6 / V.k); }
             }
         }
         // Linien
@@ -125,6 +179,7 @@
             if (!n.friend) { ctx.setLineDash([3, 3]); ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
             // weitere Communities als Punkte am Rand (Mehrfachzugehörigkeit)
             n.groups.slice(1, 5).forEach((g, i) => { const a = -Math.PI / 4 + i * 0.5; ctx.beginPath(); ctx.arc(x + Math.cos(a) * (r + 1), y + Math.sin(a) * (r + 1), 3.2, 0, Math.PI * 2); ctx.fillStyle = colorOf(g); ctx.fill(); });
+            if (n.p.fixed) { ctx.font = (10 / Math.max(1, V.k * 0.8)) + 'px Segoe UI Emoji, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('📌', x - r * 0.75, y - r * 0.75); }   // 3.8.2 fest
             if (n.state && n.state !== 'offline') { ctx.beginPath(); ctx.arc(x + r * 0.7, y + r * 0.7, 4, 0, Math.PI * 2); ctx.fillStyle = ST[n.status] || '#51e57e'; ctx.fill(); ctx.strokeStyle = '#0b121b'; ctx.lineWidth = 1.5; ctx.stroke(); }
             if (V.k > 0.85 || n === sel || n.id === S.hover || match) { ctx.font = '600 ' + (11 / Math.max(1, V.k * 0.9)) + 'px Segoe UI, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#e2e8f0'; ctx.fillText(n.name, x, y + r + 4); }
             ctx.globalAlpha = 1;
@@ -165,7 +220,7 @@
             + '<label class="ng-sl" title="' + esc(T('Mindestanzahl gemeinsamer Verbindungen')) + '">' + esc(T('min.')) + ' <input type="range" id="ngMin" min="0" max="20" value="0"> <b id="ngMinV">0</b></label>'
             + '<button type="button" class="btn btn-sm" data-ng="reset">⟲ ' + esc(T('Zurücksetzen')) + '</button>'
             + '<span class="ng-info small muted" id="ngInfo"></span></div>'
-            + '<div class="ng-body"><div class="ng-main"><canvas id="ngCanvas"></canvas><div class="ng-tip" id="ngTip" hidden></div><div class="ng-hint small muted">' + esc(T('Mausrad: Zoom · Ziehen: verschieben · Klick: auswählen · Doppelklick: Profil · Rechtsklick: Menü')) + '</div></div>'
+            + '<div class="ng-body"><div class="ng-main"><canvas id="ngCanvas"></canvas><div class="ng-tip" id="ngTip" hidden></div><div class="ng-hint small muted">' + esc(T('Mausrad: Zoom · Ziehen: verschieben · Account ziehen: festpinnen 📌 · Klick: auswählen · Doppelklick: Profil · Rechtsklick: Menü (lösen)')) + '</div></div>'
             + '<aside class="ng-side" id="ngSide"></aside></div></div>';
         canvas = box.querySelector('#ngCanvas'); ctx = canvas.getContext('2d');
         const resize = () => { const r = canvas.parentNode.getBoundingClientRect(); dpr = window.devicePixelRatio || 1; W = Math.max(300, r.width); H = Math.max(300, r.height); canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.width = W + 'px'; canvas.style.height = H + 'px'; dirty = true; };
@@ -216,7 +271,7 @@
             const [sx, sy] = pt(e);
             if (drag) {
                 if (Math.abs(sx - drag.sx) + Math.abs(sy - drag.sy) > 3) moved = true;
-                if (drag.n) { const w = toWorld(sx, sy); drag.n.p.x = w.x; drag.n.p.y = w.y; alpha = Math.max(alpha, 0.3); }
+                if (drag.n) { const w = toWorld(sx, sy); drag.n.p.x = w.x; drag.n.p.y = w.y; alpha = Math.max(alpha, 0.15); }
                 else { V.x = drag.vx - (sx - drag.sx) / V.k; V.y = drag.vy - (sy - drag.sy) / V.k; }
                 dirty = true; return;
             }
@@ -227,7 +282,7 @@
         });
         window.addEventListener('mouseup', () => {
             if (!drag) return;
-            if (drag.n) drag.n.drag = false;
+            if (drag.n) { drag.n.drag = false; if (moved) { drag.n.p.fixed = true; alpha = Math.max(alpha, 0.25); } }   // 3.8.2: rausgezogen = bleibt fest
             if (!moved) {
                 const t = Date.now();
                 if (drag.n && t - lastClick < 320 && S.sel === drag.n.id) UI.openUser(drag.n.id);   // Doppelklick = Profil
@@ -242,6 +297,8 @@
             e.preventDefault();
             const a = document.createElement('span'); a.style.cssText = 'position:fixed;left:' + e.clientX + 'px;top:' + e.clientY + 'px'; document.body.appendChild(a);
             UI.popMenu(a, [{ head: n.name }, { label: '👤 ' + T('Profil öffnen'), fn: () => UI.openUser(n.id) }, { label: '🎯 ' + T('Fokus'), fn: () => select(n.id, true) },
+                ...(n.p.fixed ? [{ label: '📌 ' + T('Lösen (wieder frei bewegen)'), fn: () => { n.p.fixed = false; alpha = Math.max(alpha, 0.4); dirty = true; } }] : [{ label: '📌 ' + T('Hier festhalten'), fn: () => { n.p.fixed = true; dirty = true; } }]),
+                { label: '🔓 ' + T('Alle lösen'), fn: () => { for (const p2 of P.values()) p2.fixed = false; alpha = Math.max(alpha, 0.6); dirty = true; } },
                 { label: '🙈 ' + T('Ausblenden'), fn: () => { S.hidden.add(n.id); if (S.sel === n.id) S.sel = ''; visible(); side(); info(); } }]);
             setTimeout(() => a.remove(), 0);
         });
@@ -262,7 +319,7 @@
         box.addEventListener('change', e => {
             const t = e.target;
             if (t.dataset.ngt === 'nonfriends') { S.nonfriends = t.checked; return load('net_graph'); }
-            if (t.dataset.ngt === 'clusters') { S.clusters = t.checked; alpha = Math.max(alpha, 0.5); dirty = true; return; }
+            if (t.dataset.ngt === 'clusters') { S.clusters = t.checked; alpha = Math.max(alpha, 0.7); dirty = true; return; }
             if (t.id === 'ngMode') { S.mode = t.value; visible(); info(); return; }
             if (t.id === 'ngSort') { S.sort = t.value; return side(); }
         });
@@ -288,6 +345,8 @@
         }).catch(e => UI.toast('⚠ ' + e.message, true));
     }
     window.NexusNet = {
+        /** Prüfwerte (für Tests): Bewegung, Überlappungen, feste Knoten */
+        stats() { let ov = 0; for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) { const a = nodes[i], b = nodes[j]; if (Math.hypot(a.p.x - b.p.x, a.p.y - b.p.y) < a.r + b.r) ov++; } return { alpha, nodes: nodes.length, overlaps: ov, fixed: nodes.filter(n => n.p.fixed).length, pos: nodes.map(n => [n.id, Math.round(n.p.x), Math.round(n.p.y)]) }; },
         open() {
             const el = document.getElementById('ngBox'); if (!el) return;
             if (box !== el || !el.querySelector('#ngCanvas')) { box = el; shell(); }

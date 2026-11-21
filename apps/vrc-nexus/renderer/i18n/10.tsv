@@ -1249,3 +1249,7 @@ Keine Gruppe vertreten.	No group represented.	Aucun groupe représenté.	代表�
 Gruppe suchen …	Search group …	Rechercher un groupe …	グループを検索 …
 Gemeinsame Gruppen	Shared groups	Groupes en commun	共通のグループ
 Keine gemeinsamen Gruppen.	No shared groups.	Aucun groupe en commun.	共通のグループはありません。
+Mausrad: Zoom · Ziehen: verschieben · Account ziehen: festpinnen 📌 · Klick: auswählen · Doppelklick: Profil · Rechtsklick: Menü (lösen)	Mouse wheel: zoom · Drag: pan · Drag an account: pin it 📌 · Click: select · Double-click: profile · Right-click: menu (unpin)	Molette : zoom · Glisser : déplacer · Glisser un compte : l'épingler 📌 · Clic : sélectionner · Double-clic : profil · Clic droit : menu (détacher)	ホイール：ズーム · ドラッグ：移動 · アカウントをドラッグ：固定 📌 · クリック：選択 · ダブルクリック：プロフィール · 右クリック：メニュー（固定解除）
+Lösen (wieder frei bewegen)	Unpin (move freely again)	Détacher (bouger librement)	固定を解除（自由に動かす）
+Hier festhalten	Pin here	Épingler ici	ここに固定
+Alle lösen	Unpin all	Tout détacher	すべて固定解除

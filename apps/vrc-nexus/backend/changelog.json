@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.8.2",
+  "title": "Calmer shared network",
+  "body": "- 🕸 **Shared network** settles down instead of wobbling: stronger damping, it cools off and stops, and reloading data no longer stirs the whole picture.\n- 🫂 Communities get their own place at the **corners/edges** of the graph; new people appear right at their community.\n- ⭕ Profile pictures **no longer overlap** (hard collision).\n- 📌 **Drag an account to pin it** – it stays where you put it (pin icon). Right-click → \"Unpin\" or \"Unpin all\". Community circles ignore pinned outliers."
+ },
+ {
   "version": "3.8.1",
   "title": "Profile: community and more actions",
   "body": "- 🫂 **Nexus Community in every profile:** shows whether the person is in the Nexus Community, with buttons for 💬 message, 📞 call and 👤 community profile.\n- ⋯ **More actions in the profile menu:** copy user ID, open on vrchat.com, open profile picture, message/call/community profile, invite to me, request invite, edit note, notify when online, activity, mute, hide avatar.\n- 🛡 **Groups:** the profile now shows only the represented group plus \"＋ More groups (n)\" – the popup lists **shared groups first**, then all others, with search."

@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.8.2 – Calmer shared network
+
+- 🕸 **Shared network** settles down instead of wobbling: stronger damping, it cools off and stops, and reloading data no longer stirs the whole picture.
+- 🫂 Communities get their own place at the **corners/edges** of the graph; new people appear right at their community.
+- ⭕ Profile pictures **no longer overlap** (hard collision).
+- 📌 **Drag an account to pin it** – it stays where you put it (pin icon). Right-click → "Unpin" or "Unpin all". Community circles ignore pinned outliers.
+
 ### New in 3.8.1 – Profile: community and more actions
 
 - 🫂 **Nexus Community in every profile:** shows whether the person is in the Nexus Community, with buttons for 💬 message, 📞 call and 👤 community profile.
