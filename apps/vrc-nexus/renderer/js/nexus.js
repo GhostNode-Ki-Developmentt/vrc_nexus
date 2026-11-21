@@ -173,7 +173,8 @@
         if (name === 'feed') loadFeed(true);
         if (name === 'stats') loadStats();
         if (name === 'worlds' && !loaded.worlds) loadWorlds('mine');   // 3.0.4: „Meine Welten“ = eigene Welten (Favoriten stehen unter ⭐ Favoriten)
-        if (name === 'avatars' && !loaded.avatars) loadAvatars('mine');
+        if (name === 'avatars') { avPark(false); if (!loaded.avatars || avatarKind === 'search') loadAvatars('mine'); }   // 3.4: Avatar-Suche wohnt unter 🔍 Suche
+        if (name === 'search' && searchKind === 'avatars') avPark(true);
         if (name === 'groups' && !loaded.groups) loadGroups();
         if (name === 'favs' && (!loaded.favs || loaded.favsDirty)) { loaded.favs = true; loaded.favsDirty = false; loadFavs(); }
         if (name === 'notifs') nfSet(NF_EXTRA.includes(sub) ? sub : (NF_EXTRA.includes(nfView) ? 'open' : nfView));
@@ -328,10 +329,29 @@
         svg.innerHTML = '<title>Freunde im Spiel, letzte 24 h (max. ' + max + ')</title><polyline points="' + pts + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
     }
 
+    // ---------- 3.4 Multiaccount: Konten wechseln (jedes Konto mit eigener Datenbank) ----------
+    document.addEventListener('click', e => {
+        const b = e.target.closest('[data-acc]');
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        api('prof_list').then(d => {
+            const go = (act, data) => api(act, data).then(r => { if (r.msg) toast(r.msg); if (r.restart && !(window.VRCX && window.VRCX.app)) setTimeout(() => location.reload(), 600); }).catch(x => toast(x.message, true));
+            const items = [{ head: 'Konten' }].concat(d.items.map(p => ({ label: (p.current ? '✔ ' : '👤 ') + (p.name || 'Neues Konto (noch nicht angemeldet)'), fn: p.current ? () => {} : () => go('prof_switch', { id: p.id }) })));
+            if (d.items.length < d.max) items.push({ label: '＋ Weiteres VRChat-Konto anmelden', fn: () => { if (confirm('Weiteres Konto hinzufügen? VRC Nexus startet dafür neu und zeigt die Anmeldung. Deine bisherigen Daten bleiben beim jetzigen Konto.')) go('prof_add'); } });
+            const others = d.items.filter(p => !p.current && p.id !== 'main');
+            if (others.length) { items.push({ head: 'Entfernen' }); others.forEach(p => items.push({ label: '🗑 ' + (p.name || p.id), fn: () => { if (confirm('Konto „' + (p.name || p.id) + '“ und alle seine Daten auf diesem Gerät entfernen?')) go('prof_remove', { id: p.id }); } })); }
+            popMenu(b, items);
+        }).catch(x => toast(x.message, true));
+    }, true);
     function renderMe() {
         const m = state.me;
         $('#me').innerHTML = img(m.image, 'vx-me-img', m.name) + '<div><b style="color:' + esc(tcol(m)) + '">' + esc(m.name) + '</b><span>' + statusDot(m.status)
-            + esc(m.status_desc || (ST[m.status] || {}).label || '') + '</span></div><button type="button" class="vx-logout" title="Abmelden" aria-label="Abmelden">⏻</button>';
+            + esc(m.status_desc || (ST[m.status] || {}).label || '') + '</span></div><button type="button" class="vx-acc" data-acc="1" title="Konto wechseln" aria-label="Konto wechseln">⇄</button><button type="button" class="vx-logout" title="Abmelden" aria-label="Abmelden">⏻</button>';
+        const mbox = $('#me');
+        if (!mbox.dataset.goProfile) {   // 3.4: Klick auf die Profil-Box (nicht auf Abmelden/Konto-Wechsel) → Community → Mein Profil (ersetzt „Ich“ in der rechten Leiste)
+            mbox.dataset.goProfile = '1'; mbox.classList.add('vx-me-go'); mbox.title = 'Mein Profil';
+            mbox.addEventListener('click', e => { if (e.target.closest('.vx-logout, [data-acc], .vx-acc-pop')) return; tab('community', 'profile'); });
+        }
         const f = $('#statusForm');
         if (f && !f.dataset.touched) {
             const r = f.querySelector('input[value="' + CSS.escape(m.status) + '"]'); if (r) r.checked = true;
@@ -1664,8 +1684,19 @@
     }, true);
 
     // ---------- Suche ----------
-    let searchKind = 'users';
-    $('#searchKinds').addEventListener('click', e => { const c = e.target.closest('[data-kind]'); if (!c) return; searchKind = c.dataset.kind; $$('#searchKinds .chip').forEach(x => x.classList.toggle('on', x === c)); $('#userSearch').focus(); });
+    var searchKind = 'users';   // var: tab() kann schon vor dieser Zeile laufen
+    /** 3.4: Avatar-Suche unter 🔍 Suche – der vorhandene Avatar-Bereich (Suche, Treffer, Sortierung, Anziehen) wird dorthin umgehängt */
+    function avPark(intoSearch) {
+        const host = $('#searchAvHost'), pane = $('[data-pane="avatars"]');
+        if (!host || !pane) return;
+        const from = intoSearch ? pane : host, to = intoSearch ? host : pane;
+        [...from.children].forEach(k => to.appendChild(k));
+        host.hidden = !intoSearch;
+        $('#searchForm').classList.toggle('av-mode', !!intoSearch);
+        $('#searchBox').hidden = !!intoSearch;
+        if (intoSearch && avatarKind !== 'search') loadAvatars('search');
+    }
+    $('#searchKinds').addEventListener('click', e => { const c = e.target.closest('[data-kind]'); if (!c) return; searchKind = c.dataset.kind; $$('#searchKinds .chip').forEach(x => x.classList.toggle('on', x === c)); avPark(searchKind === 'avatars'); if (searchKind === 'avatars') { const q = $('#avDbForm [name=q]'); if (q) q.focus(); } else $('#userSearch').focus(); });
     $('#searchForm').addEventListener('submit', e => {
         e.preventDefault();
         const box = $('#searchBox'), q = $('#userSearch').value;

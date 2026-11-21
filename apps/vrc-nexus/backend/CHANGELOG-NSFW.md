@@ -2,6 +2,10 @@
 
 Shown in the app under “About” only when NSFW is unlocked. README, GitHub release and Discord show “🔞 ***” instead.
 
+### New in 3.4.0 – Menu
+
+- 🧭 **NSFW / ERP** now sits in the sidebar section "Game & more" (below Stream bot) – still only visible while NSFW is unlocked.
+
 ### New in 3.3.1 – Panic button in the header
 
 - 🚨 **Panic button moved to the top:** while NSFW is switched on, a **Panic** button sits in the header next to Quick access and Settings. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured under NSFW / ERP) and switches NSFW off again.

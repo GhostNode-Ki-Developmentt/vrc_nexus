@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.4.0",
+  "title": "Menu",
+  "body": "- 🧭 **NSFW / ERP** now sits in the sidebar section \"Game & more\" (below Stream bot) – still only visible while NSFW is unlocked."
+ },
+ {
   "version": "3.3.1",
   "title": "Panic button in the header",
   "body": "- 🚨 **Panic button moved to the top:** while NSFW is switched on, a **Panic** button sits in the header next to Quick access and Settings. It runs the panic actions (safe avatar, clear chatbox, stop toys, private mode – as configured under NSFW / ERP) and switches NSFW off again."

@@ -74,6 +74,27 @@
         if (sub === 'chat') { box.innerHTML = chatHtml(); const l = box.querySelector('.ch-msgs'); if (l) l.scrollTop = l.scrollHeight; return; }
     }
     // ---------- 💬 Privat-Chat (Ende-zu-Ende-verschlüsselt) ----------
+    const chSnip = m => m.deleted ? T('gelöscht') : m.img ? '🖼 ' + (m.text || T('Bild')) : m.hr ? '💓 ' + m.hr + ' bpm' : String(m.text || '').replace(/\s+/g, ' ').slice(0, 80);
+    /** eine Nachricht (3.4: Antwort, Bild, Puls, Reaktionen, bearbeitet/gelöscht, Häkchen, Aktionen) */
+    function chMsg(m, o, plain) {
+        const when = new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const conv = o ? o.uid : '';
+        let body = m.deleted ? '<i class="muted">🗑 ' + esc(T('Nachricht gelöscht')) + '</i>' : '';
+        if (!m.deleted) {
+            if (m.reply) body += '<div class="ch-quote">↩ ' + esc(m.reply.text || T('gelöscht')) + '</div>';
+            if (m.img) body += '<a class="ch-img" href="nexus.php?chimg=' + esc(conv + ':' + m.id) + '" target="_blank" rel="noopener"><img src="nexus.php?chimg=' + esc(conv + ':' + m.id) + '" alt="" loading="lazy"></a>';
+            if (m.hr) body += '<div class="ch-hr">💓 <b>' + m.hr + '</b> bpm</div>';
+            if (m.text) body += '<div class="md">' + md(m.text) + '</div>';
+        }
+        const reacts = Object.entries(m.reacts || {}).map(([e, who]) => '<button type="button" class="ch-react' + (who.includes('me') ? ' on' : '') + '"' + (o ? ' data-chreact="' + esc(e) + '" data-ref="' + esc(m.id) + '"' : '') + '>' + e + (who.length > 1 ? ' ' + who.length : '') + '</button>').join('');
+        const fav = o && (o.favs || []).includes(m.id), pin = o && (o.pins || []).includes(m.id);
+        const acts = !o || m.sys || m.deleted ? '' : '<span class="ch-acts"><button type="button" data-chact="react" data-ref="' + esc(m.id) + '" title="' + esc(T('Reagieren')) + '">😀</button><button type="button" data-chact="reply" data-ref="' + esc(m.id) + '" title="' + esc(T('Antworten')) + '">↩</button>'
+            + (m.me && !m.img && !m.hr ? '<button type="button" data-chact="edit" data-ref="' + esc(m.id) + '" title="' + esc(T('Bearbeiten')) + '">✎</button>' : '')
+            + '<button type="button" data-chact="pin" data-ref="' + esc(m.id) + '" title="' + esc(T('Anheften')) + '"' + (pin ? ' class="on"' : '') + '>📌</button><button type="button" data-chact="fav" data-ref="' + esc(m.id) + '" title="' + esc(T('Merken')) + '"' + (fav ? ' class="on"' : '') + '>★</button>'
+            + (m.me ? '<button type="button" data-chact="del" data-ref="' + esc(m.id) + '" title="' + esc(T('Löschen')) + '">🗑</button>' : '') + '</span>';
+        return '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + (plain ? ' plain' : '') + '" data-mid="' + esc(m.id || '') + '">' + acts + body + (reacts ? '<div class="ch-reacts">' + reacts + '</div>' : '')
+            + '<small>' + esc(when) + (m.edited && !m.deleted ? ' · ' + esc(T('bearbeitet')) : '') + (m.me && !m.sys ? ' <span class="ch-tick' + (m.read ? ' read' : '') + '" title="' + esc(T(m.read ? 'gelesen' : 'gesendet')) + '">' + (m.read ? '✓✓' : '✓') + '</span>' : '') + '</small></div>';
+    }
     function chatHtml() {
         const names = {};
         ((UI.state && UI.state() && UI.state().friends) || []).forEach(f => { names[f.id] = f.name; });
@@ -85,7 +106,15 @@
             + (list.length ? list.map(c => '<button type="button" class="ch-item' + (c.uid === chat.uid ? ' on' : '') + '" data-chopen="' + esc(c.uid) + '"><b>' + esc(c.name || names[c.uid] || c.uid.slice(0, 13) + '…') + '</b>'
                 + (c.changed ? ' <span title="' + esc(T('Schlüssel geändert')) + '">⚠</span>' : c.verified ? ' <span title="' + esc(T('verifiziert')) + '">✔</span>' : '') + (c.unread ? ' <span class="vx-badge sm">' + c.unread + '</span>' : '')
                 + '<small>' + esc(c.last ? (c.last.me ? T('Du') + ': ' : '') + String(c.last.text).slice(0, 60) : '') + '</small></button>').join('') : '<p class="small muted">' + esc(T('Noch keine Unterhaltungen.')) + '</p>')
+            + '<div class="nc-row ch-tools"><button type="button" class="btn btn-sm' + (chat.view === 'favs' ? ' btn-gold' : '') + '" data-chview="favs">★ ' + esc(T('Gemerkt')) + '</button><button type="button" class="btn btn-sm' + (chat.view === 'devices' ? ' btn-gold' : '') + '" data-chview="devices">📱 ' + esc(T('Geräte')) + '</button></div>'
             + '<p class="small muted">🔒 ' + esc(T('Ende-zu-Ende-verschlüsselt: Nur du und dein Gegenüber können die Nachrichten lesen – auch die GhostNode-Webseite nicht.')) + '</p></div>';
+        if (chat.view === 'favs') return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><h4>★ ' + esc(T('Gemerkte Nachrichten')) + '</h4>'
+            + (chat.favs ? (chat.favs.length ? chat.favs.map(f => '<div class="ch-fav"><button type="button" class="nc-link" data-chopen="' + esc(f.conv) + '">' + esc(f.name || f.conv.slice(0, 13) + '…') + '</button>' + chMsg(f.msg, null, true) + '</div>').join('') : '<p class="vx-empty">' + esc(T('Noch nichts gemerkt – bei einer Nachricht auf ★ tippen.')) + '</p>') : '<div class="vx-loading">…</div>') + '</div></div>';
+        if (chat.view === 'devices') return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><h4>📱 ' + esc(T('Meine Chat-Geräte')) + '</h4>'
+            + '<p class="small muted">' + esc(T('Jedes Gerät hat eigene Schlüssel. Nachrichten gehen an alle aktiven Geräte. Entferne Geräte, die du nicht mehr nutzt.')) + '</p>'
+            + (chat.devs ? chat.devs.items.map(d => '<div class="nc-row ch-dev"><span>' + (d.current ? '💻 <b>' + esc(T('Dieses Gerät')) + '</b>' : '📱 ' + esc(T('Gerät')) + ' <code>' + esc(d.device.slice(0, 10)) + '</code>') + '<small> · ' + esc(T('eingerichtet')) + ' ' + esc(new Date(d.created * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE'))
+                + (d.last_seen ? ' · ' + esc(T('zuletzt aktiv')) + ' ' + esc(new Date(d.last_seen * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) : '') + '</small></span>' + (d.current ? '' : '<button type="button" class="btn btn-sm btn-danger" data-chdevrm="' + esc(d.device) + '" style="margin-left:auto">🗑 ' + esc(T('Entfernen')) + '</button>') + '</div>').join('') : '<div class="vx-loading">…</div>')
+            + '<label class="check small" style="margin-top:12px"><input type="checkbox" data-chreceipts="1"' + (!chat.prefs || chat.prefs.receipts ? ' checked' : '') + '> ' + esc(T('Gelesen-Häkchen senden (die andere Seite sieht ✓✓, wenn du gelesen hast)')) + '</label></div></div>';
         if (!o) return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><p class="vx-empty">' + esc(T('Unterhaltung wählen oder neu starten.')) + '</p></div></div>';
         const nm = names[o.uid] || (list.find(c => c.uid === o.uid) || {}).name || o.uid;
         return '<div class="ch-wrap">' + left + '<div class="nc-card ch-conv"><div class="nc-row"><h4 style="margin:0">' + esc(nm) + '</h4>'
@@ -93,11 +122,17 @@
             + (o.changed ? '<div class="tts-help">⚠ ' + esc(T('Die Schlüssel dieser Person haben sich geändert (neues Gerät oder neu eingerichtet). Vergleiche die Sicherheitsnummer, bevor du Vertrauliches schreibst.')) + '</div>' : '')
             + (chat.showSafety ? '<div class="tts-help"><b>' + esc(T('Sicherheitsnummer')) + '</b><br><code class="ch-sn">' + esc(o.safety || '–') + '</code><br><span class="small">' + esc(T('Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.')) + '</span><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-chverify="1">✔ ' + esc(T('Stimmt überein')) + '</button></div></div>' : '')
             + (!o.ready ? '<p class="small bad">' + esc(T('Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).')) + '</p>' : '')
-            + '<div class="ch-msgs">' + (o.messages || []).map(m => '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + '"><div class="md">' + md(m.text) + '</div><small>' + esc(new Date(m.at).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</small></div>').join('') + '</div>'
-            + '<form class="ch-comp nc-row">' + (window.NexusMD ? window.NexusMD.toolbar() : '') + '<textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '></textarea><button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T('Senden')) + '</button></form></div></div>';
+            + ((o.pins || []).length ? '<div class="ch-pins">' + o.pins.map(id => (o.messages || []).find(m => m.id === id)).filter(Boolean).map(m => '<button type="button" class="ch-pin" data-chjump="' + esc(m.id) + '">📌 ' + esc(chSnip(m)) + '</button>').join('') + '</div>' : '')
+            + '<div class="ch-msgs">' + (o.messages || []).map(m => chMsg(m, o)).join('') + '</div>'
+            + (chat.reply ? '<div class="ch-replying">↩ ' + esc(T('Antwort auf')) + ': <i>' + esc(chSnip(chat.reply)) + '</i><button type="button" class="nc-x" data-chreplyx="1">✕</button></div>' : '')
+            + (chat.editing ? '<div class="ch-replying">✎ ' + esc(T('Nachricht bearbeiten')) + '<button type="button" class="nc-x" data-cheditx="1">✕</button></div>' : '')
+            + '<form class="ch-comp nc-row">' + (window.NexusMD ? window.NexusMD.toolbar() : '') + '<textarea name="text" rows="2" maxlength="4000" placeholder="' + esc(T('Verschlüsselte Nachricht …')) + '" style="flex:1"' + (o.ready ? '' : ' disabled') + '>' + esc(chat.editing ? chat.editing.text : '') + '</textarea>'
+            + '<label class="btn btn-sm" title="' + esc(T('Bild oder GIF senden (verschlüsselt)')) + '">🖼<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" data-chimg="1" hidden' + (o.ready ? '' : ' disabled') + '></label>'
+            + '<button type="button" class="btn btn-sm" data-chhr="1" title="' + esc(T('Aktuellen Puls teilen')) + '"' + (o.ready ? '' : ' disabled') + '>💓</button>'
+            + '<button class="btn btn-sm btn-gold"' + (o.ready ? '' : ' disabled') + '>' + esc(T(chat.editing ? 'Speichern' : 'Senden')) + '</button></form></div></div>';
     }
     function chatLoad(poll) { return api('chat_list', poll ? { poll: '1' } : {}).then(d => { chat.list = d.items; nav(); if (sub === 'chat') render(); }).catch(e => { toast('⚠ ' + e.message, true); }); }
-    function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }
+    function chatOpen(uid) { chat.uid = uid; chat.showSafety = false; chat.view = ''; chat.reply = null; chat.editing = null; return api('chat_open', { uid }).then(d => { chat.open = d; render(); chatLoad(); }).catch(e => toast('⚠ ' + e.message, true)); }
     /** Feed alle 10 s auffrischen (neue Beiträge, Reaktionen) – nicht beim Tippen */
     /** Chat-Feed füllt genau den sichtbaren Bereich (Eingabe immer unten sichtbar) */
     function fitFeed() {
@@ -124,7 +159,7 @@
         chat.timer = setInterval(() => {
             if (!box || !box.offsetParent || sub !== 'chat') { clearInterval(chat.timer); api('chat_blur').catch(() => {}); return; }
             if (document.hidden) return;
-            if (chat.uid) api('chat_open', { uid: chat.uid }).then(d => { const n = (chat.open && chat.open.messages || []).length; chat.open = d; if (d.messages.length !== n) render(); }).catch(() => {});
+            if (chat.uid && !chat.view) api('chat_open', { uid: chat.uid }).then(d => { const old = JSON.stringify(chat.open && chat.open.messages); chat.open = d; if (JSON.stringify(d.messages) !== old) render(); }).catch(() => {});
             else chatLoad(true);
         }, 4000);
     }
@@ -255,6 +290,32 @@
             const rp = t.closest('[data-crep]'); if (rp) { const r = prompt(T('Warum meldest du diesen Beitrag?')); if (!r) return; return api('comm_report', { id: rp.dataset.crep, reason: r }).then(d => toast(d.msg)).catch(x => toast(x.message, true)); }
             const more = t.closest('[data-cmore]'); if (more) return loadFeed(true);
             const co = t.closest('[data-chopen]'); if (co) return chatOpen(co.dataset.chopen);
+            // ---- 3.4 Chat ----
+            const cv = t.closest('[data-chview]');
+            if (cv) {
+                chat.view = chat.view === cv.dataset.chview ? '' : cv.dataset.chview; render();
+                if (chat.view === 'favs') api('chat_favs').then(d => { chat.favs = d.items; render(); }).catch(x => toast(x.message, true));
+                if (chat.view === 'devices') api('chat_devices').then(d => { chat.devs = d; return api('chat_prefs'); }).then(d => { chat.prefs = d.prefs; render(); }).catch(x => toast(x.message, true));
+                return;
+            }
+            const rm = t.closest('[data-chdevrm]');
+            if (rm) { if (!confirm(T('Dieses Gerät aus dem Chat entfernen? Es bekommt dann keine Nachrichten mehr.'))) return; return api('chat_device_remove', { device: rm.dataset.chdevrm }).then(d => { chat.devs = d; toast(d.msg); render(); }).catch(x => toast(x.message, true)); }
+            const chOk = d => { chat.open = d; render(); chatLoad(); };
+            const cr = t.closest('[data-chreact]'); if (cr) return api('chat_react', { uid: chat.uid, ref: cr.dataset.ref, emoji: cr.dataset.chreact }).then(chOk).catch(x => toast(x.message, true));
+            const ca = t.closest('[data-chact]');
+            if (ca && chat.open) {
+                const ref = ca.dataset.ref, a = ca.dataset.chact, m = (chat.open.messages || []).find(x => x.id === ref);
+                if (a === 'react') return UI.popMenu(ca, (chat.open.emoji || ['❤️', '👍']).map(e => ({ label: e, fn: () => api('chat_react', { uid: chat.uid, ref, emoji: e }).then(chOk).catch(x => toast(x.message, true)) })));
+                if (a === 'reply') { chat.reply = m; chat.editing = null; render(); const ta = box.querySelector('.ch-comp textarea'); if (ta) ta.focus(); return; }
+                if (a === 'edit') { chat.editing = m; chat.reply = null; render(); const ta = box.querySelector('.ch-comp textarea'); if (ta) ta.focus(); return; }
+                if (a === 'del') { if (!confirm(T('Nachricht für beide löschen?'))) return; return api('chat_delete', { uid: chat.uid, ref }).then(chOk).catch(x => toast(x.message, true)); }
+                if (a === 'pin') return api('chat_pin', { uid: chat.uid, ref }).then(chOk).catch(x => toast(x.message, true));
+                if (a === 'fav') return api('chat_fav', { uid: chat.uid, ref }).then(chOk).catch(x => toast(x.message, true));
+            }
+            if (t.closest('[data-chreplyx]')) { chat.reply = null; return render(); }
+            if (t.closest('[data-cheditx]')) { chat.editing = null; return render(); }
+            const cj = t.closest('[data-chjump]'); if (cj) { const el = box.querySelector('.ch-msg[data-mid="' + CSS.escape(cj.dataset.chjump) + '"]'); if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1200); } return; }
+            if (t.closest('[data-chhr]')) return api('chat_hr', { uid: chat.uid }).then(chOk).catch(x => toast(x.message, true));
             if (t.closest('[data-chsafety]')) { chat.showSafety = !chat.showSafety; return render(); }
             if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
@@ -271,6 +332,15 @@
             }
         });
         box.addEventListener('change', e => {
+            // 3.4 Chat: Gelesen-Häkchen an/aus, Bild/GIF senden (wird in der App verschlüsselt)
+            if (e.target.closest('[data-chreceipts]')) return api('chat_prefs', { receipts: e.target.checked ? '1' : '0' }).then(d => { chat.prefs = d.prefs; toast(d.msg); }).catch(x => toast(x.message, true));
+            if (e.target.closest('[data-chimg]') && e.target.files && e.target.files[0]) {
+                const file = e.target.files[0], ta = box.querySelector('.ch-comp textarea'), body = new FormData();
+                body.append('act', 'chat_img'); body.append('uid', chat.uid); body.append('text', ta ? ta.value : ''); body.append('file', file);
+                busy = true; toast('🖼 ' + T('Bild wird verschlüsselt und gesendet …'));
+                return fetch('nexus.php', { method: 'POST', credentials: 'same-origin', body }).then(r => r.json()).then(d => { if (d.error) throw new Error(d.error); chat.open = d; if (ta) ta.value = ''; })
+                    .catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); });
+            }
             const up = e.target.closest('[data-cup]'), av = e.target.closest('[data-cav]');
             const f = e.target.files && e.target.files[0];
             if (!f) return;
@@ -293,7 +363,11 @@
                 window.NexusProfile18 ? { facts: JSON.stringify(window.NexusProfile18.readFacts(f)) } : {}))
                 .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; profEdit = false; render(); }).catch(x => toast(x.message, true));
             if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
-            if (f.matches('.ch-comp')) { const text = f.text.value; if (!text.trim()) return; busy = true; return api('chat_send', { uid: chat.uid, text }).then(d => { chat.open = d; f.reset(); }).catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); }); }
+            if (f.matches('.ch-comp')) {
+                const text = f.text.value; if (!text.trim()) return; busy = true;
+                const req = chat.editing ? api('chat_edit', { uid: chat.uid, ref: chat.editing.id, text }) : chat.reply ? api('chat_reply', { uid: chat.uid, ref: chat.reply.id, text }) : api('chat_send', { uid: chat.uid, text });
+                return req.then(d => { chat.open = d; chat.reply = null; chat.editing = null; f.reset(); }).catch(x => toast(x.message, true)).finally(() => { busy = false; render(); chatLoad(); });
+            }
             if (f.matches('.cm-sform')) return api('comm_mod', { do: 'mute', vrc_id: f.vrc.value.trim(), hours: f.hours.value }).then(d => { toast(d.msg); loadMod(); }).catch(x => toast(x.message, true));
         });
     }

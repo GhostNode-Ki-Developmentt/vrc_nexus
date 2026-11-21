@@ -47,8 +47,8 @@
         if (tab === 'groups') return renderGroups(el);
         const fr = (st.friends || []).filter(f => !q || f.name.toLowerCase().includes(q));
         const me = st.me || {};
-        el.innerHTML = '<div class="fs-sec"><button type="button" class="fs-head" data-sec="me"><i>' + (open.me ? '▾' : '▸') + '</i> Ich</button>'
-            + (open.me ? '<button type="button" class="fs-row fs-me" data-tab-go="community" data-tab-sub="profile">' + UI.img(me.image, 'fs-img', me.name) + '<span class="fs-txt"><b data-no-i18n>' + UI.statusDot(me.status) + ' ' + esc(me.name || '') + '</b><small data-no-i18n>' + esc(me.status_desc || '') + '</small></span></button>' : '') + '</div>'
+        // 3.4: „Ich“ entfällt – die Profil-Box oben rechts führt jetzt zu „Mein Profil“
+        el.innerHTML = ''
             + (fr.some(fresh) ? section('fresh', '✨ ' + T('Gerade online'), fr.filter(fresh)) : '')
             + section('fav', 'Favoriten', fr.filter(f => f.fav_group))
             + section('online', 'Im Spiel', fr.filter(f => f.state === 'online'))

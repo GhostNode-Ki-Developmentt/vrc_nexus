@@ -78,7 +78,7 @@
                 <button type="button" class="vx-tabbtn" data-tab="favs" data-msub="avatar"><span>🎭</span><em>Lieblings-Avatare</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="coll"><span>📚</span><em>Sammlungen mit Tags</em></button>
             </div></div>
-        <div class="vx-msec" role="separator">Spiel</div>
+        <div class="vx-msec" role="separator">Spiel und Mehr</div>
         <button type="button" class="vx-tabbtn" data-tab="client"><span>🎮</span><em>Spiel &amp; OSC</em></button>
         <button type="button" class="vx-tabbtn" data-tab="client" data-msub="log"><span>🕘</span><em>Spiel-Log</em></button>
         <div class="vx-mgroup"><button type="button" class="vx-mtop" aria-haspopup="true"><span>🧰</span><em>Werkzeuge</em><i>▾</i></button>
@@ -86,8 +86,13 @@
                 <button type="button" class="vx-tabbtn" data-tab="tools"><span>🧰</span><em>Alle Werkzeuge</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="warn"><span>⚠</span><em>Warnliste</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="mod"><span>🛡</span><em>Mod-Zentrale (Gruppen)</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="calendar"><span>📅</span><em>Gruppen-Kalender</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="gallery"><span>🖼️</span><em>Galerie &amp; Inventar</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="shop"><span>🛒</span><em>Shop &amp; Käufe</em></button>
+                <button type="button" class="vx-tabbtn" data-tab="settings" hidden><span>⚙</span><em>Einstellungen</em></button>
             </div></div>
         <button type="button" class="vx-tabbtn" data-tab="stream"><span>📺</span><em>Stream-Bot</em></button>
+        <button type="button" class="vx-tabbtn ns-tab" data-tab="nsfw" hidden><span>❤️</span><em>NSFW / ERP</em></button>
         <button type="button" class="vx-tabbtn" data-tab="remote" data-mobile><span>🎮</span><em>PC-Fernbedienung</em></button>
         <button type="button" class="vx-tabbtn" data-tab="buttons" data-mobile><span>🎛</span><em>Nexus-Knöpfe</em></button>
         <button type="button" class="vx-tabbtn" data-tab="osc" data-mobile><span>📡</span><em>OSC &amp; Parameter</em></button>
@@ -102,16 +107,7 @@
                 <button type="button" class="vx-tabbtn" data-tab="stats"><span>⏱</span><em>Statistik &amp; Spielzeit</em></button>
                 <button type="button" class="vx-tabbtn" data-tab="recap"><span>🎁</span><em>Rückblick &amp; Freunde-Pflege</em></button>
             </div></div>
-        <div class="vx-msec" role="separator"></div>
-        <button type="button" class="vx-tabbtn ns-tab" data-tab="nsfw" hidden><span>❤️</span><em>NSFW / ERP</em></button>
         <button type="button" class="vx-tabbtn ad-tab" data-tab="admin" hidden><span>👑</span><em>Admin</em></button>
-        <div class="vx-mgroup vx-mright"><button type="button" class="vx-mtop" aria-haspopup="true"><span>⚙</span><em>Mehr</em><i>▾</i></button>
-            <div class="vx-mdrop" role="menu">
-                <button type="button" class="vx-tabbtn" data-tab="settings" hidden><span>⚙</span><em>Einstellungen</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="calendar"><span>📅</span><em>Gruppen-Kalender</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="gallery"><span>🖼️</span><em>Galerie &amp; Inventar</em></button>
-                <button type="button" class="vx-tabbtn" data-tab="shop"><span>🛒</span><em>Shop &amp; Käufe</em></button>
-            </div></div>
     </nav>
     <nav class="vx-subnav" id="subNav" hidden></nav>
     <div class="vx-bar" id="syncBar">
@@ -188,7 +184,7 @@
 
     <section class="vx-tab" data-pane="avatars" hidden>
         <div class="vx-tools">
-            <div class="chips" id="avatarKinds"><button type="button" class="chip on" data-kind="mine">🎭 Meine Avatare</button><button type="button" class="chip" data-kind="favorites">⭐ Favoriten</button><button type="button" class="chip" data-kind="search">🔎 Avatar-Suche</button></div>
+            <div class="chips" id="avatarKinds"><button type="button" class="chip on" data-kind="mine">🎭 Meine Avatare</button><button type="button" class="chip" data-kind="favorites">⭐ Favoriten</button></div>
             <input type="search" id="avatarSearch" placeholder="Avatare filtern (Name, Autor) …" aria-label="Avatare filtern">
             <select id="avatarSort" aria-label="Sortierung">
                 <option value="group">Nach Favoritengruppe</option><option value="updated">Zuletzt aktualisiert</option><option value="created">Neueste zuerst</option>
@@ -315,10 +311,11 @@
 
     <section class="vx-tab" data-pane="search" hidden>
         <form class="vx-tools" id="searchForm">
-            <div class="chips" id="searchKinds"><button type="button" class="chip on" data-kind="users">👤 Benutzer</button><button type="button" class="chip" data-kind="worlds">🌐 Welten</button><button type="button" class="chip" data-kind="groups">🛡️ Gruppen</button></div>
+            <div class="chips" id="searchKinds"><button type="button" class="chip on" data-kind="users">👤 Benutzer</button><button type="button" class="chip" data-kind="worlds">🌐 Welten</button><button type="button" class="chip" data-kind="groups">🛡️ Gruppen</button><button type="button" class="chip" data-kind="avatars">🎭 Avatare</button></div>
             <input type="search" id="userSearch" placeholder="Suchbegriff …" minlength="2" required aria-label="Suchbegriff"><button class="btn btn-gold">Suchen</button>
         </form>
         <div class="vx-results" id="searchBox"></div>
+        <div id="searchAvHost" hidden></div>
     </section>
 
     <section class="vx-tab" data-pane="locations" hidden><div id="locBox"></div></section>

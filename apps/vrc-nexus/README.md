@@ -22,6 +22,20 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.4.0 – Multiaccount, more chat, cleaner menu
+
+- 👥 **Multiaccount – several VRChat accounts in VRC Nexus:** click ⇄ in your profile box (top right) to switch accounts or sign in another one. Every account has its **own database** (session, friends, history, favourites, notes, chat keys, Nexus account) – nothing mixes. Switching restarts the app with the other account; the first account keeps all your existing data. New accounts take over your look (theme, language, layout). Passwords are never stored.
+- 🔑 **Multiaccount keys:** one supporter/moderator key can now cover up to 9 additional VRChat IDs of the same person (main + alt accounts). The owner lock is unchanged – a key never makes anyone the owner. Key changes are written to a permission log in Admin.
+- 💬 **Much more chat** (still end-to-end encrypted – the website only ever sees ciphertext):
+  - reactions (❤️ 😂 👍 😮 😢 🔥 🦊 🐾), reply with quote, edit and delete your own messages for both sides
+  - **read receipts** ✓ / ✓✓ (can be switched off)
+  - **images and GIFs**: encrypted on your device with a fresh key, uploaded only as ciphertext and deleted after 30 days; only you and the recipient can load them
+  - 💓 share your current heart rate
+  - 📌 pin messages per conversation and ★ save messages (local only)
+  - 📱 device overview: see your chat devices and remove old ones
+- 🔞 *** (only visible in the app when NSFW is unlocked)
+- 🧭 **Menu:** the profile box at the top right opens *My profile* (the "Me" entry in the right sidebar is gone); the game section is now called **"Game & more"**; the *More* group is gone – group calendar, gallery & inventory and shop are now under **Tools**; **avatar search** now lives under **Search** (🎭 Avatars); with the custom title bar the sidebar starts right at the top again.
+
 ### New in 3.3.3 – Admin icons between theme and language
 
 - 👑 🛡 The small Admin (owner) and Moderation (owner and moderators) icons now sit between 🎨 theme and the language button; theme and language keep their size and place.

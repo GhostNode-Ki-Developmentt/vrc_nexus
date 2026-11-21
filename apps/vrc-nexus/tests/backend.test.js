@@ -2168,6 +2168,169 @@ test('3.3: VR-Bewegung – Einstellungen, Befehl an den SteamVR-Helfer (gemockt)
     } finally { Module._load = realLoad; cp.spawn = realSpawn; delete require.cache[require.resolve('../vroverlay')]; }
 });
 
+test('3.4: Multiaccount-Schlüssel – ein NXK1 für mehrere VRChat-IDs, Rechte-Protokoll', async () => {
+    const { NexusApp } = require('../backend/app');
+    const { hashId } = require('../backend/nsfw');
+    const id = c => 'usr_' + c.repeat(8) + '-1111-2222-3333-444444444444';
+    const OWNER = id('a'), MAIN = id('b'), ALT = id('d'), OTHER = id('c');
+    process.env.NEXUS_OWNER_HASH = hashId(OWNER);
+    const mk = async uid => {
+        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-340-')) } });
+        app.game.osc.stopListen();
+        app.vrc.account = () => ({ vrc_id: uid, me: {} });
+        return app;
+    };
+    try {
+        const own = await mk(OWNER);
+        const kp = await own.post({ act: 'nsfw_admin_keypair' }, {});
+        await assert.rejects(own.post({ act: 'nsfw_admin_issue', uid: MAIN, days: '30', features: 'mod', uids: 'quatsch' }, {}), /keine VRChat-User-ID/);
+        const iss = await own.post({ act: 'nsfw_admin_issue', uid: MAIN, name: 'Main', days: '30', features: 'mod', uids: 'https://vrchat.com/home/user/' + ALT + ', ' + MAIN }, {});
+        assert.deepStrictEqual(iss.items[0].uids, [ALT], 'Zweitkonto gebunden, Haupt-ID nicht doppelt');
+        for (const [uid, ok] of [[MAIN, true], [ALT, true], [OTHER, false]]) {
+            const a = await mk(uid); a.nsfw.trusted.push(kp.pub);
+            if (ok) { const st = await a.post({ act: 'nsfw_unlock', token: iss.token }, {}); assert.ok(st.access.key && st.access.mod && !st.access.owner, uid + ': Rolle, aber nie Besitzer'); }
+            else await assert.rejects(a.post({ act: 'nsfw_unlock', token: iss.token }, {}), /anderen VRChat-Konto/);
+        }
+        await own.post({ act: 'nsfw_admin_revoke', id: iss.items[0].id }, {});
+        const st = await own.post({ act: 'nsfw_state' }, {});
+        assert.deepStrictEqual(st.permlog.map(x => x.what), ['Schlüssel gesperrt', 'Schlüssel erzeugt']);
+        assert.ok(/1 Zweitkonto/.test(st.permlog[1].detail));
+    } finally { delete process.env.NEXUS_OWNER_HASH; }
+});
+
+test('3.4: Multiaccount – Konten mit eigener Datenbank, Wechsel, Einstellungen übernehmen, Entfernen', async () => {
+    const { NexusApp } = require('../backend/app');
+    const P = require('../backend/profiles');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-prof-'));
+    let restarts = 0;
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: dir, restart: () => { restarts++; } } });
+    app.game.osc.stopListen();
+    app.vrc.account = () => ({ vrc_id: 'usr_00000000-0000-4000-8000-000000000001', display_name: 'Haupt', avatar: 'https://example.invalid/a.png' });
+    // ohne profiles.json: bisherige Datei, nichts ändert sich
+    assert.strictEqual(P.currentFile(dir).file, path.join(dir, 'nexus.sqlite'));
+    let r = await app.post({ act: 'prof_list' }, {});
+    assert.deepStrictEqual(r.items.map(x => [x.id, x.name, x.current]), [['main', 'Haupt', true]]);
+    app.settings.save({ 'ui.theme': 'sakura', 'int.webhook': '' });
+    r = await app.post({ act: 'prof_add' }, {});
+    assert.ok(r.restart && r.items.length === 2 && r.current !== 'main');
+    await new Promise(res => setTimeout(res, 400));
+    assert.strictEqual(restarts, 1, 'App startet neu');
+    const cur = P.currentFile(dir);
+    assert.ok(/nexus-p[0-9a-f]{8}\.sqlite$/.test(cur.file), 'eigene Datenbank je Konto');
+    // neuer Start: Oberflächen-Einstellungen übernommen, aber keine Konto-Daten
+    const db2 = await openDatabase(cur.file);
+    assert.ok(P.applySeed(dir, db2));
+    const seeded = JSON.parse(db2.setting('app_settings'));
+    assert.strictEqual(seeded['ui.theme'], 'sakura'); assert.ok(!('int.api_token' in seeded), 'kein API-Token übernommen');
+    assert.ok(!P.applySeed(dir, db2), 'nur einmal');
+    assert.ok(!fs.readFileSync(path.join(dir, 'profiles.json'), 'utf8').includes('password'));
+    // zurück zum ersten Konto, dann das zweite entfernen
+    const second = cur.id;
+    await assert.rejects(app.post({ act: 'prof_remove', id: second }, {}), /aktive Konto/);
+    r = await app.post({ act: 'prof_switch', id: 'main' }, {});
+    assert.strictEqual(r.current, 'main');
+    await assert.rejects(app.post({ act: 'prof_switch', id: '../../etc' }, {}), /nicht gefunden/);
+    await assert.rejects(app.post({ act: 'prof_remove', id: 'main' }, {}), /aktive Konto|erste Konto/);
+    db2.close();
+    r = await app.post({ act: 'prof_remove', id: second }, {});
+    assert.strictEqual(r.items.length, 1); assert.ok(!fs.existsSync(cur.file), 'Daten des entfernten Kontos gelöscht');
+    // kaputte/fremde Einträge in profiles.json werden nicht benutzt
+    fs.writeFileSync(path.join(dir, 'profiles.json'), JSON.stringify({ current: 'x', list: [{ id: 'x', file: '../../böse.sqlite' }] }));
+    assert.strictEqual(P.currentFile(dir).file, path.join(dir, 'nexus.sqlite'));
+    app.tools.stop();
+});
+
+test('3.4: Chat – Reaktionen, Antworten, Bearbeiten/Löschen, Gelesen, Bilder verschlüsselt, Puls, Anheften/Merken, Geräte (Briefkasten gemockt)', async () => {
+    const http = require('http'), E = require('../backend/e2ee');
+    const { NexusApp } = require('../backend/app');
+    // ---- Schein-Briefkasten wie nexuschat.php: sieht nur Chiffretext ----
+    const devs = {}, opks = {}, inbox = [], blobs = {}, seen = [];
+    let nid = 1;
+    const srv = http.createServer((req, res) => {
+        let body = ''; req.on('data', c => { body += c; }); req.on('end', () => {
+            const a = new URL(req.url, 'http://x').searchParams.get('a'), in_ = JSON.parse(body), me = in_.token.slice(4);
+            seen.push(body);
+            const out = o => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
+            if (a === 'publish') { const id = E.deviceId(in_.ik_sig); devs[id] = devs[id] || { uid: me, created: 1700000000, last_seen: 1700000000 }; Object.assign(devs[id], { ik_dh: in_.ik_dh, ik_sig: in_.ik_sig, spk: in_.spk }); opks[id] = (opks[id] || []).concat(in_.opks || []); return out({ device: id, opks: opks[id].length }); }
+            if (a === 'devices') return out({ devices: Object.entries(devs).filter(([, d]) => d.uid === in_.uid).map(([id, d]) => Object.assign({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, created: d.created }, in_.uid === me ? { last_seen: d.last_seen } : {})) });
+            if (a === 'bundles') return out({ bundles: Object.entries(devs).filter(([id, d]) => d.uid === in_.uid && !(in_.skip || []).includes(id)).map(([id, d]) => ({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, spk: d.spk, opk: (opks[id] || []).shift() || null })) });
+            if (a === 'send') { for (const m of in_.msgs) inbox.push({ id: nid++, to: m.dev, from: me, from_dev: in_.device, body: m.body, at: Math.floor(Date.now() / 1000) }); return out({ ok: in_.msgs.length }); }
+            if (a === 'fetch') return out({ msgs: inbox.filter(m => m.to === in_.device).map(m => ({ id: m.id, from: m.from, from_dev: m.from_dev, body: m.body, at: m.at })), opks: (opks[in_.device] || []).length });
+            if (a === 'ack') { for (const id of in_.ids) { const k = inbox.findIndex(m => m.id === id && m.to === in_.device); if (k >= 0) inbox.splice(k, 1); } return out({ ok: true }); }
+            if (a === 'remove') { if (!devs[in_.device] || devs[in_.device].uid !== me) return out({ error: 'Gerät nicht gefunden.' }); delete devs[in_.device]; return out({ ok: true }); }
+            if (a === 'blob_put') { const id = require('crypto').randomBytes(16).toString('hex'); blobs[id] = { data: Buffer.from(in_.data, 'base64'), allow: in_.allow.concat([me]) }; return out({ id }); }
+            if (a === 'blob_get') { const b = blobs[in_.id]; if (!b || !b.allow.includes(me)) return out({ error: 'Bild nicht gefunden oder abgelaufen.' }); res.setHeader('Content-Type', 'application/octet-stream'); return res.end(b.data); }
+            out({ error: 'unbekannt' });
+        });
+    });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_CHAT_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const A = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', B = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444';
+    const mk = async uid => {
+        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-chat-')) } });
+        app.game.osc.stopListen();
+        app.account.current = () => ({ token: 'tok:' + uid, account: { vrc_id: uid } });
+        return app;
+    };
+    try {
+        const a = await mk(A), b = await mk(B);
+        await a.post({ act: 'chat_list' }, {}); await b.post({ act: 'chat_list' }, {});
+        let ra = await a.post({ act: 'chat_send', uid: B, text: 'Hallo **B**' }, {});
+        let rb = await b.post({ act: 'chat_open', uid: A }, {});
+        const m1 = rb.messages[0];
+        assert.strictEqual(m1.text, 'Hallo **B**'); assert.ok(!m1.me);
+        // Gelesen: B hat geöffnet → A sieht ✓✓
+        ra = await a.post({ act: 'chat_open', uid: B }, {});
+        assert.strictEqual(ra.messages[0].read, true, 'Gelesen-Häkchen');
+        // Antwort + Reaktion von B
+        rb = await b.post({ act: 'chat_reply', uid: A, ref: m1.id, text: 'Hi A' }, {});
+        rb = await b.post({ act: 'chat_react', uid: A, ref: m1.id, emoji: '❤️' }, {});
+        ra = await a.post({ act: 'chat_open', uid: B }, {});
+        const reply = ra.messages.find(m => m.text === 'Hi A');
+        assert.deepStrictEqual(reply.reply, { id: m1.id, text: 'Hallo **B**', me: true }, 'Zitat zeigt auf die eigene Nachricht');
+        assert.deepStrictEqual(ra.messages[0].reacts, { '❤️': ['them'] });
+        await assert.rejects(a.post({ act: 'chat_react', uid: B, ref: m1.id, emoji: '💩' }, {}).then(r => { if (!r.messages[0].reacts['💩']) throw new Error('verworfen'); }), /verworfen/, 'nur erlaubte Emojis');
+        // Bearbeiten/Löschen nur eigene
+        await assert.rejects(a.post({ act: 'chat_edit', uid: B, ref: reply.id, text: 'gefälscht' }, {}), /eigene/);
+        await a.post({ act: 'chat_edit', uid: B, ref: m1.id, text: 'Hallo B (bearbeitet)' }, {});
+        rb = await b.post({ act: 'chat_open', uid: A }, {});
+        assert.strictEqual(rb.messages[0].text, 'Hallo B (bearbeitet)'); assert.ok(rb.messages[0].edited);
+        await a.post({ act: 'chat_delete', uid: B, ref: m1.id }, {});
+        rb = await b.post({ act: 'chat_open', uid: A }, {});
+        assert.ok(rb.messages[0].deleted && !rb.messages[0].text && !Object.keys(rb.messages[0].reacts).length);
+        // Bild: verschlüsselt hochgeladen, nur Empfänger kann es lesen
+        const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), require('crypto').randomBytes(400)]);
+        await assert.rejects(a.post({ act: 'chat_img', uid: B, text: '' }, { file: { buffer: Buffer.from('kein bild') } }), /Nur PNG/);
+        ra = await a.post({ act: 'chat_img', uid: B, text: 'Schau!' }, { file: { buffer: png } });
+        const blobId = Object.keys(blobs)[0];
+        assert.ok(blobs[blobId].data.length >= png.length && !blobs[blobId].data.includes(png.slice(8, 40)), 'Server hat nur Chiffretext');
+        assert.ok(!seen.some(x => x.includes('Schau!')), 'Bildunterschrift nie im Klartext beim Server');
+        rb = await b.post({ act: 'chat_open', uid: A }, {});
+        const im = rb.messages.find(m => m.img);
+        const got = await b.chat.image(A + ':' + im.id);
+        assert.strictEqual(got.status, 200); assert.ok(Buffer.from(got.body).equals(png), 'Empfänger entschlüsselt das Original');
+        // Puls
+        b.heart.status = () => ({ active: true, bpm: 88 });
+        await b.post({ act: 'chat_hr', uid: A }, {});
+        ra = await a.post({ act: 'chat_open', uid: B }, {});
+        assert.strictEqual(ra.messages[ra.messages.length - 1].hr, 88);
+        // Anheften / Merken (nur lokal)
+        ra = await a.post({ act: 'chat_pin', uid: B, ref: reply.id }, {});
+        assert.deepStrictEqual(ra.pins, [reply.id]);
+        ra = await a.post({ act: 'chat_fav', uid: B, ref: reply.id }, {});
+        assert.deepStrictEqual(ra.favs, [reply.id]);
+        assert.strictEqual((await a.post({ act: 'chat_favs' }, {})).items[0].msg.text, 'Hi A');
+        // Gelesen-Häkchen abschaltbar
+        assert.strictEqual((await b.post({ act: 'chat_prefs', receipts: '0' }, {})).prefs.receipts, false);
+        // Geräte
+        const d = await a.post({ act: 'chat_devices' }, {});
+        assert.ok(d.items.length === 1 && d.items[0].current && d.items[0].last_seen);
+        await assert.rejects(a.post({ act: 'chat_device_remove', device: d.items[0].device }, {}), /selbst/);
+        assert.ok(!seen.some(x => /Hallo|Hi A|bearbeitet/.test(x)), 'Briefkasten sieht nie Klartext');
+        a.tools.stop(); b.tools.stop();
+    } finally { delete process.env.NEXUS_CHAT_BASE; srv.close(); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

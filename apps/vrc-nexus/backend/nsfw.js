@@ -69,7 +69,9 @@ class Nsfw {
         if (!ok) return { error: 'Unterschrift ungültig – der Schlüssel stammt nicht vom Besitzer (oder diese App-Version kennt seinen Schlüssel noch nicht).' };
         let p;
         try { p = JSON.parse(unb64u(m[1]).toString('utf8')); } catch (e) { return { error: 'Schlüssel beschädigt.' }; }
-        if (!p.uid || p.uid !== uid) return { error: 'Dieser Schlüssel gehört zu einem anderen VRChat-Konto.' };
+        // 3.4: Multiaccount-Schlüssel – gilt für die Haupt-ID und die gebundenen Zweitkonten (uids)
+        const bound = [str(p.uid)].concat(arr(p.uids).map(str)).map(x => x.toLowerCase());
+        if (!p.uid || !bound.includes(str(uid).toLowerCase())) return { error: 'Dieser Schlüssel gehört zu einem anderen VRChat-Konto.' };
         if (p.exp && p.exp < now()) return { error: 'Der Schlüssel ist abgelaufen.' };
         if (this.revoked().includes(p.id)) return { error: 'Der Schlüssel wurde gesperrt.' };
         return { payload: p };
@@ -114,6 +116,9 @@ class Nsfw {
     need(f) { const a = this.access(); if (!a.unlocked || (f && !a.features.includes(f))) throw new UserError('Nicht freigeschaltet.'); return a; }
 
     // ---------- Admin: Schlüssel erzeugen, Liste, sperren ----------
+    /** 3.4: Rechte-Protokoll (nur lokal beim Besitzer, letzte 300 Einträge) */
+    permLog() { try { return JSON.parse(this.app.db.setting('nsfw_permlog', '[]')) || []; } catch (e) { return []; } }
+    logPerm(what, detail) { const l = this.permLog(); l.unshift({ at: now(), what: cut(str(what), 60), detail: cut(str(detail), 200) }); this.app.db.setSetting('nsfw_permlog', JSON.stringify(l.slice(0, 300))); }
     issued() { try { return JSON.parse(this.app.db.setting('nsfw_issued', '[]')) || []; } catch (e) { return []; } }
     async issue(input) {
         if (!this.isOwner()) throw new UserError('Nur für den Besitzer.');
@@ -124,9 +129,14 @@ class Nsfw {
         const days = int(input.days);
         const f = arr(String(input.features || 'supporter').split(',')).map(x => x.trim()).filter(x => ROLES[x]);
         if (!f.length) throw new UserError('Mindestens eine Rolle wählen (Supporter oder Moderator).');
-        const payload = { v: 1, id: crypto.randomBytes(6).toString('hex'), uid, f, iat: now(), exp: days > 0 ? now() + days * 86400 : 0, n: cut(str(input.note), 80) };
+        // 3.4 Multiaccount: weitere VRChat-IDs derselben Person (Zweitkonten), höchstens 9
+        const extra = [...new Set(str(input.uids).split(/[\s,;]+/).map(x => x.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1').toLowerCase()).filter(Boolean))].filter(x => x !== uid.toLowerCase());
+        for (const x of extra) if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(x)) throw new UserError('„' + cut(x, 40) + '“ ist keine VRChat-User-ID.');
+        if (extra.length > 9) throw new UserError('Höchstens 9 weitere Konten je Schlüssel.');
+        const payload = Object.assign({ v: 1, id: crypto.randomBytes(6).toString('hex'), uid, f, iat: now(), exp: days > 0 ? now() + days * 86400 : 0, n: cut(str(input.note), 80) }, extra.length ? { uids: extra } : {});
         const token = this.sign(payload);
-        const l = this.issued(); l.unshift({ id: payload.id, uid, name, f: payload.f, iat: payload.iat, exp: payload.exp, note: payload.n, revoked: false });
+        const l = this.issued(); l.unshift(Object.assign({ id: payload.id, uid, name, f: payload.f, iat: payload.iat, exp: payload.exp, note: payload.n, revoked: false }, extra.length ? { uids: extra } : {}));
+        this.logPerm('Schlüssel erzeugt', (name || uid) + (extra.length ? ' + ' + extra.length + ' Zweitkonto/-konten' : '') + ' · ' + f.join(', '));
         this.app.db.setSetting('nsfw_issued', JSON.stringify(l.slice(0, 500)));
         return { token, entry: l[0], msg: 'Schlüssel für ' + (name || uid) + ' erzeugt.' };
     }
@@ -137,6 +147,7 @@ class Nsfw {
         e.revoked = on !== false;
         this.app.db.setSetting('nsfw_issued', JSON.stringify(l));
         const r = new Set(this.revoked()); if (e.revoked) r.add(e.id); else r.delete(e.id);
+        this.logPerm(e.revoked ? 'Schlüssel gesperrt' : 'Schlüssel entsperrt', (e.name || e.uid) + ' · ' + e.id);
         this.app.db.setSetting('nsfw_revoked', JSON.stringify([...r]));
         return { items: l };
     }
@@ -190,7 +201,7 @@ class Nsfw {
     state() {
         const a = this.access(), c = this.cfg();
         const out = { access: a, private: this.private, features: FEATURES, roles: ROLES };
-        if (a.owner) { const k = this.ownerKey(); Object.assign(out, { owner_key: k ? k.pub : '', key_known: !!(k && TRUSTED.includes(k.pub)), issued: this.issued() }); }
+        if (a.owner) { const k = this.ownerKey(); Object.assign(out, { owner_key: k ? k.pub : '', key_known: !!(k && TRUSTED.includes(k.pub)), issued: this.issued(), permlog: this.permLog().slice(0, 50) }); }
         if (!a.unlocked) return out;
         Object.assign(out, { cfg: c, current_avatar: str(this.acc() && this.acc().me && this.acc().me.currentAvatar), toys: this.app.toys ? this.app.toys.status() : null, tremote: this.app.toyremote ? this.app.toyremote.status() : null, remote: this.app.remote ? this.app.remote.status() : null });
         return out;

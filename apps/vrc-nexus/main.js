@@ -124,6 +124,8 @@ const host = {
         catch (e) { notify('VRC Nexus', 'Tastenkürzel „' + cfg.hotkey + '“ ungültig: ' + e.message); }
     },
     overlayState: () => (vr ? vr.state() : null),
+    /** 3.4 Multiaccount: nach dem Konto-Wechsel neu starten (Datenbank wird beim Beenden gespeichert) */
+    restart: () => { quitting = true; app.relaunch(); app.quit(); },
     overlayToggle: async on => { if (!vr) throw new Error('Overlay nicht verfügbar.'); return vr.toggle(on); },
     spaceCmd: op => { if (!vr) throw new Error('SteamVR-Helfer nicht verfügbar.'); return vr.spaceCmd(op); },
     applySettings: (changed, s) => {
@@ -188,7 +190,10 @@ app.whenReady().then(async () => {
         });
     } catch (e) { /* ältere Electron-Version */ }
     try {
-        db = await openDatabase(path.join(app.getPath('userData'), 'nexus.sqlite'));
+        // 3.4 Multiaccount: jedes VRChat-Konto hat seine eigene Datenbank (profiles.json im Datenordner)
+        const prof = require('./backend/profiles');
+        db = await openDatabase(prof.currentFile(app.getPath('userData')).file);
+        prof.applySeed(app.getPath('userData'), db);
     } catch (e) {
         dialog.showErrorBox('VRC Nexus', 'Die Datenbank konnte nicht geöffnet werden:\n' + e.message);
         app.exit(1);

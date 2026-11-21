@@ -82,6 +82,7 @@ class NexusApp {
         this.tts = opts.mobile ? null : new Tts(this, opts.crypt);
         this.media = opts.mobile ? null : new Media(this);
         this.vrspace = new (require('./vrspace').VrSpace)(this);
+        this.profiles = new (require('./profiles').Profiles)(this);
         this.osctools = new OscTools(this);               // 3.2.5: auch am Handy (Szenen, Aufnahme über die eigene OSC-Verbindung)
         this.vrc.onWatch = (name, world) => { if (this.settings.get('notify.watch')) this.tools.alert('🟢 ' + name + ' ist online', world ? 'in ' + world : 'gerade ins Spiel gekommen'); };
         this.vrc.onWatchEvent = (name, kind, world) => {
@@ -103,6 +104,7 @@ class NexusApp {
                 return m ? { status: 200, headers: { 'Content-Type': m[1], 'Cache-Control': 'private, max-age=31536000' }, body: Buffer.from(m[3], 'base64') } : { status: 404, headers: {}, body: '' }; }
             if (q.has('img')) return await this.image(q.get('img'), int(q.get('v')) || 1, int(q.get('s')));
             if (q.has('cimg')) return await this.comm.image(q.get('cimg'));
+            if (q.has('chimg')) { if (!this.chat) return { status: 404, headers: {}, body: '' }; try { return await this.chat.image(q.get('chimg')); } catch (e) { return { status: 404, headers: {}, body: '' }; } }   // 3.4: verschlüsselte Chat-Bilder
             if (q.has('export')) return download(this.vrc.exportCsv(q.get('export') === 'feed' ? 'feed' : 'friends'), 'text/csv; charset=utf-8', 'vrc-nexus_' + (q.get('export') === 'feed' ? 'verlauf' : 'freunde') + '_' + new Date().toISOString().slice(0, 10) + '.csv');
             if (q.has('client_export')) return download(this.game.exportCsv(), 'text/csv; charset=utf-8', 'vrchat-spiellog_' + new Date().toISOString().slice(0, 10) + '.csv');
             if (q.has('shot')) { const r = await this.tools.shotImage(q.get('shot'), q.get('t') === '1'); return { status: 200, headers: { 'Content-Type': r.type, 'Cache-Control': 'private, max-age=3600' }, body: r.body }; }
@@ -193,6 +195,7 @@ class NexusApp {
             if (act.startsWith('subs_')) { if (!this.subs) throw new UserError('Übersetzer gibt es nur in der Windows-App.'); return await this.subs.action(act, input); }
             if (act.startsWith('speech_')) { if (!this.speech) throw new UserError('Spracheingabe gibt es nur in der Windows-App.'); return await this.speech.action(act, input); }
             if (act.startsWith('space_')) return await this.vrspace.action(act, input);   // 3.3 VR-Bewegung
+            if (act.startsWith('prof_')) return await this.profiles.action(act, input);   // 3.4 Multiaccount (Konten wechseln)
             if (act === 'overlay_act') return await this.tools.apiAction(str(input.action), input);
             if (act === 'overlay_cfg') { const s = this.settings.all(); return { phrases: str(s['vr.overlay_phrases']).split('\n').map(x => x.trim()).filter(Boolean).slice(0, 40), translate: !!s['vr.overlay_translate'], target: str(s['tr.chat_target'] || '') }; }
             if (act.startsWith('ins_')) return await this.insights.action(act, input);
@@ -207,7 +210,7 @@ class NexusApp {
             if (act.startsWith('deco_')) return await this.deco.action(act, input);
             if (act.startsWith('net_')) { if (!this.vrc.account()) throw new UserError('Erst bei VRChat anmelden.'); return await this.netgraph.action(act, input); }
             if (act === 'win_titlebar') { if (this.tools.host.setTitleBar) this.tools.host.setTitleBar({ color: str(input.color), symbol: str(input.symbol) }); return { ok: true }; }
-            if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input); }
+            if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input, files); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }
             if (act.startsWith('cm_')) { if (!this.chatmods) throw new UserError('Chatbox-Module gibt es nur in der Windows-App.'); return await this.chatmods.action(act, input); }

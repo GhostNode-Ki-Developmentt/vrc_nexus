@@ -43,7 +43,10 @@ if (native) {
     await fs.__load();
     fs.__files.set('/renderer/page.html', TEMPLATE);
     const SQL = await initSqlJs({ locateFile: f => f });
-    const db = new Database(SQL, '/data/nexus.sqlite');
+    // 3.4 Multiaccount: Datenbank des aktuell gewählten Kontos
+    const prof = require('../../vrc-nexus/backend/profiles');
+    const db = new Database(SQL, prof.currentFile('/data').file);
+    prof.applySeed('/data', db);
     // Android-Sandbox: nur diese App kann ihren Speicher lesen
     const crypt = { encrypt: s => 'plain:' + Buffer.from(s).toString('base64'), decrypt: s => (s.startsWith('plain:') ? Buffer.from(s.slice(6), 'base64').toString() : '{}') };
     const host = {
@@ -62,6 +65,7 @@ if (native) {
                 await W.installApk({ path: uri });
             } finally { sub.remove(); }
         },
+        restart: async () => { try { db.save(); await fs.__flush(); } catch (e) { /* egal */ } window.location.reload(); },   // 3.4: Konto-Wechsel
         speak: t => { if (window.speechSynthesis) speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t), { lang: 'de-DE' })); },
     };
     const app = new NexusApp({ db, crypt, host, notify, mobile: true });

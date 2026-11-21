@@ -1035,7 +1035,10 @@ body.mobile .nc-pc-only { display: none !important; }
 
 /* 3.3.1: eigene Titelleiste zeigt schon „VRC Nexus“ → kein zweites Logo in der Seitenleiste */
 body.own-frame.nav-side .vx-sidebrand { display: none; }
-body.own-frame.nav-side .vx-menu { padding-top: 44px; }
+body.own-frame.nav-side .vx-menu { padding-top: 10px; }
+/* 3.4: Menü beginnt oben – der «-Knopf sitzt rechts neben dem ersten Eintrag */
+body.own-frame.nav-side .vx-menu > .vx-tabbtn:first-of-type { width: calc(100% - 34px); }
+body.own-frame.nav-side .vx-navtoggle { top: 14px; }
 /* 3.3.1: Panik-Knopf oben (nur mit NSFW an) */
 .vx-hbtn.vx-hpanic { border-color: rgba(220, 38, 38, 0.75); color: #ff6b6b; }
 .vx-hbtn.vx-hpanic em { color: #ff8a8a; }
@@ -1046,3 +1049,36 @@ body.own-frame.nav-side .vx-menu { padding-top: 44px; }
 #tabs .vx-tabbtn[data-tab="admin"] { display: none !important; }
 .i18n-fab.i18n-admin { font-size: 1rem; }
 body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte – Design und Sprache behalten ihre Breite */
+
+/* 3.4: Profil-Box oben rechts öffnet „Mein Profil“; Avatar-Suche unter 🔍 Suche */
+.vx-me.vx-me-go { cursor: pointer; } .vx-me.vx-me-go:hover { border-color: var(--accent-cyan); }
+#searchForm.av-mode > :not(#searchKinds) { display: none !important; }
+#searchAvHost #avatarKinds { display: none !important; }
+#searchAvHost:not([hidden]) { display: flex; flex-direction: column; }
+#searchAvHost #avDbForm { order: -1; }
+
+/* 3.4 Multiaccount: Konto-Wechsel in der Profil-Box */
+.vx-acc { margin-left: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; font-size: 0.95rem; }
+.vx-acc:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+/* 3.4 Chat: Aktionen, Antwort, Bild, Puls, Reaktionen, Häkchen, Anheften, Geräte */
+.ch-msg { position: relative; }
+.ch-acts { position: absolute; top: -14px; right: 6px; display: none; gap: 2px; padding: 2px; border: 1px solid var(--border-color); background: var(--panel-bg); border-radius: 6px; z-index: 2; }
+.ch-msg:hover .ch-acts, .ch-msg:focus-within .ch-acts { display: flex; }
+.ch-acts button { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; padding: 2px 5px; font-size: 0.85rem; border-radius: 4px; }
+.ch-acts button:hover, .ch-acts button.on { color: var(--accent-gold); background: rgba(var(--accent-rgb), 0.12); }
+.ch-quote { margin: 0 0 4px; padding: 3px 8px; border-left: 3px solid var(--accent-cyan); background: rgba(var(--accent-rgb), 0.06); font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-img img { display: block; max-width: min(320px, 100%); max-height: 320px; border-radius: 8px; margin: 2px 0 4px; background: rgba(0, 0, 0, 0.2); min-height: 60px; min-width: 80px; }
+.ch-hr { font-size: 1.05rem; } .ch-hr b { color: #ff6b8a; font-size: 1.3rem; }
+.ch-reacts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.ch-react { border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.04); border-radius: 12px; padding: 1px 7px; font-size: 0.85rem; cursor: pointer; color: var(--text-main); }
+.ch-react.on { border-color: var(--accent-cyan); background: rgba(var(--accent-rgb), 0.15); }
+.ch-tick { margin-left: 4px; letter-spacing: -2px; } .ch-tick.read { color: var(--accent-cyan); }
+.ch-pins { display: flex; flex-direction: column; gap: 3px; margin: 6px 0; }
+.ch-pin { text-align: left; border: 1px solid var(--border-color); background: rgba(var(--accent-rgb), 0.05); color: var(--text-main); padding: 4px 8px; font: inherit; font-size: 0.8rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-replying { display: flex; align-items: center; gap: 8px; padding: 4px 8px; font-size: 0.8rem; color: var(--text-muted); border-left: 3px solid var(--accent-gold); margin-top: 6px; }
+.ch-replying i { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-msg.flash { outline: 2px solid var(--accent-gold); }
+.ch-tools { margin: 8px 0 4px; gap: 6px; }
+.ch-fav { margin-bottom: 10px; } .ch-fav .ch-msg { max-width: 100%; }
+.ch-dev { padding: 6px 0; border-bottom: 1px solid var(--border-color); } .ch-dev small { color: var(--text-muted); }
