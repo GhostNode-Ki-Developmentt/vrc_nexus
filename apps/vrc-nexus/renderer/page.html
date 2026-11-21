@@ -23,6 +23,7 @@
 {{IF_LOGIN}}
     <div class="vx-login panel">
         <div class="panel-title">VRChat-Konto verbinden</div>
+        <div class="vx-expired" {{EXPIRED_HIDDEN}}>⏱ Deine VRChat-Sitzung ist abgelaufen – du wurdest automatisch abgemeldet. Bitte melde dich neu an.</div>
         <form id="loginForm" {{LOGIN_HIDDEN}}>
             <label class="field" for="vxU">VRChat-Benutzername oder E-Mail</label>
             <input type="text" id="vxU" name="username" autocomplete="username" required>

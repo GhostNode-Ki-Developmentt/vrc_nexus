@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.6.1 – Automatic logout when the session expires
+
+- ⏱ When the VRChat session expires, VRC Nexus now logs you out automatically instead of staying in a half-connected state. The login page tells you why. A single 401 from another endpoint is double-checked first, so you are not logged out by mistake. (Same on the GhostNode website.)
+
 ### New in 3.6.0 – Plugin system (PC)
 
 - 🧩 **Plugins** (Windows app only): VRC Nexus can now load extensions in its own package format **`.nxp`** (a ZIP with `plugin.json`). The app is only the loader – 🧩 Plugins → 📦 Install plugin.

@@ -14,7 +14,7 @@ const SYNC_MIN = 45;
 const OFFLINE_SYNC = 900;
 const FEED_KEEP_DAYS = 180;
 const UID = 1;   // die App hat genau ein Konto
-const VERSION = '3.6.0';
+const VERSION = '3.6.1';
 
 class Vrc {
     /**
@@ -67,6 +67,7 @@ class Vrc {
 
     // ---------- Anmeldung ----------
     async login(username, password) {
+        this.db.setSetting('vrc_logout_reason', '');
         const cookies = {};
         const basic = Buffer.from(encodeURIComponent(username) + ':' + encodeURIComponent(password)).toString('base64');
         const [code, json] = await this.http(cookies, 'GET', '/auth/user', {}, null, { Authorization: 'Basic ' + basic });
@@ -119,17 +120,28 @@ class Vrc {
         const a = this.account();
         if (a && remote && (Object.keys(a.cookie_jar).length || this.nativeCookies)) { try { await this.http(a.cookie_jar, 'PUT', '/logout'); } catch (e) { /* egal */ } }
         this.db.prepare('DELETE FROM accounts WHERE user_id = ?').run(UID);
+        this.db.setSetting('vrc_logout_reason', '');
         this.db.save();
     }
 
+    /** Sitzung abgelaufen: lokal abmelden (bei VRChat ist sie ohnehin ungültig) und Grund für die Anmeldeseite merken */
+    expire() {
+        if (!this.db.prepare('SELECT 1 FROM accounts WHERE user_id = ?').value(UID)) return;
+        this.db.prepare('DELETE FROM accounts WHERE user_id = ?').run(UID);
+        this.db.setSetting('vrc_logout_reason', 'expired');
+        this.db.save();
+    }
     /** API-Aufruf im Namen des Kontos; bei abgelaufener Sitzung VrcAuthError */
     async call(acc, method, path, query = {}, body = null) {
         const before = JSON.stringify(acc.cookie_jar);
         const [code, json] = await this.http(acc.cookie_jar, method, path, query, body);
         if (JSON.stringify(acc.cookie_jar) !== before) this.db.prepare('UPDATE accounts SET cookies = ? WHERE user_id = ?').run(this.crypt.encrypt(JSON.stringify(acc.cookie_jar)), UID);
-        if (code === 401 && path.startsWith('/auth/user')) {
-            this.db.prepare("UPDATE accounts SET last_error = 'Sitzung abgelaufen' WHERE user_id = ?").run(UID);
-            throw new VrcAuthError('Die VRChat-Sitzung ist abgelaufen – bitte neu anmelden.');
+        // 3.6.1: abgelaufene Sitzung → automatisch abmelden (Konto-Eintrag weg, Hinweis auf der Anmeldeseite).
+        // Bei 401 von anderen Pfaden erst über /auth/user nachprüfen (manche Endpunkte melden 401 auch ohne Ablauf).
+        if (code === 401) {
+            let expired = path.startsWith('/auth/user');
+            if (!expired) { try { expired = (await this.http(acc.cookie_jar, 'GET', '/auth/user'))[0] === 401; } catch (e) { expired = false; } }
+            if (expired) { this.expire(); throw new VrcAuthError('Die VRChat-Sitzung ist abgelaufen – du wurdest abgemeldet. Bitte neu anmelden.'); }
         }
         if (code < 200 || code >= 300) throw new UserError(this.errorText(code, json));
         return json === null ? {} : json;

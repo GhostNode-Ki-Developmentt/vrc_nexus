@@ -2532,6 +2532,30 @@ test('3.6: Plugins (.nxp) – Paket prüfen, Rechte, abgeschotteter Prozess, Cha
     } finally { P.stop(); await wait(300); }
 });
 
+test('3.6.1: abgelaufene VRChat-Sitzung meldet automatisch ab (auch bei 401 von anderen Pfaden), Hinweis auf der Anmeldeseite', async () => {
+    const { NexusApp } = require('../backend/app');
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const v = app.vrc, db = app.db;
+    const connect = () => db.prepare("INSERT OR REPLACE INTO accounts (user_id, vrc_id, display_name, cookies, me_json, connected_at) VALUES (1, 'usr_x', 'X', '{}', '{}', 1)").run();
+    let authOk = true;
+    v.http = async (jar, m, p) => (p === '/auth/user' ? (authOk ? [200, { id: 'usr_x' }] : [401, { error: { message: 'Missing Credentials' } }]) : p === '/worlds/x' ? [401, {}] : [200, {}]);
+    connect();
+    // 401 von einem anderen Pfad, Sitzung aber gültig → angemeldet bleiben
+    await assert.rejects(v.call(v.account(), 'GET', '/worlds/x'), e => !(e instanceof U.VrcAuthError));
+    assert.ok(v.account(), 'bleibt angemeldet');
+    // Sitzung abgelaufen → abmelden
+    authOk = false;
+    await assert.rejects(v.call(v.account(), 'GET', '/worlds/x'), U.VrcAuthError);
+    assert.strictEqual(v.account(), null, 'automatisch abgemeldet');
+    assert.strictEqual(db.setting('vrc_logout_reason', ''), 'expired');
+    assert.ok(/class="vx-expired" >/.test(app.page()), 'Hinweis auf der Anmeldeseite sichtbar');
+    connect(); await v.disconnect(false);
+    assert.strictEqual(db.setting('vrc_logout_reason', ''), '', 'normales Abmelden ohne Hinweis');
+    assert.ok(/class="vx-expired" hidden/.test(app.page()));
+    app.tools.stop();
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

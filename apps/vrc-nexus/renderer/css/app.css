@@ -1126,3 +1126,7 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 .pl-check { border: 1px solid var(--accent, #d4a64a); }
 .pl-plist { margin: 4px 0 10px 18px; }
 @media (max-width: 760px) { .pl-top { flex-wrap: wrap; } .pl-ctl { justify-content: flex-start; } }
+
+/* 3.6.1 Hinweis: Sitzung abgelaufen */
+.vx-expired { margin: 8px 0 12px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255, 195, 92, .5); background: rgba(255, 195, 92, .1); color: #ffc35c; font-size: .92em; }
+.vx-expired[hidden] { display: none; }
