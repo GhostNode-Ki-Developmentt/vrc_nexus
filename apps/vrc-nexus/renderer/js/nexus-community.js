@@ -436,13 +436,17 @@
         });
     }
 
+    let pendingArg = null;
     window.NexusCommunity = {
         open(s) {
             const el = document.getElementById('cmtBox');
             if (!el) return;
             if (box !== el) { box = el; bind(); }
-            loadMe().then(() => go(s && subs().some(x => x[0] === s) ? s : sub));
+            const arg = pendingArg; pendingArg = null;
+            loadMe().then(() => go(s && subs().some(x => x[0] === s) ? s : sub, arg));
         },
+        /** 3.8.1: aus einem VRChat-Profil direkt in den Chat / ins Community-Profil dieser Person springen */
+        openTo(s, arg) { pendingArg = arg; window.NexusUI.tab('community', s); },
         /** 3.7: nach einem Anruf den Verlauf neu laden (Anruf-Eintrag) */
         refreshChat() { if (box && sub === 'chat' && chat.uid) api('chat_open', { uid: chat.uid }).then(d => { chat.open = d; render(); }).catch(() => {}); },
     };

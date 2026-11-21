@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.8.1 – Profile: community and more actions
+
+- 🫂 **Nexus Community in every profile:** shows whether the person is in the Nexus Community, with buttons for 💬 message, 📞 call and 👤 community profile.
+- ⋯ **More actions in the profile menu:** copy user ID, open on vrchat.com, open profile picture, message/call/community profile, invite to me, request invite, edit note, notify when online, activity, mute, hide avatar.
+- 🛡 **Groups:** the profile now shows only the represented group plus "＋ More groups (n)" – the popup lists **shared groups first**, then all others, with search.
+
 ### New in 3.8.0 – Plugin API for group management
 
 - 🧩 New plugin permission **`vrchat`**: a plugin can manage the VRChat group(s) it names in `plugin.json` (`"groups": ["grp_…"]`) with your account – group info, instances, join requests (accept/decline), posts, members, bans, audit log. Only those groups and only those endpoints; deleting or transferring a group and your own account data are never reachable. The install dialog shows the group IDs.

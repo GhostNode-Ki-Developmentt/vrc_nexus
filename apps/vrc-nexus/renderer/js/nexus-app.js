@@ -990,26 +990,60 @@
         more.type = 'button'; more.className = 'btn btn-sm u-more'; more.textContent = '⋯'; more.title = 'Mehr';
         head.append(more);
         body.append(bar, info);
+        // 3.8.1: Community direkt aus dem Profil – Chat, Anruf, Community-Profil
+        const closeM = () => { const m = document.getElementById('userModal'); if (m) { m.hidden = true; document.body.style.overflow = ''; } };
+        const toChat = () => { closeM(); if (window.NexusCommunity && window.NexusCommunity.openTo) window.NexusCommunity.openTo('chat', u.id); };
+        const toProf = () => { closeM(); if (window.NexusCommunity && window.NexusCommunity.openTo) window.NexusCommunity.openTo('profile', u.id); };
+        const toCall = () => { if (window.NexusVoice) window.NexusVoice.call(u.id, u.name); };
+        const clickIn = sel => { const b = body.querySelector(sel); if (b) b.click(); else UI.toast('Gerade nicht möglich.', true); };
+        const comm = document.createElement('div');
+        comm.className = 'u-comm'; comm.hidden = !window.NexusCommunity;
+        comm.innerHTML = '<b>🫂 ' + esc(T('Nexus Community')) + '</b><span class="u-comm-st vx-small"></span>'
+            + '<button type="button" class="btn btn-sm" data-uc="chat">💬 ' + esc(T('Nachricht')) + '</button>'
+            + (window.NexusVoice ? '<button type="button" class="btn btn-sm" data-uc="call">📞 ' + esc(T('Anrufen')) + '</button>' : '')
+            + '<button type="button" class="btn btn-sm" data-uc="prof">👤 ' + esc(T('Community-Profil')) + '</button>';
+        info.prepend(comm);
+        comm.addEventListener('click', e => { const b = e.target.closest('[data-uc]'); if (!b) return; ({ chat: toChat, call: toCall, prof: toProf })[b.dataset.uc](); });
         more.addEventListener('click', () => menu(more, [
             { icon: '⟳', label: 'Aktualisieren', fn: () => UI.openUser(u.id) },
             { icon: '↗', label: 'Teilen', sub: shareItems('https://vrchat.com/home/user/' + u.id, u.name, u.id) },
+            { icon: '📋', label: 'User-ID kopieren', fn: () => UI.copy(u.id) },
+            { icon: '🌐', label: 'Profil auf vrchat.com öffnen', fn: () => window.open('https://vrchat.com/home/user/' + u.id, '_blank', 'noopener') },
+            ...(u.image ? [{ icon: '🖼', label: 'Profilbild groß öffnen', fn: () => window.open(UI.pic ? UI.pic(u.image) || u.image : u.image, '_blank', 'noopener') }] : []),
+            '-',
+            { icon: '💬', label: 'Nachricht schreiben (Nexus-Chat)', fn: toChat },
+            ...(window.NexusVoice ? [{ icon: '📞', label: 'Anrufen (Nexus)', fn: toCall }] : []),
+            { icon: '👤', label: 'Nexus-Community-Profil', fn: toProf },
+            '-',
+            ...(body.querySelector('[data-act=invite]') ? [{ icon: '📨', label: 'Zu mir einladen', fn: () => clickIn('[data-act=invite]') }] : []),
+            ...(body.querySelector('[data-act=request_invite]') ? [{ icon: '🙋', label: 'Einladung anfragen', fn: () => clickIn('[data-act=request_invite]') }] : []),
+            { icon: '📝', label: 'Notiz bearbeiten', fn: () => { uTab(u, 'info'); const n = body.querySelector('.vx-note-form textarea'); if (n) { n.scrollIntoView({ block: 'center' }); n.focus(); } } },
+            { icon: '🔔', label: 'Benachrichtigen, wenn online', fn: () => { const f = body.querySelector('.vx-note-form'); if (f && f.watch) { f.watch.checked = !f.watch.checked; f.requestSubmit(); } } },
             '-',
             { icon: '🕘', label: 'Frühere Instanzen zeigen', fn: () => uTab(u, 'instances') },
+            { icon: '🗺', label: 'Aktivität', fn: () => uTab(u, 'activity') },
             { icon: '{ }', label: 'JSON anzeigen', fn: () => uTab(u, 'json') },
             '-',
-            { icon: '⛔', label: 'Blockieren', bad: true, fn: () => { const b = body.querySelector('[data-mod=block]'); if (b) b.click(); } },
+            { icon: '🔇', label: 'Stummschalten', fn: () => clickIn('[data-mod=mute]') },
+            { icon: '🙈', label: 'Avatar ausblenden', fn: () => clickIn('[data-mod=hideAvatar]') },
+            { icon: '⛔', label: 'Blockieren', bad: true, fn: () => clickIn('[data-mod=block]') },
         ]));
         bar.addEventListener('click', e => { const b = e.target.closest('[data-ut]'); if (b) uTab(u, b.dataset.ut); });
         // 3.1.1: 🔞 18+-Profil aus der Nexus Community – Reiter direkt nach „Info“, nur wenn der Server es für mich freigibt
         if (window.NexusProfile18 && window.VRCX && !window.VRCX.mobile_lite) api('comm_profile', { id: u.id }).then(d => {
             const p = d.profile, P = window.NexusProfile18;
+            const st = comm.querySelector('.u-comm-st'); if (st) st.textContent = p ? '✔ ' + T('ist in der Nexus Community') : T('noch nicht in der Nexus Community');
             if (!p || p.nsfw_facts === undefined || (!P.hasNsfw(p.nsfw_facts) && !p.nsfw_bio) || !document.contains(bar)) return;
             u._p18 = p;
             const b = document.createElement('button');
             b.type = 'button'; b.dataset.ut = 'p18'; b.className = 'u-tab18'; b.textContent = '🔞 ' + (window.t ? window.t('18+-Profil') : '18+-Profil');
             const first = bar.querySelector('[data-ut="info"]');
             first.after(b);
-        }).catch(() => { /* kein Nexus-Konto / keine Freigabe → kein Reiter */ });
+        }).catch(e => {
+            // Person ohne Nexus-Konto: Bereich bleibt (Hinweis), Chat/Profil aus; ich selbst ohne Nexus-Konto: Bereich weg
+            if (/kein Nexus-Konto/i.test(e.message)) { const st = comm.querySelector('.u-comm-st'); if (st) st.textContent = T('noch nicht in der Nexus Community'); comm.querySelectorAll('[data-uc]').forEach(b => { b.disabled = true; }); }
+            else comm.hidden = true;
+        });
     }
     function uTab(u, t) {
         const body = $('#userBody');

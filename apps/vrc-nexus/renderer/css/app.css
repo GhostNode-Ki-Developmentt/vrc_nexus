@@ -1155,3 +1155,13 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 .ch-pick-off { margin-top: 6px; width: 100%; }
 .ch-pick-none { margin: 6px; }
 .pl-in select { width: 100%; }
+
+/* 3.8.1 Profil: Gruppen-Popup */
+.u-gpop { position: fixed; inset: 0; z-index: 9500; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 16px; }
+.u-gpop-box { width: min(640px, 100%); max-height: 80vh; overflow: auto; padding: 14px 16px; border-radius: 10px; background: rgb(var(--panel-rgb, 12, 16, 22)); border: 1px solid var(--accent, #38d5e6); box-shadow: 0 12px 40px rgba(0,0,0,.6); }
+.u-gpop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.u-gpop-q { width: 100%; margin-bottom: 6px; }
+.u-gpop .vx-pill[hidden] { display: none; }
+/* 3.8.1 Profil: Community-Bereich */
+.u-comm { margin: 10px 0; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--line, rgba(255,255,255,.15)); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.u-comm b { margin-right: 6px; }

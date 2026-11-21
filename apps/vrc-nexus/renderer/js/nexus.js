@@ -558,7 +558,18 @@
         if (u.bio_html) h += '<h4>Bio</h4><div class="fmt vx-u-bio">' + u.bio_html + '</div>';
         if (u.links && u.links.length) h += '<h4>Links</h4><ul class="vx-u-links">' + u.links.map(x => '<li><a href="' + esc(x) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(x.replace(/^https?:\/\//, '')) + '</a></li>').join('') + '</ul>';
         const mine = new Set((loaded.groupList || []).map(g => g.id));
-        if (u.groups && u.groups.length) h += '<h4>Gruppen <small>' + u.groups.filter(g => mine.has(g.id)).length + ' gemeinsam</small></h4><div class="vx-u-groups">' + u.groups.sort((a, b) => (mine.has(b.id) - mine.has(a.id)) || (b.rep - a.rep)).map(g => '<button type="button" class="vx-pill' + (g.rep ? ' rep' : '') + (mine.has(g.id) ? ' mutual' : '') + '" data-opengroup="' + esc(g.id) + '" title="' + g.members + ' Mitglieder' + (mine.has(g.id) ? ' · du bist auch Mitglied' : '') + '">' + (g.rep ? '★ ' : '') + (mine.has(g.id) ? '🤝 ' : '') + esc(g.name) + '</button>').join('') + '</div>';
+        // 3.8.1: nur die vertretene Gruppe zeigen; alle weiteren im Popup (gemeinsame Gruppen oben)
+        if (u.groups && u.groups.length) {
+            const gpill = g => '<button type="button" class="vx-pill' + (g.rep ? ' rep' : '') + (mine.has(g.id) ? ' mutual' : '') + '" data-opengroup="' + esc(g.id) + '" title="' + g.members + ' Mitglieder' + (mine.has(g.id) ? ' · du bist auch Mitglied' : '') + '">' + (g.rep ? '★ ' : '') + (mine.has(g.id) ? '🤝 ' : '') + esc(g.name) + '</button>';
+            const rep = u.groups.filter(g => g.rep), shared = u.groups.filter(g => mine.has(g.id)), rest = u.groups.filter(g => !g.rep);
+            h += '<h4>Gruppen <small>' + u.groups.length + ' · ' + shared.length + ' gemeinsam</small></h4><div class="vx-u-groups">'
+                + (rep.length ? rep.map(gpill).join('') : '<span class="vx-small">Keine Gruppe vertreten.</span>')
+                + (rest.length ? '<button type="button" class="btn btn-sm" data-ugroups="1">＋ Weitere Gruppen (' + rest.length + ')</button>' : '') + '</div>';
+            u._gpop = '<div class="u-gpop-box"><div class="u-gpop-head"><b>Gruppen von ' + esc(u.name) + '</b><button type="button" class="nc-x" data-ugclose="1">✕</button></div>'
+                + '<input type="search" class="u-gpop-q" placeholder="Gruppe suchen …">'
+                + '<h4>🤝 Gemeinsame Gruppen <small>' + shared.length + '</small></h4><div class="vx-u-groups">' + (shared.length ? shared.sort((a, b) => b.rep - a.rep).map(gpill).join('') : '<span class="vx-small">Keine gemeinsamen Gruppen.</span>') + '</div>'
+                + '<h4>Weitere Gruppen <small>' + (u.groups.length - shared.length) + '</small></h4><div class="vx-u-groups">' + u.groups.filter(g => !mine.has(g.id)).sort((a, b) => (b.rep - a.rep) || String(a.name).localeCompare(String(b.name))).map(gpill).join('') + '</div></div>';
+        }
         h += '<h4>🤝 Gemeinsam</h4><div id="uMutual" class="vx-umutual"><div class="vx-loading">Lade gemeinsame Freunde &amp; Gruppen …</div></div>';
         h += '<div id="uModSec"><h4>🛡️ Gruppen-Moderation <small>(Gruppen, in denen du mindestens kicken darfst)</small></h4><div id="uMod" class="vx-umods" data-user="' + esc(u.id) + '" data-name="' + esc(u.name) + '"><div class="vx-loading">Prüfe deine Gruppen …</div></div></div>';
         h += '<dl class="vx-u-facts">' + (u.joined ? '<dt>Dabei seit</dt><dd>' + esc(isoDate(u.joined)) + '</dd>' : '') + (u.last_login ? '<dt>Letzter Login</dt><dd>' + esc(isoDT(u.last_login)) + '</dd>' : '')
@@ -598,6 +609,19 @@
             if (!confirm('„' + u.name + '“ in VRChat ' + label + '?' + (t === 'block' ? ' Blockieren beendet auch eine Freundschaft.' : ''))) return;
             api('moderate', { user: u.id, type: t }).then(d => { toast(d.msg || 'Erledigt.'); loaded.mod = false; }).catch(x => toast(x.message, true));
         }));
+        // 3.8.1: Popup „Weitere Gruppen“ (gemeinsame oben, mit Suche)
+        body._gpop = u._gpop || '';
+        if (!body._gpopBound) body._gpopBound = true, body.addEventListener('click', e => {
+            if (e.target.closest('[data-ugroups]') && body._gpop) {
+                if (body.querySelector('.u-gpop')) return;
+                const pop = document.createElement('div'); pop.className = 'u-gpop'; pop.innerHTML = body._gpop; body.appendChild(pop);
+                const q = pop.querySelector('.u-gpop-q'); q.focus();
+                q.addEventListener('input', () => { const v = q.value.trim().toLowerCase(); pop.querySelectorAll('.vx-pill').forEach(b => { b.hidden = !!v && !b.textContent.toLowerCase().includes(v); }); });
+                return;
+            }
+            const pop = e.target.closest('.u-gpop');
+            if (pop && (e.target === pop || e.target.closest('[data-ugclose]'))) pop.remove();
+        });
         if (!loaded.groupList) api('groups').then(d => { loaded.groupList = d.groups; }).catch(() => {});
         loadUserMod(u);
         loadUserMutual(u);
