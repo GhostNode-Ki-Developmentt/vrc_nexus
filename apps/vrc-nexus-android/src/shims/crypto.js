@@ -1,5 +1,14 @@
 'use strict';
-/* crypto-Ersatz: Zufall über WebCrypto, SHA-1 und SHA-256 in JavaScript (synchron, wie bei Node). */
+/* crypto-Ersatz: Zufall über WebCrypto, SHA-1 und SHA-256 in JavaScript (synchron, wie bei Node).
+ * 3.5: für den Ende-zu-Ende-Chat zusätzlich X25519, Ed25519, HKDF, HMAC-SHA256 und AES-256-GCM – über die geprüften
+ *      @noble-Bibliotheken (MIT, ohne weitere Abhängigkeiten; Entscheidung der Besitzerin 21.11.). Gleiche Schnittstelle wie
+ *      Node-crypto, damit backend/e2ee.js und backend/chat.js unverändert auf dem Handy laufen. Schlüssel im selben Format
+ *      (SPKI/PKCS8-DER) wie am PC. */
+const { ed25519, x25519 } = require('@noble/curves/ed25519.js');
+const { hkdf } = require('@noble/hashes/hkdf.js');
+const { hmac } = require('@noble/hashes/hmac.js');
+const { sha256: nsha256, sha512: nsha512 } = require('@noble/hashes/sha2.js');
+const { gcm } = require('@noble/ciphers/aes.js');
 function sha1(bytes) {
     const ml = bytes.length, words = [];
     const withPad = new Uint8Array(((ml + 9 + 63) >> 6) << 6);
@@ -47,7 +56,59 @@ function sha256(bytes) {
     }
     return Buffer.from(Array.from(H).flatMap(x => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255]));
 }
-const HASHES = { sha1, sha256 };
+const HASHES = { sha1, sha256: b => Buffer.from(nsha256(b)), sha512: b => Buffer.from(nsha512(b)) };
+
+// ---------- Schlüssel (wie Node-KeyObject, nur was der Chat braucht) ----------
+const PRE = {
+    x25519: { spki: Buffer.from('302a300506032b656e032100', 'hex'), pkcs8: Buffer.from('302e020100300506032b656e04220420', 'hex') },
+    ed25519: { spki: Buffer.from('302a300506032b6570032100', 'hex'), pkcs8: Buffer.from('302e020100300506032b657004220420', 'hex') },
+};
+class KeyObject {
+    constructor(type, kind, raw) { this.type = type; this.asymmetricKeyType = kind; this.raw = Uint8Array.from(raw); }
+    export(o) {
+        const t = (o && o.type) || (this.type === 'public' ? 'spki' : 'pkcs8');
+        if ((t === 'spki') !== (this.type === 'public')) throw new Error('Export-Typ passt nicht zum Schlüssel.');
+        return Buffer.concat([PRE[this.asymmetricKeyType][t], Buffer.from(this.raw)]);
+    }
+}
+function parseDer(der, t) {
+    const b = Buffer.from(der);
+    for (const kind of Object.keys(PRE)) {
+        const p = PRE[kind][t];
+        if (b.length === p.length + 32 && b.subarray(0, p.length).equals(p)) return new KeyObject(t === 'spki' ? 'public' : 'private', kind, b.subarray(p.length));
+    }
+    throw new Error('Schlüsselformat wird nicht unterstützt.');
+}
+const curve = kind => (kind === 'x25519' ? x25519 : kind === 'ed25519' ? ed25519 : null);
+const pubOf = k => new KeyObject('public', k.asymmetricKeyType, curve(k.asymmetricKeyType).getPublicKey(k.raw));
+const bytes = x => (typeof x === 'string' ? Buffer.from(x, 'utf8') : Buffer.from(x));
+
+/** AES-256-GCM mit Node-Ablauf (setAAD → update → final → getAuthTag); rechnet beim final() in einem Stück */
+function gcmStream(key, iv, decrypt) {
+    if (Buffer.from(key).length !== 32) throw new Error('Ungültige Schlüssellänge.');
+    let aad = new Uint8Array(0), tag = null, done = false, outTag = null;
+    const parts = [];
+    const o = {
+        setAAD(a) { aad = Uint8Array.from(a); return o; },
+        setAuthTag(t) { tag = Uint8Array.from(t); return o; },
+        update(d) { parts.push(Buffer.from(d)); return Buffer.alloc(0); },
+        final() {
+            if (done) throw new Error('final() schon aufgerufen.');
+            done = true;
+            const c = gcm(Uint8Array.from(key), Uint8Array.from(iv), aad), data = Buffer.concat(parts);
+            if (decrypt) {
+                if (!tag) throw new Error('Kein Auth-Tag.');
+                try { return Buffer.from(c.decrypt(Buffer.concat([data, Buffer.from(tag)]))); } catch (e) { throw new Error('Unsupported state or unable to authenticate data'); }
+            }
+            const out = Buffer.from(c.encrypt(data));
+            outTag = out.subarray(out.length - 16);
+            return out.subarray(0, out.length - 16);
+        },
+        getAuthTag() { if (!outTag) throw new Error('Erst final() aufrufen.'); return Buffer.from(outTag); },
+    };
+    return o;
+}
+
 module.exports = {
     randomBytes(n) { const b = new Uint8Array(n); globalThis.crypto.getRandomValues(b); return Buffer.from(b); },
     createHash(alg) {
@@ -57,5 +118,49 @@ module.exports = {
         const h = { update(x) { parts.push(typeof x === 'string' ? Buffer.from(x, 'utf8') : Buffer.from(x)); return h; }, digest(enc) { const out = fn(Buffer.concat(parts)); return enc ? out.toString(enc) : out; } };
         return h;
     },
+    // ---- 3.5: Chat-Krypto ----
+    generateKeyPairSync(kind) {
+        const c = curve(kind);
+        if (!c) throw new Error('Schlüsseltyp ' + kind + ' ist in der Handy-App nicht verfügbar.');
+        const priv = new KeyObject('private', kind, c.utils.randomSecretKey());
+        return { privateKey: priv, publicKey: pubOf(priv) };
+    },
+    createPublicKey(x) {
+        if (x instanceof KeyObject) return x.type === 'public' ? x : pubOf(x);
+        if (x && x.key instanceof KeyObject) return x.key.type === 'public' ? x.key : pubOf(x.key);
+        if (x && x.format === 'der' && x.type === 'spki') return parseDer(x.key, 'spki');
+        throw new Error('createPublicKey: Format wird nicht unterstützt.');
+    },
+    createPrivateKey(x) {
+        if (x instanceof KeyObject) return x;
+        if (x && x.format === 'der' && x.type === 'pkcs8') return parseDer(x.key, 'pkcs8');
+        throw new Error('createPrivateKey: Format wird nicht unterstützt.');
+    },
+    diffieHellman({ privateKey, publicKey }) {
+        if (privateKey.asymmetricKeyType !== 'x25519' || publicKey.asymmetricKeyType !== 'x25519') throw new Error('Nur X25519.');
+        return Buffer.from(x25519.getSharedSecret(privateKey.raw, publicKey.raw));
+    },
+    sign(alg, data, key) {
+        if (alg !== null && alg !== undefined) throw new Error('Nur Ed25519 (alg = null).');
+        if (key.asymmetricKeyType !== 'ed25519') throw new Error('Nur Ed25519.');
+        return Buffer.from(ed25519.sign(bytes(data), key.raw));
+    },
+    verify(alg, data, key, sig) {
+        if (key.asymmetricKeyType !== 'ed25519') throw new Error('Nur Ed25519.');
+        try { return ed25519.verify(Uint8Array.from(sig), bytes(data), key.raw); } catch (e) { return false; }
+    },
+    hkdfSync(alg, ikm, salt, info, len) {
+        if (String(alg).toLowerCase() !== 'sha256') throw new Error('Nur HKDF-SHA256.');
+        return Uint8Array.from(hkdf(nsha256, bytes(ikm), bytes(salt), bytes(info), len)).buffer;
+    },
+    createHmac(alg, key) {
+        if (String(alg).toLowerCase() !== 'sha256') throw new Error('Nur HMAC-SHA256.');
+        const parts = [];
+        const h = { update(x) { parts.push(bytes(x)); return h; }, digest(enc) { const out = Buffer.from(hmac(nsha256, bytes(key), Buffer.concat(parts))); return enc ? out.toString(enc) : out; } };
+        return h;
+    },
+    createCipheriv(alg, key, iv) { if (String(alg).toLowerCase() !== 'aes-256-gcm') throw new Error('Nur AES-256-GCM.'); return gcmStream(key, iv, false); },
+    createDecipheriv(alg, key, iv) { if (String(alg).toLowerCase() !== 'aes-256-gcm') throw new Error('Nur AES-256-GCM.'); return gcmStream(key, iv, true); },
+    KeyObject,
     timingSafeEqual(a, b) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a[i] ^ b[i]; return r === 0; },
 };

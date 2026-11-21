@@ -1,6 +1,6 @@
 {
   "name": "vrc-nexus-android",
-  "version": "3.4.2",
+  "version": "3.5.0",
   "private": true,
   "description": "VRC Nexus für Android (ohne PC-Funktionen wie Spiel-Log, OSC, Stream Deck)",
   "scripts": {
@@ -16,6 +16,9 @@
     "@capacitor/filesystem": "7.1.9",
     "@capacitor/local-notifications": "7.0.7",
     "@capacitor/share": "7.0.4",
+    "@noble/ciphers": "2.4.0",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
     "buffer": "6.0.3",
     "path-browserify": "^1.0.1",
     "sql.js": "1.13.0"

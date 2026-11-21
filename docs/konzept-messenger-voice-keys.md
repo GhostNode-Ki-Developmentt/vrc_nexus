@@ -1,7 +1,7 @@
 # Konzept: Messenger · Voice · Permission & Key System (ab 3.4.0)
 
 Stand 21.11.2026, 4:01 · Grundlage: Roadmap (ghostenode/Roadmap.php, Module 06–08) und Wünsche der Besitzerin vom 20./21.11.
-Status: **3.4.0 gebaut** (Zustimmung 21.11.: „Bauen“, Multiaccount = beides). Spätere Releases (3.5 ff.) weiter nur Plan. Auf der Roadmap wird nichts abgehakt ohne Rückfrage.
+Status: **3.4.0 gebaut** (Zustimmung 21.11.: „Bauen“, Multiaccount = beides). **3.5.0 gebaut** (21.11.: „Weiter mit 3.5“, Handy-Krypto über @noble statt WebCrypto – Zustimmung der Besitzerin): Chat am Handy, lokale Benachrichtigung beim Abholen, Gruppenchats. Hintergrund-Push über `nexus_push.php` noch offen. Spätere Releases (3.6 ff.) weiter nur Plan. Auf der Roadmap wird nichts abgehakt ohne Rückfrage.
 
 Legende: ✅ vorhanden · 🟡 teilweise · ⬜ offen
 

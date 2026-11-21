@@ -5,10 +5,18 @@
  *   - Jede Nachricht geht an alle Geräte der Gegenseite und (zum Abgleich) an die eigenen anderen Geräte.
  *   - Sicherheitsnummer je Kontakt; ändern sich die Geräte-Schlüssel der Gegenseite, wird das deutlich angezeigt.
  *   - Chat ist freiwillig: erst beim ersten Öffnen wird ein Geräte-Schlüssel erzeugt und veröffentlicht.
- * Nur Windows-App (das Android-Krypto-Modul kann X25519/Ed25519/AES-GCM noch nicht).
+ * Seit 3.5 auch in der Android-App (X25519/Ed25519/AES-GCM über @noble im Krypto-Shim, gleiches Schlüsselformat wie am PC).
  * 3.4: Reaktionen, Antworten, Bearbeiten/Löschen, Gelesen-Häkchen, 💓 Puls teilen, Bilder/GIFs (auf dem Gerät mit AES-256-GCM
  *   verschlüsselt, als Chiffretext auf der Webseite – Schlüssel nur in der E2E-Nachricht), Anheften, Merken, Geräte-Übersicht.
  *   Alles läuft als verschlüsselte Steuer-Nachricht über denselben Briefkasten – die Webseite sieht davon nichts.
+ * 3.5: private Gruppenchats nach dem Megolm-Prinzip (eigene Umsetzung):
+ *   - Jedes Mitglied (je Gerät) hat eine Sender-Sitzung: Kettenschlüssel ck + Zähler + Ed25519-Signaturschlüssel.
+ *     Nachrichtenschlüssel = HMAC(ck, 0x01), danach ck = HMAC(ck, 0x02) → alte Schlüssel lassen sich nicht zurückrechnen.
+ *   - Die Sender-Schlüssel gehen NUR über die vorhandenen 1:1-Sitzungen (X3DH + Double Ratchet) an die Mitglieder.
+ *   - Jede Gruppennachricht: AES-256-GCM + Signatur des Absenders; der Briefkasten sieht nur Chiffretext.
+ *   - Ändert sich die Mitgliederliste (oder nach 100 Nachrichten / 7 Tagen), baut jedes Mitglied vor der nächsten
+ *     Nachricht eine NEUE Sender-Sitzung und verteilt sie nur an die aktuellen Mitglieder – Entfernte lesen nichts Neues mit.
+ *   - Mitglieder verwaltet die Person, die die Gruppe erstellt hat (Admin der Gruppe); verlassen kann jede/r.
  */
 const crypto = require('crypto');
 const E = require('./e2ee');
@@ -22,6 +30,20 @@ const IMG_MAX = 4 * 1048576;   // Bilder bis 4 MB (verschlüsselt ≈ gleich gro
 const MIME = b => b[0] === 0x89 && b[1] === 0x50 ? 'image/png' : b[0] === 0xff && b[1] === 0xd8 ? 'image/jpeg' : b.slice(0, 3).toString() === 'GIF' ? 'image/gif'
     : b.slice(0, 4).toString() === 'RIFF' && b.slice(8, 12).toString() === 'WEBP' ? 'image/webp' : '';
 const rid = () => crypto.randomBytes(8).toString('hex');
+const CONV = /^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10}|g:[0-9a-f]{16})$/;   // 1:1 (VRChat-ID) oder Gruppe (g:…)
+const isGroup = c => /^g:[0-9a-f]{16}$/.test(str(c));
+const GMAX = 50;              // Mitglieder je Gruppe
+const G_ROTATE_N = 100, G_ROTATE_MS = 7 * 86400000;
+const RAW_E = Buffer.from('302a300506032b6570032100', 'hex');
+const ghmac = (k, b) => crypto.createHmac('sha256', k).update(Buffer.from([b])).digest();
+function gKeys(mk) { const o = Buffer.from(crypto.hkdfSync('sha256', mk, Buffer.alloc(32), Buffer.from('NexusGroupMsg-v1'), 44)); return [o.subarray(0, 32), o.subarray(32)]; }
+function gNewSession() {
+    const k = crypto.generateKeyPairSync('ed25519');
+    return { sid: rid(), ck: crypto.randomBytes(32).toString('base64'), idx: 0, count: 0, created: Date.now(),
+        sigPriv: k.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64'), sigPub: Buffer.from(k.publicKey.export({ type: 'spki', format: 'der' }).subarray(12)).toString('base64') };
+}
+const gSign = (privB64, data) => crypto.sign(null, data, crypto.createPrivateKey({ key: Buffer.from(privB64, 'base64'), format: 'der', type: 'pkcs8' })).toString('base64');
+const gVerify = (pubB64, data, sig) => { try { const raw = Buffer.from(str(pubB64), 'base64'); if (raw.length !== 32) return false; return crypto.verify(null, data, crypto.createPublicKey({ key: Buffer.concat([RAW_E, raw]), format: 'der', type: 'spki' }), Buffer.from(str(sig), 'base64')); } catch (e) { return false; } };
 
 class Chat {
     constructor(app, crypt) { this.app = app; this.crypt = crypt; this.timer = null; this.error = ''; this.busy = null; this.unread = 0; this.imgs = new Map(); }
@@ -76,6 +98,7 @@ class Chat {
         return msg;
     }
     async sendPayload(uid, msg) {
+        if (isGroup(uid)) return this.groupSend(uid.slice(2), msg);
         if (!UID.test(uid)) throw new UserError('Ungültige VRChat-User-ID.');
         const dev = await this.device(), mine = this.me().account.vrc_id;
         if (uid === mine) throw new UserError('An dich selbst geht nicht.');
@@ -101,13 +124,15 @@ class Chat {
         return msg;
     }
     /** eine (empfangene oder eigene) Nachricht auf den Verlauf anwenden */
-    apply(conv, p, fromMe) {
+    apply(conv, p, fromMe, from) {
+        const grp = isGroup(conv);
         const c = this.convs(), l = c[conv] = c[conv] || [];
         const find = id => l.find(x => x.id === str(id));
         const at = Math.min(Date.now(), int(p.at) || Date.now());
         if (p.t === 'msg' || p.t === 'hr') {
             if (find(p.id)) return false;
             const m = { id: str(p.id), me: fromMe, text: cut(str(p.text), 4000), at };
+            if (grp && !fromMe) m.from = str(from);
             if (p.reply && typeof p.reply === 'object') m.reply = { id: str(p.reply.id), text: cut(str(p.reply.text), 140), me: !!p.reply.me };
             if (p.img && typeof p.img === 'object' && /^[0-9a-f]{32}$/.test(str(p.img.b))) m.img = { b: str(p.img.b), k: str(p.img.k), n: str(p.img.n), m: /^image\/(png|jpeg|gif|webp)$/.test(str(p.img.m)) ? str(p.img.m) : 'image/png', s: int(p.img.s) };
             if (p.t === 'hr') m.hr = Math.max(0, Math.min(300, int(p.hr)));
@@ -115,17 +140,17 @@ class Chat {
             if (l.length > KEEP) l.splice(0, l.length - KEEP);
         } else if (p.t === 'react') {
             const m = find(p.ref); if (!m || m.deleted || !EMOJI.includes(str(p.emoji))) return false;
-            const who = fromMe ? 'me' : 'them', r = m.reacts = m.reacts || {}, list = r[p.emoji] = (r[p.emoji] || []).filter(x => x !== who);
+            const who = fromMe ? 'me' : grp ? str(from) : 'them', r = m.reacts = m.reacts || {}, list = r[p.emoji] = (r[p.emoji] || []).filter(x => x !== who);
             if (p.on !== false) list.push(who);
             if (!list.length) delete r[p.emoji];
         } else if (p.t === 'edit') {
-            const m = find(p.ref); if (!m || m.me !== fromMe || m.deleted) return false;
+            const m = find(p.ref); if (!m || m.me !== fromMe || m.deleted || (grp && !fromMe && m.from !== str(from))) return false;
             m.text = cut(str(p.text), 4000); m.edited = at;
         } else if (p.t === 'del') {
-            const m = find(p.ref); if (!m || m.me !== fromMe) return false;
+            const m = find(p.ref); if (!m || m.me !== fromMe || (grp && !fromMe && m.from !== str(from))) return false;
             Object.assign(m, { deleted: true, text: '', reacts: {} }); delete m.img; delete m.hr; delete m.reply;
         } else if (p.t === 'read') {
-            if (fromMe) return false;   // eigene andere Geräte: nichts zu tun
+            if (fromMe || grp) return false;   // eigene andere Geräte: nichts zu tun
             for (const m of l) if (m.me && m.at <= int(p.upto)) m.read = true;
         } else return false;
         this.put(this.key('chat_msgs'), c);
@@ -160,6 +185,11 @@ class Chat {
             for (const m of d.msgs) {
                 ids.push(m.id);
                 let env; try { env = JSON.parse(m.body); } catch (e) { continue; }
+                if (env && env.g) {   // 3.5 Gruppennachricht (Sender-Schlüssel)
+                    try { const r = this.groupRecv(m, env, mine); if (r && r.counted) { got++; this.unreadMark(r.conv); } }
+                    catch (e) { this.store('g:' + str(env.g), { id: 'err' + m.id, sys: true, text: '⚠ Gruppennachricht konnte nicht entschlüsselt werden (' + e.message + ').', at: m.at * 1000 }); }
+                    continue;
+                }
                 const sk = m.from + '|' + m.from_dev;
                 try {
                     let st = sess[sk];
@@ -174,6 +204,7 @@ class Chat {
                     const r = E.decrypt(st, env);
                     sess[sk] = r.st;
                     const p = JSON.parse(r.text);
+                    if (p.t === 'gctl') { this.groupCtl(m.from, p, mine); continue; }   // 3.5 Gruppen-Verwaltung und Sender-Schlüssel (nur über 1:1-E2E)
                     const conv = m.from === mine ? str(p.conv).toLowerCase() : m.from;   // Abgleich von eigenen Geräten
                     if (!UID.test(conv)) continue;
                     if (!p.at) p.at = m.at * 1000;
@@ -183,6 +214,7 @@ class Chat {
             }
             this.put(this.key('chat_sess'), sess);
             if (devChanged) this.put(this.key('chat_dev'), dev);
+            got += this.groupRetry(mine);   // Gruppennachrichten, deren Schlüssel erst jetzt angekommen ist
             if (ids.length) await this.call('ack', { device: dev.id, ids });
             if (d.opks < 15) { E.addOpks(dev, 40); this.put(this.key('chat_dev'), dev); await this.device(); }
             this.error = '';
@@ -203,11 +235,16 @@ class Chat {
         const c = this.convs(), u = this.get(this.key('chat_unread'), {}), k = this.known();
         const names = {};
         try { for (const f of this.app.vrc.friendList()) names[f.id] = f.name; } catch (e) { /* ohne Freunde */ }
-        return Object.entries(c).filter(([id]) => UID.test(id)).map(([id, l]) => ({ uid: id, name: names[id] || '', last: l[l.length - 1], unread: u[id] || 0, changed: !!(k[id] && k[id].changed), verified: !!(k[id] && k[id].verified) }))
-            .sort((a, b) => (b.last ? b.last.at : 0) - (a.last ? a.last.at : 0));
+        const groups = this.groups();
+        for (const g of Object.values(groups)) if (!g.left && !c['g:' + g.id]) c['g:' + g.id] = [];
+        return Object.entries(c).filter(([id]) => CONV.test(id)).map(([id, l]) => {
+            const g = isGroup(id) ? groups[id.slice(2)] : null;
+            return { uid: id, group: !!g, left: !!(g && g.left), members: g ? g.members.length : 0, name: g ? g.name : names[id] || '', last: l[l.length - 1], unread: u[id] || 0, changed: !!(k[id] && k[id].changed), verified: !!(k[id] && k[id].verified) };
+        }).filter(x => !isGroup(x.uid) || groups[x.uid.slice(2)]).sort((a, b) => (b.last ? b.last.at : 0) - (a.last ? a.last.at : 0));
     }
     async open(uid) {
         uid = str(uid).toLowerCase();
+        if (isGroup(uid)) return this.groupOpen(uid);
         if (!UID.test(uid)) throw new UserError('Ungültige VRChat-User-ID.');
         const dev = await this.device();
         const u = this.get(this.key('chat_unread'), {}); delete u[uid]; this.put(this.key('chat_unread'), u);
@@ -241,13 +278,14 @@ class Chat {
         if (!mime) throw new UserError('Nur PNG, JPEG, GIF oder WebP.');
         const key = crypto.randomBytes(32), iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', key, iv);
         const ct = Buffer.concat([c.update(buf), c.final(), c.getAuthTag()]);
-        const up = await this.call('blob_put', { data: ct.toString('base64'), allow: [str(uid).toLowerCase()] });
+        const g = isGroup(uid) ? this.groups()[str(uid).slice(2)] : null;
+        const up = await this.call('blob_put', { data: ct.toString('base64'), allow: g ? g.members : [str(uid).toLowerCase()] });
         return this.send(uid, caption, { img: { b: str(up.id), k: key.toString('base64'), n: iv.toString('base64'), m: mime, s: buf.length } });
     }
     /** Bild für die Oberfläche: nexus.php?chimg=<uid>:<msgid> – laden, entschlüsseln, kurz im Speicher halten */
     async image(ref) {
-        const [uid, id] = str(ref).toLowerCase().split(':');
-        const m = UID.test(uid || '') && /^[0-9a-f]{16}$/.test(id || '') ? (this.convs()[uid] || []).find(x => x.id === id) : null;
+        const r0 = str(ref).toLowerCase(), cut0 = r0.lastIndexOf(':'), uid = r0.slice(0, cut0), id = r0.slice(cut0 + 1);
+        const m = CONV.test(uid || '') && /^[0-9a-f]{16}$/.test(id || '') ? (this.convs()[uid] || []).find(x => x.id === id) : null;
         if (!m || !m.img) return { status: 404, headers: {}, body: '' };
         let body = this.imgs.get(m.img.b);
         if (!body) {
@@ -267,6 +305,138 @@ class Chat {
         }
         return { status: 200, headers: { 'Content-Type': m.img.m, 'Cache-Control': 'no-store' }, body };
     }
+    // ================= 3.5 Gruppen (Megolm-Prinzip) =================
+    groups() { return this.get(this.key('chat_groups'), {}); }
+    saveGroups(g) { this.put(this.key('chat_groups'), g); }
+    names() { const n = {}; try { for (const f of this.app.vrc.friendList()) n[f.id] = f.name; } catch (e) { /* egal */ } return n; }
+    sysNote(gid, text) { this.store('g:' + gid, { id: 's' + rid(), sys: true, text, at: Date.now() }); }
+    /** Gruppen-Steuerung an alle Mitglieder (je 1:1-E2E); wer den Chat nicht eingerichtet hat, wird übersprungen */
+    async groupTell(members, payload) {
+        const mine = this.me().account.vrc_id, failed = [];
+        for (const u of members) { if (u === mine) continue; try { await this.sendPayload(u, Object.assign({ t: 'gctl', id: rid(), at: Date.now() }, payload)); } catch (e) { failed.push(u); } }
+        return failed;
+    }
+    /** eigene Sender-Sitzung (neu bei Mitgliederwechsel, nach 100 Nachrichten oder 7 Tagen) – an alle Mitglieder verteilen */
+    async ensureSender(gid) {
+        const all = this.groups(), g = all[gid];
+        if (g.my && !g.rotate && g.my.count < G_ROTATE_N && Date.now() - g.my.created < G_ROTATE_MS) return g;
+        g.my = gNewSession(); g.rotate = false;
+        all[gid] = g; this.saveGroups(all);
+        await this.groupTell(g.members, { op: 'key', gid, sid: g.my.sid, ck: g.my.ck, idx: g.my.idx, sigPub: g.my.sigPub });
+        return g;
+    }
+    async groupSend(gid, msg) {
+        const mine = this.me().account.vrc_id, dev = await this.device();
+        let all = this.groups(), g = all[gid];
+        if (!g || g.left) throw new UserError('Gruppe nicht gefunden oder verlassen.');
+        if (!g.members.includes(mine)) throw new UserError('Du bist nicht (mehr) Mitglied dieser Gruppe.');
+        await this.ensureSender(gid);
+        all = this.groups(); g = all[gid];
+        const s = g.my, ck = Buffer.from(s.ck, 'base64'), mk = ghmac(ck, 1), [key, iv] = gKeys(mk);
+        const aad = Buffer.from(gid + '|' + s.sid + '|' + s.idx);
+        const c = crypto.createCipheriv('aes-256-gcm', key, iv); c.setAAD(aad);
+        const ct = Buffer.concat([c.update(Buffer.from(JSON.stringify(Object.assign({}, msg, { conv: 'g:' + gid })), 'utf8')), c.final(), c.getAuthTag()]);
+        const env = { g: gid, s: s.sid, i: s.idx, c: ct.toString('base64'), sig: gSign(s.sigPriv, Buffer.concat([aad, ct])) };
+        s.ck = ghmac(ck, 2).toString('base64'); s.idx++; s.count++;
+        all[gid] = g; this.saveGroups(all);
+        const body = JSON.stringify(env), out = [];
+        for (const u of g.members) {
+            let devs = [];
+            try { devs = (await this.call('devices', { uid: u })).devices; } catch (e) { devs = []; }
+            for (const d of devs) if (d.device !== dev.id) out.push({ to: u, dev: d.device, body });
+        }
+        for (let i = 0; i < out.length; i += 50) await this.call('send', { device: dev.id, msgs: out.slice(i, i + 50) });
+        return msg;
+    }
+    /** eingehende Gruppennachricht prüfen (Mitglied? Signatur?), Kette vorspulen, entschlüsseln, anwenden */
+    groupRecv(m, env, mine, retry) {
+        const all = this.groups(), g = all[str(env.g)];
+        if (!g || g.left || !g.members.includes(m.from)) return null;
+        const pk = m.from + '|' + str(env.s), peer = g.peers && g.peers[pk];
+        if (!peer) {   // Schlüssel noch nicht da – kurz aufheben und nach dem nächsten Abholen erneut versuchen
+            if (!retry) { const pend = this.get(this.key('chat_gpend'), []); pend.push({ from: m.from, at: m.at, env, id: m.id }); this.put(this.key('chat_gpend'), pend.slice(-300)); }
+            return { pending: true };
+        }
+        const i = int(env.i), ct = Buffer.from(str(env.c), 'base64'), aad = Buffer.from(g.id + '|' + str(env.s) + '|' + i);
+        if (ct.length < 17 || !gVerify(peer.sigPub, Buffer.concat([aad, ct]), env.sig)) throw new Error('Signatur ungültig.');
+        let mk;
+        if (i < peer.idx) { mk = peer.skipped && peer.skipped[i]; if (!mk) throw new Error('Nachricht bereits gelesen oder zu alt.'); delete peer.skipped[i]; mk = Buffer.from(mk, 'base64'); }
+        else {
+            if (i - peer.idx > 1000) throw new Error('Zu viele Nachrichten übersprungen.');
+            let ck = Buffer.from(peer.ck, 'base64');
+            peer.skipped = peer.skipped || {};
+            for (let k = peer.idx; k < i; k++) { peer.skipped[k] = ghmac(ck, 1).toString('base64'); ck = ghmac(ck, 2); }
+            mk = ghmac(ck, 1); peer.ck = ghmac(ck, 2).toString('base64'); peer.idx = i + 1;
+            const ks = Object.keys(peer.skipped); if (ks.length > 2000) for (const k of ks.slice(0, ks.length - 2000)) delete peer.skipped[k];
+        }
+        const [key, iv] = gKeys(mk), d = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        d.setAAD(aad); d.setAuthTag(ct.subarray(ct.length - 16));
+        const p = JSON.parse(Buffer.concat([d.update(ct.subarray(0, ct.length - 16)), d.final()]).toString('utf8'));
+        this.saveGroups(all);
+        if (!p.at) p.at = m.at * 1000;
+        const conv = 'g:' + g.id;
+        const added = this.apply(conv, p, m.from === mine, m.from);
+        return { conv, counted: added && m.from !== mine && (p.t === 'msg' || p.t === 'hr') };
+    }
+    groupRetry(mine) {
+        const pend = this.get(this.key('chat_gpend'), []);
+        if (!pend.length) return 0;
+        let got = 0; const keep = [];
+        for (const x of pend) {
+            if (Date.now() - x.at * 1000 > 7 * 86400000) continue;
+            try { const r = this.groupRecv({ from: x.from, at: x.at, id: x.id }, x.env, mine, true); if (r && r.pending) keep.push(x); else if (r && r.counted) { got++; this.unreadMark(r.conv); } } catch (e) { /* verwerfen */ }
+        }
+        this.put(this.key('chat_gpend'), keep);
+        return got;
+    }
+    /** Gruppen-Steuerung (kommt nur über 1:1-E2E): sync = Name/Mitglieder (nur vom Admin), key = Sender-Schlüssel, leave */
+    groupCtl(from, p, mine) {
+        const gid = str(p.gid);
+        if (!/^[0-9a-f]{16}$/.test(gid)) return;
+        const all = this.groups(), names = this.names(), nm = u => names[u] || (u === mine ? 'Du' : u.slice(0, 12) + '…');
+        let g = all[gid];
+        if (p.op === 'sync') {
+            const members = [...new Set([].concat(p.members || []).map(x => str(x).toLowerCase()).filter(x => UID.test(x)))].slice(0, GMAX);
+            if (!members.includes(str(from))) return;
+            if (!g) {
+                if (!members.includes(mine) || str(p.admin) !== from) return;
+                g = all[gid] = { id: gid, name: cut(str(p.name), 40) || 'Gruppe', admin: from, members, created: Date.now(), peers: {}, my: null, rotate: true };
+                this.saveGroups(all);
+                this.sysNote(gid, '👥 ' + nm(from) + ' hat dich zur Gruppe „' + g.name + '“ hinzugefügt.');
+                return;
+            }
+            if (g.admin !== from) return;
+            const removed = g.members.filter(x => !members.includes(x)), added = members.filter(x => !g.members.includes(x));
+            g.name = cut(str(p.name), 40) || g.name; g.members = members;
+            for (const k of Object.keys(g.peers || {})) if (!members.includes(k.split('|')[0])) delete g.peers[k];
+            if (removed.length || added.length) g.rotate = true;
+            if (!members.includes(mine)) { g.left = true; this.sysNote(gid, '🚪 Du wurdest aus der Gruppe entfernt.'); }
+            else { if (added.length) this.sysNote(gid, '➕ ' + added.map(nm).join(', ') + ' hinzugefügt.'); if (removed.length) this.sysNote(gid, '➖ ' + removed.map(nm).join(', ') + ' entfernt – neue Schlüssel.'); }
+            this.saveGroups(all);
+        } else if (p.op === 'key') {
+            if (!g || !g.members.includes(from) || !/^[0-9a-f]{16}$/.test(str(p.sid))) return;
+            if (Buffer.from(str(p.ck), 'base64').length !== 32 || Buffer.from(str(p.sigPub), 'base64').length !== 32) return;
+            g.peers = g.peers || {};
+            const k = from + '|' + str(p.sid);
+            if (!g.peers[k]) g.peers[k] = { ck: str(p.ck), idx: Math.max(0, int(p.idx)), sigPub: str(p.sigPub), skipped: {} };
+            this.saveGroups(all);
+        } else if (p.op === 'leave') {
+            if (!g || !g.members.includes(from)) return;
+            if (from === mine) { g.left = true; } else { g.members = g.members.filter(x => x !== from); g.rotate = true; this.sysNote(gid, '🚪 ' + nm(from) + ' hat die Gruppe verlassen.'); }
+            for (const k of Object.keys(g.peers || {})) if (k.split('|')[0] === from) delete g.peers[k];
+            this.saveGroups(all);
+        }
+    }
+    groupOpen(uid) {
+        const g = this.groups()[uid.slice(2)];
+        if (!g) throw new UserError('Gruppe nicht gefunden.');
+        const u = this.get(this.key('chat_unread'), {}); delete u[uid]; this.put(this.key('chat_unread'), u);
+        const names = this.names(), mine = this.me().account.vrc_id, cm = this.meta()[uid] || {};
+        return { uid, group: { id: g.id, name: g.name, admin: g.admin, is_admin: g.admin === mine, left: !!g.left, members: g.members.map(x => ({ uid: x, name: names[x] || (x === mine ? '' : ''), me: x === mine, admin: x === g.admin })) },
+            messages: this.convs()[uid] || [], pins: cm.pins || [], favs: this.favs().filter(f => f.conv === uid).map(f => f.id), emoji: EMOJI, prefs: this.prefs(), names,
+            safety: '', devices: [], ready: !g.left, verified: false, changed: false, error: this.error };
+    }
+    parseMembers(v) { return [...new Set(str(v).split(/[\s,;]+/).map(x => x.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1').toLowerCase()).filter(Boolean))]; }
     async action(act, input, files) {
         switch (act) {
             case 'chat_list': { await this.device(); if (input.poll === '1') await this.poll().catch(() => {}); return { items: this.list(), error: this.error, device: (this.get(this.key('chat_dev'), null) || {}).id || '' }; }
@@ -274,6 +444,45 @@ class Chat {
             case 'chat_send': { const m = await this.send(input.uid, input.text); return Object.assign(await this.open(input.uid), { sent: m.id }); }
             case 'chat_verify': { const uid = str(input.uid).toLowerCase(); const k = this.known(); if (!k[uid]) throw new UserError('Noch keine Schlüssel bekannt.'); k[uid].verified = input.on !== '0'; k[uid].changed = false; this.put(this.key('chat_known'), k); return await this.open(uid); }
             case 'chat_blur': this.focus = false; return { ok: true };
+            // ---- 3.5 Gruppen ----
+            case 'chat_group_create': {
+                const mine = this.me().account.vrc_id; await this.device();
+                const name = cut(str(input.name).trim(), 40);
+                if (!name) throw new UserError('Bitte einen Gruppennamen angeben.');
+                const others = this.parseMembers(input.members).filter(x => x !== mine);
+                for (const x of others) if (!UID.test(x)) throw new UserError('„' + cut(x, 40) + '“ ist keine VRChat-User-ID.');
+                if (!others.length) throw new UserError('Mindestens eine weitere Person auswählen.');
+                if (others.length + 1 > GMAX) throw new UserError('Höchstens ' + GMAX + ' Mitglieder.');
+                const gid = crypto.randomBytes(8).toString('hex'), members = [mine].concat(others);
+                const all = this.groups(); all[gid] = { id: gid, name, admin: mine, members, created: Date.now(), peers: {}, my: null, rotate: true }; this.saveGroups(all);
+                const failed = await this.groupTell(members, { op: 'sync', gid, name, admin: mine, members });
+                this.sysNote(gid, '👥 Gruppe „' + name + '“ erstellt.' + (failed.length ? ' ⚠ Nicht erreicht (Chat nicht eingerichtet): ' + failed.length : ''));
+                return Object.assign(await this.groupOpen('g:' + gid), { msg: failed.length ? failed.length + ' Person(en) haben den Chat noch nicht eingerichtet.' : 'Gruppe erstellt.' });
+            }
+            case 'chat_group_members': {
+                const uid = str(input.uid).toLowerCase(), all = this.groups(), g = all[uid.slice(2)], mine = this.me().account.vrc_id;
+                if (!g || g.left) throw new UserError('Gruppe nicht gefunden.');
+                if (g.admin !== mine) throw new UserError('Nur wer die Gruppe erstellt hat, kann Mitglieder ändern.');
+                const add = this.parseMembers(input.add).filter(x => UID.test(x) && !g.members.includes(x)), rm = this.parseMembers(input.remove).filter(x => x !== mine);
+                const before = g.members.slice();
+                g.members = g.members.filter(x => !rm.includes(x)).concat(add).slice(0, GMAX);
+                if (input.name !== undefined && str(input.name).trim()) g.name = cut(str(input.name).trim(), 40);
+                g.rotate = true;
+                for (const k of Object.keys(g.peers || {})) if (!g.members.includes(k.split('|')[0])) delete g.peers[k];
+                this.saveGroups(all);
+                await this.groupTell([...new Set(before.concat(g.members))], { op: 'sync', gid: g.id, name: g.name, admin: g.admin, members: g.members });
+                if (add.length) this.sysNote(g.id, '➕ ' + add.length + ' hinzugefügt.');
+                if (rm.length) this.sysNote(g.id, '➖ ' + rm.length + ' entfernt – neue Schlüssel.');
+                return await this.groupOpen(uid);
+            }
+            case 'chat_group_leave': {
+                const uid = str(input.uid).toLowerCase(), all = this.groups(), g = all[uid.slice(2)];
+                if (!g) throw new UserError('Gruppe nicht gefunden.');
+                if (!g.left) await this.groupTell(g.members, { op: 'leave', gid: g.id });
+                delete all[g.id]; this.saveGroups(all);
+                const c = this.convs(); delete c[uid]; this.put(this.key('chat_msgs'), c);
+                return { items: this.list(), msg: 'Gruppe verlassen.' };
+            }
             // ---- 3.4 ----
             case 'chat_react': { const m = this.msgOf(input.uid, input.ref), on = !((m.reacts || {})[input.emoji] || []).includes('me'); await this.control(input.uid, { t: 'react', ref: m.id, emoji: str(input.emoji), on }); return await this.open(input.uid); }
             case 'chat_edit': { const m = this.msgOf(input.uid, input.ref); if (!m.me || m.deleted) throw new UserError('Nur eigene Nachrichten.'); const t = cut(str(input.text).replace(/\r/g, ''), 4000).trim(); if (!t) throw new UserError('Leere Nachricht.'); await this.control(input.uid, { t: 'edit', ref: m.id, text: t }); return await this.open(input.uid); }

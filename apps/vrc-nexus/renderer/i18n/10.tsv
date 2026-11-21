@@ -1152,3 +1152,14 @@ gelesen	read	lu	既読
 gelöscht	deleted	supprimé	削除済み
 gesendet	sent	envoyé	送信済み
 ＋ Weiteres VRChat-Konto anmelden	＋ Sign in another VRChat account	＋ Connecter un autre compte VRChat	＋ 別のVRChatアカウントでログイン
+Gruppenname	Group name	Nom du groupe	グループ名
+Mitglieder (VRChat-User-IDs oder Profil-Links, mit Komma getrennt)	Members (VRChat user IDs or profile links, comma-separated)	Membres (ID utilisateur VRChat ou liens de profil, séparés par des virgules)	メンバー（VRChatユーザーIDまたはプロフィールリンク、カンマ区切り）
+Gruppen sind Ende-zu-Ende-verschlüsselt: Jedes Mitglied bekommt die Schlüssel nur über die verschlüsselten 1:1-Verbindungen. Wird jemand entfernt, entstehen neue Schlüssel – ab dann liest die Person nichts mehr mit. Höchstens 50 Mitglieder.	Groups are end-to-end encrypted: every member receives the keys only through the encrypted 1:1 connections. When someone is removed, new keys are created – from then on that person can no longer read along. At most 50 members.	Les groupes sont chiffrés de bout en bout : chaque membre reçoit les clés uniquement via les connexions 1:1 chiffrées. Si quelqu'un est retiré, de nouvelles clés sont créées – cette personne ne peut alors plus rien lire. 50 membres maximum.	グループはエンドツーエンドで暗号化されています。各メンバーは暗号化された1対1の接続を通じてのみ鍵を受け取ります。誰かを削除すると新しい鍵が作られ、その人はそれ以降読めなくなります。最大50人。
+Gruppe erstellen	Create group	Créer le groupe	グループを作成
+Gruppe erstellt.	Group created.	Groupe créé.	グループを作成しました。
+Gruppe verlassen.	Left the group.	Groupe quitté.	グループを退出しました。
+Umbenennen	Rename	Renommer	名前を変更
+Du bist nicht mehr in dieser Gruppe.	You are no longer in this group.	Tu ne fais plus partie de ce groupe.	このグループのメンバーではなくなりました。
+Aus der Liste entfernen	Remove from list	Retirer de la liste	リストから削除
+Diese Person aus der Gruppe entfernen? Danach gibt es neue Schlüssel.	Remove this person from the group? New keys will be created afterwards.	Retirer cette personne du groupe ? De nouvelles clés seront ensuite créées.	この人をグループから削除しますか？その後、新しい鍵が作られます。
+Gruppe verlassen? Der Verlauf wird auf diesem Gerät gelöscht.	Leave the group? The history on this device will be deleted.	Quitter le groupe ? L'historique sur cet appareil sera supprimé.	グループを退出しますか？この端末の履歴は削除されます。

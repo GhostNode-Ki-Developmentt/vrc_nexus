@@ -1082,3 +1082,24 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 .ch-tools { margin: 8px 0 4px; gap: 6px; }
 .ch-fav { margin-bottom: 10px; } .ch-fav .ch-msg { max-width: 100%; }
 .ch-dev { padding: 6px 0; border-bottom: 1px solid var(--border-color); } .ch-dev small { color: var(--text-muted); }
+
+/* 3.5 Chat am Handy: Liste ODER Unterhaltung, mit ZurÃ¼ck-Knopf */
+.ch-back { display: none; }
+@media (max-width: 760px) {
+    .ch-back { display: inline-flex; }
+    .ch-wrap.has-open > .ch-list { display: none; }
+    .ch-wrap:not(.has-open) > .ch-conv { display: none; }
+    .ch-conv { min-height: 0; }
+    .ch-msgs { max-height: calc(100vh - 330px); }
+    .ch-msg { max-width: 88%; }
+    .ch-acts { display: flex; position: static; margin: -2px 0 4px; border: 0; background: transparent; justify-content: flex-end; opacity: 0.75; }
+    .ch-comp { flex-wrap: wrap; }
+    .ch-comp textarea { flex: 1 1 100% !important; }
+}
+
+/* 3.5 Gruppenchat */
+.ch-from { display: block; font-size: 0.78em; color: var(--accent, #d4a64a); margin-bottom: 2px; }
+.ch-gnew label { display: block; margin-bottom: 8px; }
+.ch-gnew input[type=text], .ch-gnew textarea { width: 100%; }
+.ch-gpick { display: flex; flex-wrap: wrap; gap: 4px 14px; max-height: 180px; overflow: auto; margin: 4px 0 10px; padding: 6px; border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 8px; }
+.ch-gmem .nc-row { margin: 2px 0; }

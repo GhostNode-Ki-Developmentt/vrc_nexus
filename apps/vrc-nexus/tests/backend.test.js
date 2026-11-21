@@ -2332,6 +2332,118 @@ test('3.4: Chat – Reaktionen, Antworten, Bearbeiten/Löschen, Gelesen, Bilder 
     } finally { delete process.env.NEXUS_CHAT_BASE; srv.close(); }
 });
 
+test('3.5: Gruppenchat (Megolm-Prinzip) – Sender-Schlüssel nur über 1:1-E2E, Signatur, Mitglieder entfernen → neue Schlüssel, Verlassen', async () => {
+    const http = require('http'), E = require('../backend/e2ee');
+    const { NexusApp } = require('../backend/app');
+    // ---- Schein-Briefkasten wie nexuschat.php: sieht nur Chiffretext ----
+    const devs = {}, opks = {}, inbox = [], blobs = {}, seen = [];
+    let nid = 1;
+    const srv = http.createServer((req, res) => {
+        let body = ''; req.on('data', c => { body += c; }); req.on('end', () => {
+            const a = new URL(req.url, 'http://x').searchParams.get('a'), in_ = JSON.parse(body), me = in_.token.slice(4);
+            seen.push(body);
+            const out = o => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
+            if (a === 'publish') { const id = E.deviceId(in_.ik_sig); devs[id] = devs[id] || { uid: me, created: 1700000000, last_seen: 1700000000 }; Object.assign(devs[id], { ik_dh: in_.ik_dh, ik_sig: in_.ik_sig, spk: in_.spk }); opks[id] = (opks[id] || []).concat(in_.opks || []); return out({ device: id, opks: opks[id].length }); }
+            if (a === 'devices') return out({ devices: Object.entries(devs).filter(([, d]) => d.uid === in_.uid).map(([id, d]) => Object.assign({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, created: d.created }, in_.uid === me ? { last_seen: d.last_seen } : {})) });
+            if (a === 'bundles') return out({ bundles: Object.entries(devs).filter(([id, d]) => d.uid === in_.uid && !(in_.skip || []).includes(id)).map(([id, d]) => ({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, spk: d.spk, opk: (opks[id] || []).shift() || null })) });
+            if (a === 'send') { for (const m of in_.msgs) inbox.push({ id: nid++, to: m.dev, from: me, from_dev: in_.device, body: m.body, at: Math.floor(Date.now() / 1000) }); return out({ ok: in_.msgs.length }); }
+            if (a === 'fetch') return out({ msgs: inbox.filter(m => m.to === in_.device).map(m => ({ id: m.id, from: m.from, from_dev: m.from_dev, body: m.body, at: m.at })), opks: (opks[in_.device] || []).length });
+            if (a === 'ack') { for (const id of in_.ids) { const k = inbox.findIndex(m => m.id === id && m.to === in_.device); if (k >= 0) inbox.splice(k, 1); } return out({ ok: true }); }
+            if (a === 'remove') { if (!devs[in_.device] || devs[in_.device].uid !== me) return out({ error: 'Gerät nicht gefunden.' }); delete devs[in_.device]; return out({ ok: true }); }
+            if (a === 'blob_put') { const id = require('crypto').randomBytes(16).toString('hex'); blobs[id] = { data: Buffer.from(in_.data, 'base64'), allow: in_.allow.concat([me]) }; return out({ id }); }
+            if (a === 'blob_get') { const b = blobs[in_.id]; if (!b || !b.allow.includes(me)) return out({ error: 'Bild nicht gefunden oder abgelaufen.' }); res.setHeader('Content-Type', 'application/octet-stream'); return res.end(b.data); }
+            out({ error: 'unbekannt' });
+        });
+    });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_CHAT_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const A = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', B = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444', C = 'usr_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    const mk = async uid => {
+        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-chat-')) } });
+        app.game.osc.stopListen();
+        app.account.current = () => ({ token: 'tok:' + uid, account: { vrc_id: uid } });
+        return app;
+    };
+    try {
+        const a = await mk(A), b = await mk(B), c = await mk(C);
+        for (const x of [a, b, c]) await x.post({ act: 'chat_list' }, {});
+        await assert.rejects(a.post({ act: 'chat_group_create', name: '', members: B }, {}), /Gruppennamen/);
+        await assert.rejects(a.post({ act: 'chat_group_create', name: 'X', members: 'quatsch' }, {}), /keine VRChat-User-ID/);
+        let ra = await a.post({ act: 'chat_group_create', name: 'Crew', members: B + ', ' + C }, {});
+        const G = ra.uid;
+        assert.ok(/^g:[0-9a-f]{16}$/.test(G) && ra.group.is_admin && ra.group.members.length === 3);
+        await a.post({ act: 'chat_send', uid: G, text: 'Hallo Crew' }, {});
+        let rb = await b.post({ act: 'chat_open', uid: G }, {}), rc = await c.post({ act: 'chat_open', uid: G }, {});
+        assert.strictEqual(rb.group.name, 'Crew'); assert.ok(!rb.group.is_admin);
+        assert.strictEqual(rb.messages.filter(m => !m.sys)[0].text, 'Hallo Crew');
+        assert.strictEqual(rc.messages.filter(m => !m.sys)[0].from, A, 'Absender wird angezeigt');
+        assert.ok((await b.post({ act: 'chat_list' }, {})).items.some(x => x.uid === G && x.group && x.members === 3));
+        // Antwort + Reaktion in der Gruppe
+        await b.post({ act: 'chat_send', uid: G, text: 'Hi von B' }, {});
+        const m1 = rc.messages.filter(m => !m.sys)[0];
+        await c.post({ act: 'chat_react', uid: G, ref: m1.id, emoji: '❤️' }, {});
+        ra = await a.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(ra.messages.some(m => m.text === 'Hi von B' && m.from === B));
+        assert.deepStrictEqual(ra.messages.find(m => m.id === m1.id).reacts, { '❤️': [C] });
+        // fremde Nachricht bearbeiten geht nicht (auch nicht per gefälschter Steuerung)
+        await assert.rejects(c.post({ act: 'chat_edit', uid: G, ref: m1.id, text: 'gefälscht' }, {}), /eigene/);
+        // Nicht-Admin darf keine Mitglieder ändern
+        await assert.rejects(b.post({ act: 'chat_group_members', uid: G, remove: C }, {}), /erstellt/);
+        // C entfernen → neue Sender-Schlüssel, C liest nichts Neues
+        ra = await a.post({ act: 'chat_group_members', uid: G, remove: C }, {});
+        assert.strictEqual(ra.group.members.length, 2);
+        rc = await c.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(rc.group.left, 'C ist draußen');
+        await b.post({ act: 'chat_open', uid: G }, {});   // B holt die neue Mitgliederliste
+        await a.post({ act: 'chat_send', uid: G, text: 'Geheim ohne C' }, {});
+        await b.post({ act: 'chat_send', uid: G, text: 'B auch ohne C' }, {});
+        rb = await b.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(rb.messages.some(m => m.text === 'Geheim ohne C'));
+        rc = await c.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(!rc.messages.some(m => /ohne C/.test(m.text || '')), 'Entfernte lesen nichts Neues mit');
+        ra = await a.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(ra.messages.some(m => m.text === 'B auch ohne C'), 'B hat neue Schlüssel nur an A verteilt');
+        // Signatur: verfälschter Umschlag wird verworfen
+        const env = JSON.parse(seen.filter(x => x.includes('"msgs"') && x.includes('\\"g\\"') && x.includes('"tok:' + A + '"')).pop()).msgs[0].body;
+        const bad = JSON.parse(env); bad.c = Buffer.from(Buffer.from(bad.c, 'base64').map((x, i) => (i === 3 ? x ^ 1 : x))).toString('base64');
+        const devB = Object.keys(devs).find(k => devs[k].uid === B);
+        inbox.push({ id: nid++, to: devB, from: A, from_dev: Object.keys(devs).find(k => devs[k].uid === A), body: JSON.stringify(bad), at: Math.floor(Date.now() / 1000) });
+        rb = await b.post({ act: 'chat_open', uid: G }, {});
+        assert.ok(rb.messages.some(m => m.sys && /Signatur/.test(m.text)), 'Signatur geprüft');
+        // Bild in der Gruppe: Freigabe nur für Mitglieder
+        const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), require('crypto').randomBytes(200)]);
+        await a.post({ act: 'chat_img', uid: G, text: '' }, { file: { buffer: png } });
+        const bl = Object.values(blobs).pop();
+        assert.ok(bl.allow.includes(B) && !bl.allow.includes(C));
+        rb = await b.post({ act: 'chat_open', uid: G }, {});
+        const im = rb.messages.find(m => m.img);
+        assert.ok(Buffer.from((await b.chat.image(G + ':' + im.id)).body).equals(png));
+        // Verlassen
+        await b.post({ act: 'chat_group_leave', uid: G }, {});
+        ra = await a.post({ act: 'chat_open', uid: G }, {});
+        assert.deepStrictEqual(ra.group.members.map(m => m.uid), [A]);
+        assert.ok(!seen.some(x => /Hallo Crew|Geheim|Crew/.test(x)), 'Briefkasten sieht nie Klartext, auch nicht den Gruppennamen');
+        a.tools.stop(); b.tools.stop(); c.tools.stop();
+    } finally { delete process.env.NEXUS_CHAT_BASE; srv.close(); }
+});
+
+test('3.5: Handy-Krypto (@noble-Ersatz) spricht mit dem PC – E2E-Chat und Sicherheitsnummer gleich', () => {
+    const Module = require('module'), shimPath = path.join(__dirname, '../../vrc-nexus-android/src/shims/crypto.js');
+    if (!fs.existsSync(shimPath) || !fs.existsSync(path.join(__dirname, '../../vrc-nexus-android/node_modules/@noble/curves'))) return;
+    const shim = require(shimPath);
+    const ep = require.resolve('../backend/e2ee');
+    const load = cr => { const orig = Module._load, keep = require.cache[ep]; delete require.cache[ep]; Module._load = function (r, ...a) { return r === 'crypto' && a[0] && a[0].filename === ep ? cr : orig.call(this, r, ...a); }; try { return require(ep); } finally { Module._load = orig; if (keep) require.cache[ep] = keep; else delete require.cache[ep]; } };
+    const Ph = load(shim), Pc = require('../backend/e2ee');
+    const phone = Ph.newDevice(5), pc = Pc.newDevice(5);
+    const bd = Pc.bundle(pc), st = Ph.initiate(phone, Object.assign({}, bd, { opk: bd.opks && bd.opks[0] }));
+    const env = Ph.encrypt(st, 'Hallo vom Handy');
+    const acc = Pc.accept(pc, env.pre), r = Pc.decrypt(acc.st, env);
+    assert.strictEqual(r.text, 'Hallo vom Handy');
+    const r2 = Ph.decrypt(st, Pc.encrypt(r.st, 'Hallo zurück'));
+    assert.strictEqual(r2.text, 'Hallo zurück');
+    assert.strictEqual(Ph.safetyNumber([phone.idSig.pub], [pc.idSig.pub]), Pc.safetyNumber([phone.idSig.pub], [pc.idSig.pub]));
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

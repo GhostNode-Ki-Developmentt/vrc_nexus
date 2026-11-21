@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.5.0 – Chat on Android and private group chats
+
+- 📱 **Chat on the phone:** the end-to-end encrypted chat now runs in the Android app too, with a phone layout (conversation list or conversation, ← back). Phone and PC talk to each other with the same encryption and the same safety number.
+- 🔔 New chat messages show an Android notification while VRC Nexus is open or running in the background (no push when the app is closed yet).
+- 👥 **Private group chats** (up to 50 members): every member has its own sender key that is shared only through the encrypted 1:1 connections; every group message is encrypted and signed. When someone is removed or leaves, new keys are created – from then on that person can no longer read along. Keys are also renewed after 100 messages or 7 days.
+- 👥 Group admin (the creator) adds/removes members and renames the group; anyone can leave. Reactions, replies, images (only members can download them), heart rate, pins and saved messages work in groups too.
+
 ### New in 3.4.2 – Keys only for supporter and moderator
 
 - 🔑 Unlock keys are back to one VRChat account each and only for the supporter and moderator roles – the multiaccount field when creating a key is gone. Switching between several VRChat accounts (⇄) works without any key, as before.

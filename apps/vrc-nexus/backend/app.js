@@ -69,7 +69,7 @@ class NexusApp {
         this.deco = new (require('./deco').Deco)(this);                    // 3.1: Profil-Dekorationen
         this.netgraph = new (require('./netgraph').NetGraph)(this);        // 3.2.3: Gemeinsames Netzwerk
         this.vrc.onUserData = (id, u) => this.deco.remember(id, u);
-        this.chat = opts.mobile ? null : new (require('./chat').Chat)(this, opts.crypt);
+        this.chat = new (require('./chat').Chat)(this, opts.crypt);   // 3.5: auch am Handy (Krypto über @noble im Android-Shim)
         this.heart = opts.mobile ? null : new (require('./heart').Heart)(this, opts.crypt);
         this.chatmods = new ChatMods(this, opts.crypt);   // 3.2.5: auch am Handy (nur Module ohne PC-Werte)
         this.subs = opts.mobile ? null : new (require('./subtitles').Subtitles)(this);
