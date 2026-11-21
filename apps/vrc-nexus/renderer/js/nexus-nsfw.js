@@ -79,7 +79,7 @@
         // Avatar-Paare
         h += sec('🎭 SFW ↔ NSFW-Avatar', '<div class="ns-pairs">' + (c.pairs || []).map((p, i) => '<button type="button" class="btn ' + (st.current_avatar === p.nsfw ? 'btn-gold' : '') + '" data-ns="avatar" data-i="' + i + '">'
             + (st.current_avatar === p.nsfw ? '🔞 ' : '🙂 ') + esc(p.name || 'Avatar ' + (i + 1)) + '</button>').join('') + '</div>'
-            + '<details class="ns-edit"><summary class="small">Paare bearbeiten</summary><textarea id="nsPairs" rows="4" placeholder="Name | avtr_… (SFW) | avtr_… (NSFW)  – eine Zeile pro Paar">' + esc((c.pairs || []).map(p => p.name + ' | ' + p.sfw + ' | ' + p.nsfw).join('\n')) + '</textarea>'
+            + '<details class="ns-edit" open><summary class="small">Paare bearbeiten</summary><textarea id="nsPairs" rows="4" placeholder="Name | avtr_… (SFW) | avtr_… (NSFW)  – eine Zeile pro Paar">' + esc((c.pairs || []).map(p => p.name + ' | ' + p.sfw + ' | ' + p.nsfw).join('\n')) + '</textarea>'
             + '<div class="nc-row"><span class="small">Sicherer Avatar (Panik)</span><input type="text" id="nsSafe" value="' + esc(c.safe_avatar) + '" placeholder="avtr_…" style="flex:1"></div><button type="button" class="btn btn-sm btn-gold" data-ns="save_av">💾 Speichern</button></details>');
         // Panik-Optionen
         h += sec('🚨 Panik-Knopf', '<p class="muted small">Auch auf dem Handy und als Stream-Deck-Befehl. Was passiert:</p>' + chk('panic_avatar', c.panic_avatar, 'sicheren Avatar anziehen') + chk('panic_chat', c.panic_chat, 'Chatbox leeren & Module aus')

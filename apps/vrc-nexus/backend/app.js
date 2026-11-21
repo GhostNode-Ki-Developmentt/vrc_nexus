@@ -439,7 +439,13 @@ class NexusApp {
                     links: arr(u.bioLinks).filter(l => /^https?:\/\//.test(str(l))), pronouns: str(u.pronouns), trust: U.trust(u.tags), platform: U.VRC_PLATFORM[u.last_platform] || str(u.last_platform),
                     is_friend: !!u.isFriend, joined: str(u.date_joined), last_login: str(u.last_login), last_activity: str(u.last_activity), loc, note: n.note, favorite: !!n.favorite,
                     stats: v.friendStats(id), lists: str(n.tags), watch: !!n.watch, warn: this.warn ? this.warn.get(id) : null,
-                    groups: arr(groups).map(g => ({ id: str(g.groupId), name: str(g.name), icon: str(g.iconUrl), members: int(g.memberCount), rep: !!g.isRepresenting })) } };
+                    groups: arr(groups).map(g => ({ id: str(g.groupId), name: str(g.name), icon: str(g.iconUrl), members: int(g.memberCount), rep: !!g.isRepresenting })),
+                    // 3.8.3: Profilkarte – Sprachen, Abzeichen, 18+, Banner, aktueller Avatar, Avatar-Klonen
+                    languages: arr(u.tags).map(t => (/^language_([a-z]{3})$/.exec(str(t)) || [])[1]).filter(Boolean).slice(0, 6),
+                    badges: arr(u.badges).filter(b => b && b.showcased !== false && U.https(b.badgeImageUrl)).slice(0, 12).map(b => ({ img: U.https(b.badgeImageUrl), name: cut(str(b.badgeName), 60), desc: cut(str(b.badgeDescription), 160) })),
+                    age18: str(u.ageVerificationStatus) === '18+' || u.ageVerified === true,
+                    banner: (deco && deco.banner) || U.https(u.profilePicOverride) || U.https(u.currentAvatarImageUrl) || '',
+                    avatar_thumb: U.https(u.currentAvatarThumbnailImageUrl) || '', clone: u.allowAvatarCopying === true ? true : u.allowAvatarCopying === false ? false : null } };
             }
             case 'note_save':
                 v.noteSave(valid(id, 'usr'), str(input.note), truthy(input.favorite), input.lists !== undefined ? str(input.lists) : null, input.watch !== undefined ? truthy(input.watch) : null);

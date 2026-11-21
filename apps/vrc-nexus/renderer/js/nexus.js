@@ -509,7 +509,7 @@
     }
     // ---------- Dialog (Benutzer / Welt / Instanz / Avatar) ----------
     const modal = $('#userModal');
-    function openModal(html) { modal.hidden = false; document.body.style.overflow = 'hidden'; $('#userBody').innerHTML = html; }
+    function openModal(html) { modal.hidden = false; document.body.style.overflow = 'hidden'; $('#userBody').classList.remove('u-prof'); $('#userBody').innerHTML = html; }
     function closeModal() { modal.hidden = true; document.body.style.overflow = ''; }
     modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
@@ -532,10 +532,29 @@
     function renderUser(u) {
         const l = u.loc || {}, w = l.world_info || {}, s = u.stats || {}, myLoc = state.me.location;
         if (window.NexusDeco) window.NexusDeco.set(u.id, u.deco);
-        let h = '<div class="vx-u-head" data-uid="' + esc(u.id) + '">' + img(u.image, 'vx-u-img', u.name) + '<div><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
-            + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + (u.pronouns ? ' · ' + esc(u.pronouns) : '') + '</div>'
-            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>' + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill" title="Entwicklerin von VRC Nexus">👑 Nexus Admin</span>' : '') + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
-            + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (window.NexusWarn ? window.NexusWarn.pill(u.warn) : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div></div></div>';
+        // 3.8.3: Profilkarte links (Banner, rundes Bild, Name, Status, Merkmale, Sprachen, Abzeichen, Avatar, vertretene Gruppe)
+        const LANG = { deu: ['🇩🇪', 'Deutsch'], eng: ['🇬🇧', 'English'], fra: ['🇫🇷', 'Français'], spa: ['🇪🇸', 'Español'], ita: ['🇮🇹', 'Italiano'], jpn: ['🇯🇵', '日本語'], kor: ['🇰🇷', '한국어'], zho: ['🇨🇳', '中文'], rus: ['🇷🇺', 'Русский'], por: ['🇵🇹', 'Português'], nld: ['🇳🇱', 'Nederlands'], pol: ['🇵🇱', 'Polski'], tur: ['🇹🇷', 'Türkçe'], swe: ['🇸🇪', 'Svenska'], fin: ['🇫🇮', 'Suomi'], dan: ['🇩🇰', 'Dansk'], nor: ['🇳🇴', 'Norsk'], ukr: ['🇺🇦', 'Українська'], ces: ['🇨🇿', 'Čeština'], ase: ['🤟', 'ASL'], bfi: ['🤟', 'BSL'], dse: ['🤟', 'NGT'], fsl: ['🤟', 'LSF'], jsl: ['🤟', 'JSL'], kvk: ['🤟', 'KSL'], zxx: ['❔', 'keine Sprache'] };
+        const mineG = new Set((loaded.groupList || []).map(g => g.id)), repG = (u.groups || []).filter(g => g.rep);
+        u._gshared = (u.groups || []).filter(g => mineG.has(g.id)).map(g => g.id);
+        const ban = u.banner && pic(u.banner);
+        let h = '<div class="vx-u-head u-card" data-uid="' + esc(u.id) + '">'
+            + '<div class="u-banner"' + (ban ? ' style="background-image:url(\'' + esc(ban.replace(/['"()\\\s]/g, encodeURIComponent)) + '\')"' : '') + '></div>'
+            + '<div class="u-avwrap">' + img(u.image, 'vx-u-img', u.name) + '</div>'
+            + '<div class="u-idblock"><h2 style="color:' + esc(tcol(u)) + '">' + esc(u.name) + '</h2>'
+            + (u.pronouns ? '<div class="u-pron">' + esc(u.pronouns) + '</div>' : '')
+            + '<div class="vx-u-sub">' + statusDot(u.status) + esc(u.status_desc || (ST[u.status] || {}).label || '') + '</div>'
+            + '<div class="vx-u-tags"><span class="vx-pill" style="--pc:' + esc(tcol(u)) + '">' + esc(u.trust[0]) + '</span>'
+            + (u.age18 ? '<span class="vx-pill" style="--pc:#38d5e6" title="Altersverifiziert (VRChat)">🪪 18+</span>' : '')
+            + (u.nexus_admin ? '<span class="vx-pill nx-admin-pill" title="Entwicklerin von VRC Nexus">👑 Nexus Admin</span>' : '') + (u.platform ? '<span class="vx-pill">' + esc(u.platform) + '</span>' : '')
+            + (u.is_friend ? '<span class="vx-pill" style="--pc:#51e57e">Freund</span>' : '') + (window.NexusWarn ? window.NexusWarn.pill(u.warn) : '') + (u.favorite ? '<span class="vx-pill rep">⭐ Favorit</span>' : '') + '</div>'
+            + ((u.languages || []).length ? '<div class="u-langs">' + u.languages.map(c => '<span class="u-lang">' + (LANG[c] ? LANG[c][0] + ' ' + esc(LANG[c][1]) : esc(c)) + ' <small>(' + esc(c) + ')</small></span>').join('') + '</div>' : '')
+            + ((u.badges || []).length ? '<div class="u-badges">' + u.badges.map(b => '<img src="' + esc(pic(b.img) || b.img) + '" alt="' + esc(b.name) + '" title="' + esc(b.name + (b.desc ? ' – ' + b.desc : '')) + '" loading="lazy" referrerpolicy="no-referrer">').join('') + '</div>' : '')
+            + (u.clone !== null && u.clone !== undefined ? '<div class="u-kv"><span>Avatar klonen</span><b>' + (u.clone ? 'erlaubt' : 'aus') + '</b></div>' : '')
+            + '</div>'
+            + (u.avatar_thumb ? '<div class="u-sub"><h5>Avatar</h5><div class="u-avinfo">' + img(u.avatar_thumb, 'u-avthumb', 'Avatar') + '<span class="vx-small">Aktueller Avatar</span></div></div>' : '')
+            + ((u.groups || []).length ? '<div class="u-sub"><h5>Vertretene Gruppe</h5>' + (repG.length ? repG.map(g => '<button type="button" class="u-repg" data-opengroup="' + esc(g.id) + '">' + img(g.icon, 'u-gicon', g.name) + '<span><b>' + esc(g.name) + '</b><small>' + g.members + ' Mitglieder' + (mineG.has(g.id) ? ' · 🤝 gemeinsam' : '') + '</small></span></button>').join('') : '<span class="vx-small">Keine Gruppe vertreten.</span>')
+                + '<button type="button" class="btn btn-sm u-allg" data-ugroups="1">＋ Alle Gruppen (' + u.groups.length + ' · ' + u.groups.filter(g => mineG.has(g.id)).length + ' gemeinsam)</button></div>' : '')
+            + '</div>';
         if (l.kind === 'world') {
             h += '<div class="vx-u-loc">' + img(w.thumb, 'vx-u-world', '') + '<div><b><a href="#" data-world="' + esc(l.world) + '">' + esc((w.name) || 'Unbekannte Welt') + '</a></b><small>' + esc(l.label) + (w.author ? ' · von ' + esc(w.author) : '') + (w.capacity ? ' · max. ' + w.capacity : '') + '</small><span class="vx-u-btns">'
                 + (joinable(l) ? '<a class="btn btn-sm btn-gold" href="' + esc(launch(l.location)) + '">▶ Beitreten (Spiel)</a><button type="button" class="btn btn-sm" data-act="invite_self" data-loc="' + esc(l.location) + '">📨 Selbst-Einladung</button>' : '')
@@ -562,9 +581,7 @@
         if (u.groups && u.groups.length) {
             const gpill = g => '<button type="button" class="vx-pill' + (g.rep ? ' rep' : '') + (mine.has(g.id) ? ' mutual' : '') + '" data-opengroup="' + esc(g.id) + '" title="' + g.members + ' Mitglieder' + (mine.has(g.id) ? ' · du bist auch Mitglied' : '') + '">' + (g.rep ? '★ ' : '') + (mine.has(g.id) ? '🤝 ' : '') + esc(g.name) + '</button>';
             const rep = u.groups.filter(g => g.rep), shared = u.groups.filter(g => mine.has(g.id)), rest = u.groups.filter(g => !g.rep);
-            h += '<h4>Gruppen <small>' + u.groups.length + ' · ' + shared.length + ' gemeinsam</small></h4><div class="vx-u-groups">'
-                + (rep.length ? rep.map(gpill).join('') : '<span class="vx-small">Keine Gruppe vertreten.</span>')
-                + (rest.length ? '<button type="button" class="btn btn-sm" data-ugroups="1">＋ Weitere Gruppen (' + rest.length + ')</button>' : '') + '</div>';
+            void rep; void rest;   // 3.8.3: vertretene Gruppe steht jetzt in der Profilkarte links
             u._gpop = '<div class="u-gpop-box"><div class="u-gpop-head"><b>Gruppen von ' + esc(u.name) + '</b><button type="button" class="nc-x" data-ugclose="1">✕</button></div>'
                 + '<input type="search" class="u-gpop-q" placeholder="Gruppe suchen …">'
                 + '<h4>🤝 Gemeinsame Gruppen <small>' + shared.length + '</small></h4><div class="vx-u-groups">' + (shared.length ? shared.sort((a, b) => b.rep - a.rep).map(gpill).join('') : '<span class="vx-small">Keine gemeinsamen Gruppen.</span>') + '</div>'
@@ -586,7 +603,7 @@
             + '<button type="button" class="btn btn-sm" data-mod="mute">🔇 Stummschalten</button><button type="button" class="btn btn-sm" data-mod="hideAvatar">🙈 Avatar ausblenden</button><button type="button" class="btn btn-sm btn-danger" data-mod="block">⛔ Blockieren</button>'
             + (u.is_friend ? '<button type="button" class="btn btn-sm btn-danger" data-act="unfriend">Freundschaft beenden</button>' : '<button type="button" class="btn btn-sm btn-gold" data-act="friend_request">＋ Freundschaftsanfrage</button>') + '</div>';
         const body = $('#userBody');
-        body.innerHTML = h;
+        body.innerHTML = h; body.classList.add('u-prof');
         favPicker('friend', u.id, { name: u.name, image: u.image, sub: u.status_desc || '' }, u.is_friend);
         if (window.NexusWarn && $('#uWarn')) window.NexusWarn.profile($('#uWarn'), u);
         body.querySelector('.vx-note-form').addEventListener('submit', e => {
@@ -717,7 +734,7 @@
             + '<label class="field">Region</label><select name="region"><option value="eu">🇪🇺 Europa</option><option value="us">🇺🇸 USA West</option><option value="use">🇺🇸 USA Ost</option><option value="jp">🇯🇵 Japan</option></select>'
             + '<label class="vx-auto"><input type="checkbox" name="invite_me" checked> mir sofort eine Einladung schicken</label><button class="btn btn-gold" style="margin-top:10px">＋ Instanz erstellen</button>'
             + (groups.length ? '' : '<p class="vx-small">Für Gruppen-Instanzen einmal den Reiter „Gruppen“ öffnen.</p>') + '</form></div></div>';
-        $('#userBody').innerHTML = h;
+        $('#userBody').classList.remove('u-prof'); $('#userBody').innerHTML = h;
         favPicker('world', w.id, { name: w.name, image: w.image, sub: w.author }, true);
         if (window.NexusApp && window.NexusApp.entityTabs) window.NexusApp.entityTabs('world', w.id, w.name);
         if (window.NexusColl) window.NexusColl.decorate(w.id);
@@ -737,7 +754,7 @@
             const i = d.instance, l = i.loc;
             remember('instance', i.location, (l.access || 'Instanz') + ' #' + (l.name || ''));
             const pct = i.capacity ? Math.min(100, Math.round(i.users / i.capacity * 100)) : 0;
-            $('#userBody').innerHTML = '<h2>Instanz #' + esc(l.name || '') + '</h2><div class="vx-u-sub">' + esc(l.access) + ' · ' + esc(l.region) + (i.name ? ' · ' + esc(i.name) : '') + ' · <a href="#" data-world="' + esc(l.world) + '">Welt ansehen</a></div>'
+            $('#userBody').classList.remove('u-prof'); $('#userBody').innerHTML = '<h2>Instanz #' + esc(l.name || '') + '</h2><div class="vx-u-sub">' + esc(l.access) + ' · ' + esc(l.region) + (i.name ? ' · ' + esc(i.name) : '') + ' · <a href="#" data-world="' + esc(l.world) + '">Welt ansehen</a></div>'
                 + '<div class="vx-kpis sm"><div><b>' + i.users + ' / ' + (i.capacity || '?') + '</b><span>Personen</span></div><div><b>' + i.pc + '</b><span>💻 PC</span></div><div><b>' + i.quest + '</b><span>📱 Quest</span></div>'
                 + (i.ios ? '<div><b>' + i.ios + '</b><span>🍏 iOS</span></div>' : '') + (i.queue ? '<div><b>' + i.queue + '</b><span>in der Warteschlange</span></div>' : '') + '</div>'
                 + '<div class="vx-cap"><div style="width:' + pct + '%"></div></div>' + (i.full ? '<p class="vx-error">Die Instanz ist voll.</p>' : '') + (i.closed ? '<p class="vx-error">Die Instanz wurde geschlossen.</p>' : '')
@@ -2241,7 +2258,7 @@
         api('avatar', { id }).then(d => {
             const a = d.avatar;
             remember('avatar', a.id, a.name);
-            $('#userBody').innerHTML = (pic(a.image) ? '<div class="vx-w-hero" style="background-image:url(\'' + esc(pic(a.image).replace(/['"()\\\s]/g, encodeURIComponent)) + '\')"></div>' : '')
+            $('#userBody').classList.remove('u-prof'); $('#userBody').innerHTML = (pic(a.image) ? '<div class="vx-w-hero" style="background-image:url(\'' + esc(pic(a.image).replace(/['"()\\\s]/g, encodeURIComponent)) + '\')"></div>' : '')
                 + '<div class="vx-w-head"><div><h2>' + esc(a.name) + (a.current ? ' <span class="vx-pill rep">trägst du</span>' : '') + '</h2><div class="vx-u-sub">von <a href="#" data-user="' + esc(a.author_id) + '">' + esc(a.author) + '</a> · ' + esc(a.status) + (a.version ? ' · Version ' + a.version : '') + '</div>'
                 + '<div class="vx-u-tags">' + a.platforms.map(p => '<span class="vx-pill">' + esc(p) + '</span>').join('') + a.performance.map(p => '<span class="vx-pill" style="--pc:#ffb86c">' + esc(p) + '</span>').join('') + a.tags.slice(0, 8).map(t => '<span class="vx-pill" style="--pc:#bd93f9">#' + esc(t) + '</span>').join('') + '</div></div>'
                 + '<span class="vx-u-btns">' + (a.current ? '' : '<button type="button" class="btn btn-sm btn-gold" id="avSel">🎭 Anziehen</button>') + '<button type="button" class="btn btn-sm" id="avFav">☆ Favorisieren</button><button type="button" class="btn btn-sm" id="avUnfav">Favorit entfernen</button>'

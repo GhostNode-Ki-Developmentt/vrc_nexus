@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.8.3 – New profile layout
+
+- 👤 **Profiles redesigned:** a profile card on the left (banner, round picture, name, pronouns, status, trust/18+/platform, languages with flags, badges, avatar cloning, current avatar, represented group) and the tabs on the right.
+- 🫂 New **"Nexus profile"** tab with the person's community profile (bio, languages, interests, links, member since) plus message/call buttons; the 🔞 18+ profile tab stays for unlocked viewers.
+- 🛡 **Groups tab** as a grid with pictures, search and sorting – represented and shared groups first.
+- 🔞 SFW ↔ NSFW avatar pairs: the editor is open by default.
+
 ### New in 3.8.2 – Calmer shared network
 
 - 🕸 **Shared network** settles down instead of wobbling: stronger damping, it cools off and stops, and reloading data no longer stirs the whole picture.

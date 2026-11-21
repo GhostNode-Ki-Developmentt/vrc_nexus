@@ -1033,6 +1033,12 @@
         if (window.NexusProfile18 && window.VRCX && !window.VRCX.mobile_lite) api('comm_profile', { id: u.id }).then(d => {
             const p = d.profile, P = window.NexusProfile18;
             const st = comm.querySelector('.u-comm-st'); if (st) st.textContent = p ? '✔ ' + T('ist in der Nexus Community') : T('noch nicht in der Nexus Community');
+            if (p && document.contains(bar) && !bar.querySelector('[data-ut="nexus"]')) {   // 3.8.3: Reiter „Nexus-Profil“
+                u._np = p;
+                const nb = document.createElement('button');
+                nb.type = 'button'; nb.dataset.ut = 'nexus'; nb.textContent = '🫂 ' + T('Nexus-Profil');
+                bar.querySelector('[data-ut="info"]').after(nb);
+            }
             if (!p || p.nsfw_facts === undefined || (!P.hasNsfw(p.nsfw_facts) && !p.nsfw_bio) || !document.contains(bar)) return;
             u._p18 = p;
             const b = document.createElement('button');
@@ -1062,9 +1068,42 @@
             pane.innerHTML = '<div class="nc-card cm-p18">' + P.factsView(p.facts) + P.nsfwView(p.nsfw_facts, p.nsfw_bio) + '</div>';
             return;
         }
-        if (t === 'groups') {
-            pane.innerHTML = (u.groups || []).length ? '<div class="u-glist">' + u.groups.map(g => '<button type="button" class="loc-p" data-opengroup="' + esc(g.id) + '">' + img(g.icon, 'vx-av', g.name) + '<b>' + esc(g.name) + '</b>'
-                + (g.rep ? ' <span class="vx-pill rep">★</span>' : '') + '<small class="vx-small">' + g.members + ' Mitgl.</small></button>').join('') + '</div>' : '<div class="vx-empty">Keine (öffentlichen) Gruppen.</div>';
+        if (t === 'nexus') {   // 3.8.3: Nexus-Community-Profil der Person
+            const p = u._np || {}, P = window.NexusProfile18;
+            const links = (p.links || []).filter(x => /^https?:\/\//.test(x));
+            pane.innerHTML = '<div class="u-np">'
+                + (p.banner ? '<div class="u-np-ban" style="background-image:url(nexus.php?cimg=' + esc(p.banner) + ')"></div>' : '')
+                + '<div class="nc-card"><h4>🫂 ' + esc(p.name || u.name) + (p.verified18 ? ' <span class="vx-pill" style="--pc:#38d5e6">🪪 18+</span>' : '') + '</h4>'
+                + (p.pronouns ? '<p class="small">' + esc(p.pronouns) + '</p>' : '')
+                + (p.bio ? '<div class="fmt">' + esc(p.bio).replace(/\n/g, '<br>') + '</div>' : '<p class="small muted">' + esc(T('Noch keine Community-Bio.')) + '</p>')
+                + (p.languages ? '<p class="small">🗣 ' + esc(p.languages) + '</p>' : '') + (p.interests ? '<p class="small">✨ ' + esc(p.interests) + '</p>' : '')
+                + (links.length ? '<ul class="vx-u-links">' + links.map(x => '<li><a href="' + esc(x) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(x.replace(/^https?:\/\//, '')) + '</a></li>').join('') + '</ul>' : '')
+                + '<p class="small muted">' + (p.joined ? esc(T('Dabei seit')) + ' ' + esc(new Date(p.joined * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE')) + ' · ' : '') + (p.posts || 0) + ' ' + esc(T('Beiträge')) + '</p>'
+                + '<div class="nc-row"><button type="button" class="btn btn-sm" data-uc2="chat">💬 ' + esc(T('Nachricht')) + '</button>' + (window.NexusVoice ? '<button type="button" class="btn btn-sm" data-uc2="call">📞 ' + esc(T('Anrufen')) + '</button>' : '')
+                + '<button type="button" class="btn btn-sm" data-uc2="prof">👤 ' + esc(T('Im Community-Bereich öffnen')) + '</button></div></div>'
+                + (() => { const fv = P && p.facts ? P.factsView(p.facts) : ''; return fv && fv.replace(/<[^>]*>/g, '').trim() ? '<div class="nc-card">' + fv + '</div>' : ''; })() + '</div>';
+            pane.onclick = e => { const b = e.target.closest('[data-uc2]'); if (!b) return; const c = $('#userBody').querySelector('.u-comm [data-uc="' + b.dataset.uc2 + '"]'); if (c) c.click(); };
+            return;
+        }
+        if (t === 'groups') {   // 3.8.3: Raster mit Bildern, Suche, Sortierung – gemeinsame Gruppen oben
+            const shared = new Set(u._gshared || []);
+            let q = '', sort = UI.store ? UI.store.get('ugSort', 'members') : 'members';
+            const tile = g => '<button type="button" class="u-gtile" data-opengroup="' + esc(g.id) + '" data-gname="' + esc(String(g.name).toLowerCase()) + '">' + img(g.icon, 'u-gicon', g.name)
+                + '<span><b>' + (g.rep ? '★ ' : '') + esc(g.name) + '</b><small>' + Number(g.members).toLocaleString(window.nxLoc ? nxLoc() : 'de-DE') + (shared.has(g.id) ? ' · 🤝' : '') + '</small></span></button>';
+            const paint = () => {
+                const gs = (u.groups || []).filter(g => !q || String(g.name).toLowerCase().includes(q));
+                const cmp = sort === 'name' ? (a, b) => String(a.name).localeCompare(String(b.name)) : (a, b) => (b.members - a.members);
+                const sh = gs.filter(g => shared.has(g.id) || g.rep).sort((a, b) => (b.rep - a.rep) || cmp(a, b)), rest = gs.filter(g => !shared.has(g.id) && !g.rep).sort(cmp);
+                $('.u-gres', pane).innerHTML = (sh.length ? '<h4>🤝 ' + esc(T('Vertreten & gemeinsam')) + ' <small>' + sh.length + '</small></h4><div class="u-ggrid">' + sh.map(tile).join('') + '</div>' : '')
+                    + '<h4>' + esc(T('Gruppen')) + ' <small>' + rest.length + '</small></h4><div class="u-ggrid">' + (rest.length ? rest.map(tile).join('') : '<span class="vx-small">–</span>') + '</div>';
+            };
+            pane.innerHTML = (u.groups || []).length ? '<div class="nc-row u-gbar"><b>' + esc(T('Gesamt')) + ' ' + u.groups.length + '</b><input type="search" class="u-gq" placeholder="' + esc(T('Gruppen suchen')) + '" style="flex:1">'
+                + '<select class="u-gsort"><option value="members"' + (sort === 'members' ? ' selected' : '') + '>' + esc(T('Mitglieder')) + '</option><option value="name"' + (sort === 'name' ? ' selected' : '') + '>' + esc(T('Name')) + '</option></select></div><div class="u-gres"></div>'
+                : '<div class="vx-empty">Keine (öffentlichen) Gruppen.</div>';
+            if (!(u.groups || []).length) return;
+            paint();
+            $('.u-gq', pane).addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); paint(); });
+            $('.u-gsort', pane).addEventListener('change', e => { sort = e.target.value; if (UI.store) UI.store.set('ugSort', sort); paint(); });
             return;
         }
         if (t === 'json') {

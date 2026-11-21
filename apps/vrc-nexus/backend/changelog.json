@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.8.3",
+  "title": "New profile layout",
+  "body": "- 👤 **Profiles redesigned:** a profile card on the left (banner, round picture, name, pronouns, status, trust/18+/platform, languages with flags, badges, avatar cloning, current avatar, represented group) and the tabs on the right.\n- 🫂 New **\"Nexus profile\"** tab with the person's community profile (bio, languages, interests, links, member since) plus message/call buttons; the 🔞 18+ profile tab stays for unlocked viewers.\n- 🛡 **Groups tab** as a grid with pictures, search and sorting – represented and shared groups first.\n- 🔞 SFW ↔ NSFW avatar pairs: the editor is open by default."
+ },
+ {
   "version": "3.8.2",
   "title": "Calmer shared network",
   "body": "- 🕸 **Shared network** settles down instead of wobbling: stronger damping, it cools off and stops, and reloading data no longer stirs the whole picture.\n- 🫂 Communities get their own place at the **corners/edges** of the graph; new people appear right at their community.\n- ⭕ Profile pictures **no longer overlap** (hard collision).\n- 📌 **Drag an account to pin it** – it stays where you put it (pin icon). Right-click → \"Unpin\" or \"Unpin all\". Community circles ignore pinned outliers."
