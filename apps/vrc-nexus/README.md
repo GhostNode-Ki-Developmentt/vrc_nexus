@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.4.1 – Multiaccount without re-entering keys
+
+- 👥 Switching accounts never needed a key – and now an unlock key (supporter/moderator) entered in one account also works directly in your other accounts in VRC Nexus, as long as it is valid for that VRChat ID (e.g. a multiaccount key). Removing it removes it everywhere.
+
 ### New in 3.4.0 – Multiaccount, more chat, cleaner menu
 
 - 👥 **Multiaccount – several VRChat accounts in VRC Nexus:** click ⇄ in your profile box (top right) to switch accounts or sign in another one. Every account has its **own database** (session, friends, history, favourites, notes, chat keys, Nexus account) – nothing mixes. Switching restarts the app with the other account; the first account keeps all your existing data. New accounts take over your look (theme, language, layout). Passwords are never stored.

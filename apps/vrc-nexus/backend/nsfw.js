@@ -77,7 +77,17 @@ class Nsfw {
         return { payload: p };
     }
     revoked() { try { return JSON.parse(this.app.db.setting('nsfw_revoked', '[]')) || []; } catch (e) { return []; } }
-    myToken() { try { return this.crypt.decrypt(this.app.db.setting('nsfw_token', '')) || ''; } catch (e) { return ''; } }
+    myToken() {
+        try { const t = this.crypt.decrypt(this.app.db.setting('nsfw_token', '')) || ''; if (t) return t; } catch (e) { /* weiter */ }
+        // 3.4.1 Multiaccount: Schlüssel aus einem anderen Konto dieser App, wenn er (auch) für dieses VRChat-Konto gilt
+        const uid = this.myId(), dir = this.app.tools && this.app.tools.userData;
+        if (!uid || !dir) return '';
+        for (const enc of require('./profiles').sharedKeys(dir)) {
+            let t = ''; try { t = this.crypt.decrypt(enc) || ''; } catch (e) { continue; }
+            if (t && !this.check(t, uid).error) return t;
+        }
+        return '';
+    }
     /** Was ist für das eingeloggte Konto freigeschaltet? */
     /** Rollen aus dem NXK1-Schlüssel (Supporter/Moderator) */
     roles() {
@@ -213,10 +223,12 @@ class Nsfw {
                 const uid = this.myId();
                 if (!uid) throw new UserError('Erst bei VRChat anmelden.');
                 const t = str(input.token).trim();
-                if (!t) { this.app.db.setSetting('nsfw_token', ''); return Object.assign(this.state(), { msg: 'Schlüssel entfernt.' }); }
+                if (!t) { const old = this.app.db.setting('nsfw_token', ''); if (old) require('./profiles').setSharedKey(this.app.tools && this.app.tools.userData, old, true); this.app.db.setSetting('nsfw_token', ''); return Object.assign(this.state(), { msg: 'Schlüssel entfernt.' }); }
                 const r = this.check(t, uid);
                 if (r.error) throw new UserError(r.error);
-                this.app.db.setSetting('nsfw_token', this.crypt.encrypt(t));
+                const enc = this.crypt.encrypt(t);
+                this.app.db.setSetting('nsfw_token', enc);
+                require('./profiles').setSharedKey(this.app.tools && this.app.tools.userData, enc);   // 3.4.1: gilt auch in den anderen Konten dieser App
                 return Object.assign(this.state(), { msg: '🔑 Schlüssel gespeichert: ' + (arr(r.payload.f).filter(f => ROLES[f]).map(f => ROLES[f]).join(', ') || 'keine Rolle') + '.' });
             }
         }

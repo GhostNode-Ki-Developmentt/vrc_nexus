@@ -111,4 +111,15 @@ class Profiles {
     }
 }
 
-module.exports = { Profiles, load, save, currentFile, applySeed, MAX };
+/** 3.4.1: Freischalt-Schlüssel gelten für alle Konten dieser App – einmal eintragen reicht (verschlüsselt gespeichert, geprüft wird je Konto) */
+function sharedKeys(dir) { try { return (load(dir).keys || []).filter(k => typeof k === 'string').slice(0, 20); } catch (e) { return []; } }
+function setSharedKey(dir, enc, remove) {
+    if (!dir) return;
+    const j = load(dir);
+    j.keys = (j.keys || []).filter(k => k !== enc);
+    if (!remove && enc) j.keys.unshift(enc);
+    j.keys = j.keys.slice(0, 20);
+    try { save(dir, j); } catch (e) { /* egal */ }
+}
+
+module.exports = { Profiles, load, save, currentFile, applySeed, sharedKeys, setSharedKey, MAX };
