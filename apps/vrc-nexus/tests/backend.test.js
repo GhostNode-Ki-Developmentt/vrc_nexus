@@ -2638,6 +2638,24 @@ test('3.7: Sprachanrufe 1:1 – Signalisierung E2E über den Briefkasten, Annehm
     } finally { delete process.env.NEXUS_CHAT_BASE; srv.close(); }
 });
 
+test('3.7.1: Nexus-Konto – abgelaufener/entzogener Zugang (401) meldet in der App automatisch ab, mit Hinweis', async () => {
+    const { NexusApp } = require('../backend/app');
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const acc = app.account;
+    acc.myId = () => 'usr_x';
+    acc.store({ token: 'a'.repeat(64), account: { vrc_id: 'usr_x' }, at: Date.now() });
+    assert.ok(acc.current(), 'verbunden');
+    const orig = global.fetch;
+    global.fetch = async () => ({ ok: false, status: 401, json: async () => ({ error: 'Nicht angemeldet.' }) });
+    try {
+        await assert.rejects(app.chat.call('fetch', {}), /Nicht angemeldet/);
+        assert.strictEqual(acc.current(), null, 'automatisch abgemeldet');
+        const st = await app.post({ act: 'acct_get' }, {});
+        assert.ok(!st.connected && st.expired, 'Hinweis „abgelaufen“');
+    } finally { global.fetch = orig; app.tools.stop(); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.7.1 – Automatic logout for every session
+
+- ⏱ **Nexus account:** if the website no longer accepts your Nexus sign-in (signed out elsewhere, device removed, account blocked), the app now signs you out automatically and shows why – Community, chat and NSFW fall back cleanly instead of failing with errors.
+- ⏱ **GhostNode website:** open pages now notice when your login expires (12 h without activity, or 30 days with "stay signed in", or signed out on another device) and send you to the login automatically – with a warning 2 minutes before and a "Stay signed in" button. After signing in again you return to the same page.
+- The VRChat session already logs out automatically since 3.6.1.
+
 ### New in 3.7.0 – Voice calls 1:1 (PC)
 
 - 📞 **Voice calls** between two VRC Nexus users (Windows app): the 📞 button in a chat conversation. Ringing with accept/decline, call timer, mute, **push-to-talk** (hold button or key, default V), volume, microphone/speaker choice, noise suppression, echo cancellation and automatic gain.

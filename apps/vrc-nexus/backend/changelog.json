@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.7.1",
+  "title": "Automatic logout for every session",
+  "body": "- ⏱ **Nexus account:** if the website no longer accepts your Nexus sign-in (signed out elsewhere, device removed, account blocked), the app now signs you out automatically and shows why – Community, chat and NSFW fall back cleanly instead of failing with errors.\n- ⏱ **GhostNode website:** open pages now notice when your login expires (12 h without activity, or 30 days with \"stay signed in\", or signed out on another device) and send you to the login automatically – with a warning 2 minutes before and a \"Stay signed in\" button. After signing in again you return to the same page.\n- The VRChat session already logs out automatically since 3.6.1."
+ },
+ {
   "version": "3.7.0",
   "title": "Voice calls 1:1 (PC)",
   "body": "- 📞 **Voice calls** between two VRC Nexus users (Windows app): the 📞 button in a chat conversation. Ringing with accept/decline, call timer, mute, **push-to-talk** (hold button or key, default V), volume, microphone/speaker choice, noise suppression, echo cancellation and automatic gain.\n- 🔒 End-to-end encrypted: audio via WebRTC (Opus, DTLS-SRTP); call setup goes through the existing end-to-end encrypted chat, so the server cannot tamper with it. Calls, missed and declined calls appear in the chat history; a second caller gets \"busy\".\n- 🛰 Connections use **only your own STUN/TURN server** (no public servers). The website hands out short-lived TURN credentials; alternatively enter a server under Chat → 📞 Calls. Setup guide: `docs/VOICE-SERVER.md`. Without a server, calls only work within the same network.\n- 📱 Calls on Android come later."

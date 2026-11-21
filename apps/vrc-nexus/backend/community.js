@@ -23,7 +23,7 @@ class Community {
         let r;
         try { r = await fetch(BASE() + '/nexuscomm.php?a=' + a, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign(this.auth(), body || {})), signal: AbortSignal.timeout(20000) }); }
         catch (e) { if (e instanceof UserError) throw e; throw new UserError('GhostNode-Webseite nicht erreichbar.'); }
-        if (r.status === 401) { this.app.account.refresh(true).catch(() => {}); }
+        if (r.status === 401) { if (this.app.account.expired) this.app.account.expired(); else this.app.account.refresh(true).catch(() => {}); }
         return r;
     }
     async call(a, body) {

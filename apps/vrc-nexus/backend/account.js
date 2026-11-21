@@ -37,7 +37,7 @@ class Account {
         try { r = await fetch(BASE() + '/nexusacct.php?a=' + a, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign(token ? { token } : {}, body || {})), signal: AbortSignal.timeout(15000) }); }
         catch (e) { throw new UserError('GhostNode-Webseite nicht erreichbar.'); }
         const d = await r.json().catch(() => ({ error: 'Antwort kein JSON – liegt nexusacct.php auf der Webseite?' }));
-        if (r.status === 401 && token) { this.store(null); this.notifyAccess(); }
+        if (r.status === 401 && token) this.expired();
         if (!r.ok || d.error) throw new UserError(str(d.error) || 'Fehler ' + r.status + '.');
         return d;
     }
@@ -49,6 +49,13 @@ class Account {
         this.notifyAccess();
     }
     /** NSFW-Bereich neu bewerten (z. B. Freigabe entzogen → Spielzeuge stoppen) */
+    /** 3.7.1: Zugang ungültig (auf der Webseite abgemeldet, Gerät entfernt) → hier automatisch abmelden und Grund merken */
+    expired() {
+        if (!this.load().token) return;
+        this.store(null);
+        this.app.db.setSetting('nexus_logout_reason', 'expired');
+        this.notifyAccess();
+    }
     notifyAccess() {
         const nsfw = this.app.nsfw;
         if (nsfw && !nsfw.access().unlocked) {
@@ -103,6 +110,7 @@ class Account {
         const acc = this.app.vrc.account() || {};
         const d = await this.call('register', { vrc_id: id, name: str(acc.display_name), device: str(device) || (process.platform === 'win32' ? 'Windows-PC' : this.app.mobile ? 'Handy' : 'Gerät') });
         this.store({ token: d.token, account: d.account, at: Date.now() });
+        this.app.db.setSetting('nexus_logout_reason', '');
         this.pending = null; this.at = Date.now();
         try { const a = await this.checkAge(); if (a) this.save(a); } catch (e) { /* später erneut */ }
         this.notifyAccess();
@@ -161,7 +169,7 @@ class Account {
     }
     status() {
         const o = this.current();
-        return { connected: !!o, account: o ? o.account : null, age: this.age(), devices: this.devices || [], error: this.error, pending: this.pending || null, lost: this.lost || null, server: BASE() };
+        return { connected: !!o, expired: !o && this.app.db.setting('nexus_logout_reason', '') === 'expired', account: o ? o.account : null, age: this.age(), devices: this.devices || [], error: this.error, pending: this.pending || null, lost: this.lost || null, server: BASE() };
     }
     async action(act, input) {
         const o = () => { const c = this.current(); if (!c) throw new UserError('Erst das Nexus-Konto verbinden.'); return c; };
