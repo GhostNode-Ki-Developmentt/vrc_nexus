@@ -55,6 +55,8 @@ function checkManifest(files, appVersion) {
     if (!m || typeof m !== 'object') throw new UserError('plugin.json ist leer.');
     if (int(m.format) !== 1) throw new UserError('Unbekanntes Plugin-Format (erwartet „format“: 1).');
     if (!ID.test(str(m.id))) throw new UserError('Ungültige Plugin-ID (nur a–z, 0–9 und „-“, 2–40 Zeichen).');
+    // zuerst die Mindestversion – sonst meldet eine ältere App bei neuen Rechten nur „Unbekannte Rechte“
+    if (m.nexus && !versionAtLeast(appVersion, m.nexus)) throw new UserError('Das Plugin braucht VRC Nexus ' + str(m.nexus).replace(/^>=\s*/, '') + ' oder neuer.');
     const main = str(m.main || 'main.js');
     if (!files[main] || !main.endsWith('.js')) throw new UserError('Die Hauptdatei „' + cut(main, 60) + '“ fehlt.');
     const perms = [...new Set([].concat(m.permissions || []).map(str))];
@@ -64,7 +66,6 @@ function checkManifest(files, appVersion) {
     if (groups.some(g => !GRP.test(g))) throw new UserError('Ungültige Gruppen-ID in plugin.json (grp_…).');
     if (groups.length > 5) throw new UserError('Höchstens 5 Gruppen je Plugin.');
     if (perms.includes('vrchat') && !groups.length) throw new UserError('Recht „vrchat“ braucht „groups“: ["grp_…"] in plugin.json.');
-    if (m.nexus && !versionAtLeast(appVersion, m.nexus)) throw new UserError('Das Plugin braucht VRC Nexus ' + str(m.nexus).replace(/^>=\s*/, '') + ' oder neuer.');
     return {
         id: str(m.id), name: cut(str(m.name).trim(), 60) || str(m.id), version: cut(str(m.version || '0.0.0'), 20), author: cut(str(m.author).trim(), 60),
         description: cut(str(m.description).trim(), 400), icon: cut(str(m.icon || '🧩'), 4), main, nexus: cut(str(m.nexus || ''), 20), permissions: perms,
