@@ -23,6 +23,10 @@ jobs:
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
         run: npm ci
+      # 3.5: die Tests prüfen auch den Handy-crypto-Ersatz (@noble) gegen den PC
+      - name: Abhängigkeiten (Android-Shims)
+        working-directory: apps/vrc-nexus-android
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Tests
         working-directory: apps/vrc-nexus
         run: npm test
