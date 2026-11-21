@@ -25,9 +25,25 @@ const NOTIF_TYPES = {
 const NOTIF_RESPONSES = { accept: '✓ Annehmen', decline: '✕ Ablehnen', block: '⛔ Blockieren', unsubscribe: '🔕 Abbestellen', delete: '🗑 Löschen', boop: '👃 Zurück-Boopen' };
 const AVATAR_PROVIDERS_DEFAULT = ['https://api.avtrdb.com/v3/avatar/search/vrcx', 'https://paw-api.amelia.fun/vrcx_search',
     'https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search',        // 3.2.2: NSVR – NekoSune Community
-    'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'];                 // 3.2.2: VRCDB
+    'https://vrcx.vrcdb.com/avatars/Avatar/VRCX',                  // 3.2.2: VRCDB
+    'https://aviseek.vrchatlegends.com/api'];                      // 3.5.1: AviSeek (eigene JSON-API, ohne Schlüssel)
 /** neue Standard-Anbieter, die bestehenden Listen einmalig hinzugefügt werden */
-const AVATAR_PROVIDERS_ADDED = { 'v322': ['https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'] };
+const AVATAR_PROVIDERS_ADDED = { 'v322': ['https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'], 'v351': ['https://aviseek.vrchatlegends.com/api'] };
+/** 3.5.1 AviSeek: keine VRCX-Schnittstelle, sondern /avatars/search, /avatars/{id}, /avatars/creators/{usr} */
+const isAviSeek = u => { try { return new URL(u).hostname.toLowerCase() === 'aviseek.vrchatlegends.com'; } catch (e) { return false; } };
+function aviSeekUrl(base, q) {
+    const b = base.replace(/\/+$/, ''), m = q.match(/(usr_[0-9a-f-]{36})/i), m2 = q.match(/(avtr_[0-9a-f-]{36})/i);
+    if (m) return b + '/avatars/creators/' + m[1].toLowerCase() + '?limit=60';
+    if (m2) return b + '/avatars/' + m2[1].toLowerCase();
+    return b + '/avatars/search?' + new URLSearchParams({ q: q.slice(0, 100), sort: 'relevance', limit: '60' });
+}
+/** AviSeek-Antwort in die VRCX-Form bringen, damit der Rest gleich bleibt */
+function aviSeekList(d) {
+    const l = d && Array.isArray(d.avatars) ? d.avatars : d && d.avatar ? [d.avatar] : [];
+    const PL = { pc: 'PC', quest: 'Quest / Android', ios: 'iOS' };
+    return l.map(a => ({ id: a.id, name: a.name, authorName: a.authorName, authorId: a.authorId, imageUrl: a.imageUrl, description: a.description, updated_at: a.updatedAt || '', created_at: a.addedAt || '',
+        _platforms: [].concat(a.platforms || []).map(x => PL[x]).filter(Boolean), _perf: Object.fromEntries([['PC', (a.performance || {}).pc], ['Quest', (a.performance || {}).quest], ['iOS', (a.performance || {}).ios]].filter(x => x[1])) }));
+}
 
 class Extra {
     constructor(vrc) { this.vrc = vrc; this.db = vrc.db; }
@@ -437,23 +453,25 @@ class Extra {
         if ((m = q.match(/(usr_[0-9a-f-]{36})/i))) params = { authorId: m[1], n: 500 };
         else if ((m = q.match(/(avtr_[0-9a-f-]{36})/i))) params = { search: m[1], n: 50 };
         else params = { search: cut(q, 100), n: 500 };
+        const avi = isAviSeek(list[provider]);
         let res;
-        try { res = await fetch(list[provider] + '?' + new URLSearchParams(params), { headers: { Accept: 'application/json', 'User-Agent': this.vrc.userAgent() }, redirect: 'error', signal: AbortSignal.timeout(20000) }); }
+        try { res = await fetch(avi ? aviSeekUrl(list[provider], q) : list[provider] + '?' + new URLSearchParams(params), { headers: { Accept: 'application/json', 'User-Agent': this.vrc.userAgent() }, redirect: 'error', signal: AbortSignal.timeout(20000) }); }
         catch (e) { throw new UserError('Provider nicht erreichbar: ' + (e.cause && e.cause.code || e.message)); }
         if (res.status === 404) return [];
         if (res.status !== 200) throw new UserError('Provider antwortet mit HTTP ' + res.status + '.');
         let data;
         try { data = await res.json(); } catch (e) { throw new UserError('Provider liefert kein gültiges Ergebnis.'); }
+        if (avi) data = aviSeekList(data);
         if (!Array.isArray(data)) throw new UserError('Provider liefert kein gültiges Ergebnis.');
         const rated = r => r && r !== 'None';
         return data.slice(0, 500).filter(a => a && /^avtr_[0-9a-f-]{36}$/i.test(str(a.id))).map(a => {
             const p = a.performance && typeof a.performance === 'object' ? a.performance : {};
             return { id: a.id, name: cut(a.name, 120), author: cut(a.authorName, 64), author_id: /^usr_[0-9a-f-]{36}$/i.test(str(a.authorId)) ? a.authorId : '',
                 thumb: U.https(a.thumbnailImageUrl) || U.https(a.imageUrl), desc: cut(a.description, 300), status: str(a.releaseStatus), updated: str(a.updated_at), created: str(a.created_at),
-                platforms: [rated(p.pc_rating) && 'PC', rated(p.android_rating) && 'Quest / Android', rated(p.ios_rating) && 'iOS'].filter(Boolean),
-                perf: Object.fromEntries([['PC', p.pc_rating], ['Quest', p.android_rating], ['iOS', p.ios_rating]].filter(x => x[1])) };
+                platforms: a._platforms || [rated(p.pc_rating) && 'PC', rated(p.android_rating) && 'Quest / Android', rated(p.ios_rating) && 'iOS'].filter(Boolean),
+                perf: a._perf || Object.fromEntries([['PC', p.pc_rating], ['Quest', p.android_rating], ['iOS', p.ios_rating]].filter(x => x[1])) };
         });
     }
 }
 
-module.exports = { Extra, NOTIF_TYPES, NOTIF_RESPONSES, FAV_KINDS };
+module.exports = { Extra, NOTIF_TYPES, NOTIF_RESPONSES, FAV_KINDS, aviSeekUrl, aviSeekList };

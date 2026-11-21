@@ -2444,6 +2444,36 @@ test('3.5: Handy-Krypto (@noble-Ersatz) spricht mit dem PC – E2E-Chat und Sich
     assert.strictEqual(Ph.safetyNumber([phone.idSig.pub], [pc.idSig.pub]), Pc.safetyNumber([phone.idSig.pub], [pc.idSig.pub]));
 });
 
+test('3.5.1: AviSeek als Avatar-Datenbank – eigene JSON-API (Suche, Ersteller, Avatar-ID), Standard und einmalig ergänzt', async () => {
+    const { aviSeekUrl, aviSeekList } = require('../backend/extra');
+    const B = 'https://aviseek.vrchatlegends.com/api';
+    assert.strictEqual(aviSeekUrl(B, 'proto gen'), B + '/avatars/search?q=proto+gen&sort=relevance&limit=60');
+    assert.strictEqual(aviSeekUrl(B + '/', 'https://vrchat.com/home/user/usr_AAAAAAAA-1111-2222-3333-444444444444'), B + '/avatars/creators/usr_aaaaaaaa-1111-2222-3333-444444444444?limit=60');
+    assert.strictEqual(aviSeekUrl(B, 'avtr_aaaaaaaa-1111-2222-3333-444444444444'), B + '/avatars/avtr_aaaaaaaa-1111-2222-3333-444444444444');
+    const a = { id: 'avtr_aaaaaaaa-1111-2222-3333-444444444444', name: 'Proto', authorName: 'X', authorId: '', imageUrl: 'https://x.test/a.png', platforms: ['quest', 'pc'], performance: { quest: 'Poor' }, addedAt: '2026-01-01' };
+    const l = aviSeekList({ total: 1, avatars: [a] });
+    assert.deepStrictEqual([l[0]._platforms, l[0]._perf, l[0].created_at], [['Quest / Android', 'PC'], { Quest: 'Poor' }, '2026-01-01']);
+    assert.strictEqual(aviSeekList({ avatar: a }).length, 1);
+    assert.deepStrictEqual(aviSeekList({ error: 'x' }), []);
+    // über die App (fetch gemockt, kein Netz)
+    const { NexusApp } = require('../backend/app');
+    const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
+    app.game.osc.stopListen();
+    const ex = app.extra || app.x;
+    assert.ok(ex.avatarProviders().includes(B), 'Standard');
+    const db = app.db || app.vrc.db;
+    db.setSetting('vrc_avatar_providers', JSON.stringify(['https://api.avtrdb.com/v3/avatar/search/vrcx']));
+    db.setSetting('vrc_avatar_providers_v322', '1');
+    assert.ok(ex.avatarProviders().includes(B), 'eigene Liste einmalig ergänzt');
+    const orig = global.fetch; let asked = '';
+    global.fetch = async u => { asked = String(u); return { status: 200, json: async () => ({ total: 1, avatars: [a] }) }; };
+    try {
+        const r = await ex.avatarDbSearch(ex.avatarProviders().indexOf(B), 'proto');
+        assert.ok(asked.startsWith(B + '/avatars/search?q=proto'));
+        assert.deepStrictEqual([r[0].name, r[0].platforms, r[0].thumb], ['Proto', ['Quest / Android', 'PC'], 'https://x.test/a.png']);
+    } finally { global.fetch = orig; app.tools.stop(); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });
@@ -2520,7 +2550,7 @@ test('3.2.2: Avatar-Suche – NSVR und VRCDB als Standard, bestehende Listen ein
     db.setSetting('vrc_avatar_providers', JSON.stringify(['https://meine.example/vrcx']));
     db.setSetting('vrc_avatar_providers_v322', '');
     const l = x.avatarProviders();
-    assert.deepStrictEqual(l, ['https://meine.example/vrcx', 'https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX'], 'eigene Liste bleibt, neue dazu');
+    assert.deepStrictEqual(l, ['https://meine.example/vrcx', 'https://vrcavatarsearch.nekosunevr.co.uk/vrcx_search', 'https://vrcx.vrcdb.com/avatars/Avatar/VRCX', 'https://aviseek.vrchatlegends.com/api'], 'eigene Liste bleibt, neue dazu');
     x.avatarProvidersSave('https://meine.example/vrcx');
     assert.deepStrictEqual(x.avatarProviders(), ['https://meine.example/vrcx'], 'entfernte Anbieter kommen nicht wieder');
     app.tools.stop();

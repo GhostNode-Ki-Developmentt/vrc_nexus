@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.5.1 – AviSeek avatar search
+
+- 🔎 **AviSeek** is now one of the avatar databases in the avatar search (free, no key): search by name/tag, by creator (user ID or profile link) or by avatar ID, with platform (PC / Quest / iOS) and performance info. Existing provider lists get it added once. Results credit “Data from AviSeek”.
+
 ### New in 3.5.0 – Chat on Android and private group chats
 
 - 📱 **Chat on the phone:** the end-to-end encrypted chat now runs in the Android app too, with a phone layout (conversation list or conversation, ← back). Phone and PC talk to each other with the same encryption and the same safety number.

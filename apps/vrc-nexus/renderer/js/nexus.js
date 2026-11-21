@@ -747,7 +747,7 @@
     }
     let avProviders = null, avCanEdit = false;
     function fillProviders() {
-        const NAMES = { 'api.avtrdb.com': 'avtrDB', 'paw-api.amelia.fun': 'PAW – Puppy\'s Avatar World', 'vrcavatarsearch.nekosunevr.co.uk': 'NSVR – NekoSune Community', 'vrcx.vrcdb.com': 'VRCDB', 'vrcx.avtr.zip': 'avtr.zip', 'avtr.icu': 'CuteDB', 'avatarwbvrcxsearch.worldbalancer.com': 'VRCWB – World Balancer', 'avtr.fumikoecho.net': 'KitsuneDB' };
+        const NAMES = { 'api.avtrdb.com': 'avtrDB', 'paw-api.amelia.fun': 'PAW – Puppy\'s Avatar World', 'vrcavatarsearch.nekosunevr.co.uk': 'NSVR – NekoSune Community', 'vrcx.vrcdb.com': 'VRCDB', 'vrcx.avtr.zip': 'avtr.zip', 'avtr.icu': 'CuteDB', 'avatarwbvrcxsearch.worldbalancer.com': 'VRCWB – World Balancer', 'avtr.fumikoecho.net': 'KitsuneDB', 'aviseek.vrchatlegends.com': 'AviSeek' };
         $('#avDbProv').innerHTML = avProviders.map((u, i) => { let h = u; try { h = new URL(u).hostname; } catch (e) { /* egal */ } return '<option value="' + i + '">' + esc(NAMES[h] || h) + '</option>'; }).join('');
         $('#avDbEdit').hidden = !avCanEdit;
     }
@@ -761,6 +761,7 @@
             avatarList = d.avatars.map((a, i) => Object.assign(a, { _i: i }));
             if (!avatarList.length) { box.innerHTML = '<div class="vx-empty">Nichts gefunden.</div>'; $('#avatarCount').textContent = '0 Treffer'; return; }
             renderAvatars();
+            if (/aviseek\.vrchatlegends\.com/i.test(avProviders[f.provider.value] || '')) $('#avatarCount').insertAdjacentHTML('beforeend', ' · Daten von <a href="https://aviseek.vrchatlegends.com" target="_blank" rel="noopener">AviSeek</a>');
         }).catch(fail(box));
     });
     function avDbBrowser(provider, q) {
@@ -768,14 +769,21 @@
         if (!provider || !/^https:\/\//.test(provider) || q.length < 2) return Promise.reject(new Error('ungültig'));
         const m = q.match(/(usr_[0-9a-f-]{36})/i), m2 = q.match(/(avtr_[0-9a-f-]{36})/i);
         const params = new URLSearchParams(m ? { authorId: m[1], n: 500 } : m2 ? { search: m2[1], n: 50 } : { search: q.slice(0, 100), n: 500 });
+        // 3.5.1 AviSeek hat eine eigene JSON-API (keine VRCX-Form)
+        const avi = /^https:\/\/aviseek\.vrchatlegends\.com(\/|$)/i.test(provider), ab = provider.replace(/\/+$/, '');
+        const url = !avi ? provider + '?' + params : m ? ab + '/avatars/creators/' + m[1].toLowerCase() + '?limit=60' : m2 ? ab + '/avatars/' + m2[1].toLowerCase() : ab + '/avatars/search?' + new URLSearchParams({ q: q.slice(0, 100), sort: 'relevance', limit: '60' });
+        const PL = { pc: 'PC', quest: 'Quest / Android', ios: 'iOS' };
+        const aviList = d => (d && Array.isArray(d.avatars) ? d.avatars : d && d.avatar ? [d.avatar] : []).map(a => ({ id: a.id, name: a.name, authorName: a.authorName, authorId: a.authorId, imageUrl: a.imageUrl, description: a.description, updated_at: a.updatedAt || '', created_at: a.addedAt || '',
+            _platforms: [].concat(a.platforms || []).map(x => PL[x]).filter(Boolean), _perf: Object.fromEntries([['PC', (a.performance || {}).pc], ['Quest', (a.performance || {}).quest], ['iOS', (a.performance || {}).ios]].filter(x => x[1])) }));
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), 20000);
-        return fetch(provider + '?' + params, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctl.signal, headers: { Accept: 'application/json' } }).then(r => {
+        return fetch(url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctl.signal, headers: { Accept: 'application/json' } }).then(r => {
             clearTimeout(timer);
             if (r.status === 404) return [];
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
         }).then(data => {
+            if (avi) data = aviList(data);
             if (!Array.isArray(data)) throw new Error('kein Ergebnis');
             const https = u => typeof u === 'string' && /^https:\/\//.test(u) ? u : '';
             const cur = state && state.me ? state.me.avatar : '';
@@ -784,8 +792,8 @@
                 const p = a.performance || {};
                 return { id: a.id, name: String(a.name || '').slice(0, 120), author: String(a.authorName || '').slice(0, 64), author_id: /^usr_[0-9a-f-]{36}$/i.test(a.authorId || '') ? a.authorId : '',
                          thumb: https(a.thumbnailImageUrl) || https(a.imageUrl), desc: String(a.description || '').slice(0, 300), status: String(a.releaseStatus || ''), updated: String(a.updated_at || ''), created: String(a.created_at || ''),
-                         platforms: [rated(p.pc_rating) && 'PC', rated(p.android_rating) && 'Quest / Android', rated(p.ios_rating) && 'iOS'].filter(Boolean),
-                         perf: Object.fromEntries([['PC', p.pc_rating], ['Quest', p.android_rating], ['iOS', p.ios_rating]].filter(x => x[1])), current: a.id === cur };
+                         platforms: a._platforms || [rated(p.pc_rating) && 'PC', rated(p.android_rating) && 'Quest / Android', rated(p.ios_rating) && 'iOS'].filter(Boolean),
+                         perf: a._perf || Object.fromEntries([['PC', p.pc_rating], ['Quest', p.android_rating], ['iOS', p.ios_rating]].filter(x => x[1])), current: a.id === cur };
             }) };
         });
     }
