@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.7.3 – Pick friends in the chat
+
+- 💬 Starting a chat: instead of the long list of user IDs, the chat now shows your **online friends** (in game first, then web/app) with picture and status – one click opens the conversation. **Offline friends** appear with a button. Typing filters by name; a direct user ID or profile link still works.
+
 ### New in 3.7.2 – Fix: stuck "session expired"
 
 - 🐞 Fixed: after an expired VRChat session the app could stay half signed in ("⚠ Session expired", empty profile box, no logout button). Old leftover errors are now re-checked on start, a VRChat answer without user (2FA required again) also counts as expired, and the error bar always offers "⏻ Sign out & sign in again".

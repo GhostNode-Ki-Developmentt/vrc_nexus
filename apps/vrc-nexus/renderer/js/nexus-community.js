@@ -96,14 +96,27 @@
         return '<div class="ch-msg' + (m.me ? ' me' : '') + (m.sys ? ' sys' : '') + (plain ? ' plain' : '') + '" data-mid="' + esc(m.id || '') + '">' + acts + body + (reacts ? '<div class="ch-reacts">' + reacts + '</div>' : '')
             + '<small>' + esc(when) + (m.edited && !m.deleted ? ' · ' + esc(T('bearbeitet')) : '') + (m.me && !m.sys ? ' <span class="ch-tick' + (m.read ? ' read' : '') + '" title="' + esc(T(m.read ? 'gelesen' : 'gesendet')) + '">' + (m.read ? '✓✓' : '✓') + '</span>' : '') + '</small></div>';
     }
+    /** 3.7.3: Freunde zum Anschreiben – online zuerst (im Spiel, dann Web), Offline-Freunde per Knopf; Tippen filtert nach Namen */
+    function chFriendPick(friends) {
+        const rank = { online: 0, active: 1 }, st = (window.VRCX && window.VRCX.status) || {};
+        const on = friends.filter(f => f.state === 'online' || f.state === 'active').sort((a, b) => (rank[a.state] - rank[b.state]) || String(a.name).localeCompare(String(b.name)));
+        const off = friends.filter(f => f.state !== 'online' && f.state !== 'active');
+        const row = f => '<button type="button" class="ch-fr" data-chopen="' + esc(f.id) + '" data-fname="' + esc(String(f.name || '').toLowerCase()) + '">' + UI.img(f.image, 'ch-fr-img', f.name)
+            + '<span class="ch-fr-n">' + esc(f.name) + '</span><i class="ch-fr-dot" style="background:' + esc(f.state === 'offline' || !f.state ? '#6b7280' : ((st[f.status] || {}).color || '#51e57e')) + '" title="' + esc(f.state === 'online' ? T('im Spiel') : f.state === 'active' ? T('online (Web/App)') : T('offline')) + '"></i></button>';
+        if (!friends.length) return '';
+        return '<div class="ch-pick"><div class="ch-pick-h small muted">👥 ' + esc(T('Freunde online')) + ' (' + on.length + ')</div>'
+            + '<div class="ch-pick-l">' + (on.length ? on.map(row).join('') : '<p class="small muted ch-pick-none">' + esc(T('Gerade niemand online.')) + '</p>')
+            + (chat.showOff ? '<div class="ch-pick-h small muted">⚪ ' + esc(T('Offline')) + ' (' + off.length + ')</div>' + off.map(row).join('') : '') + '</div>'
+            + (off.length ? '<button type="button" class="btn btn-sm ch-pick-off" data-choff="1">' + (chat.showOff ? '▴ ' + esc(T('Offline-Freunde ausblenden')) : '⚪ ' + esc(T('Offline-Freunde zeigen')) + ' (' + off.length + ')') + '</button>' : '') + '</div>';
+    }
     function chatHtml() {
-        const names = {};
-        ((UI.state && UI.state() && UI.state().friends) || []).forEach(f => { names[f.id] = f.name; });
+        const names = {}, friends = (UI.state && UI.state() && UI.state().friends) || [];
+        friends.forEach(f => { names[f.id] = f.name; });
         const list = chat.list || [];
         const o = chat.open;
         const left = '<div class="nc-card ch-list"><h4>💬 ' + esc(T('Unterhaltungen')) + '</h4>'
-            + '<form class="nc-row ch-new"><input type="text" name="uid" placeholder="' + esc(T('VRChat-User-ID oder Profil-Link')) + '" list="chFriends" style="flex:1"><button class="btn btn-sm btn-gold">＋</button></form>'
-            + '<datalist id="chFriends">' + Object.entries(names).map(([id, n]) => '<option value="' + esc(id) + '">' + esc(n) + '</option>').join('') + '</datalist>'
+            + '<form class="nc-row ch-new"><input type="text" name="uid" placeholder="' + esc(T('VRChat-User-ID, Profil-Link oder Name suchen')) + '" autocomplete="off" style="flex:1"><button class="btn btn-sm btn-gold" title="' + esc(T('Unterhaltung mit dieser ID starten')) + '">＋</button></form>'
+            + chFriendPick(friends)
             + (list.length ? list.map(c => '<button type="button" class="ch-item' + (c.uid === chat.uid ? ' on' : '') + '" data-chopen="' + esc(c.uid) + '"><b>' + (c.group ? '👥 ' : '') + esc(c.name || names[c.uid] || c.uid.slice(0, 13) + '…') + '</b>' + (c.group ? ' <small class="muted" style="display:inline">· ' + c.members + '</small>' : '')
                 + (c.changed ? ' <span title="' + esc(T('Schlüssel geändert')) + '">⚠</span>' : c.verified ? ' <span title="' + esc(T('verifiziert')) + '">✔</span>' : '') + (c.unread ? ' <span class="vx-badge sm">' + c.unread + '</span>' : '')
                 + '<small>' + esc(c.last ? (c.last.me ? T('Du') + ': ' : '') + String(c.last.text).slice(0, 60) : '') + '</small></button>').join('') : '<p class="small muted">' + esc(T('Noch keine Unterhaltungen.')) + '</p>')
@@ -131,7 +144,7 @@
             + (g.left ? '<p class="small bad">' + esc(T('Du bist nicht mehr in dieser Gruppe.')) + ' <button type="button" class="nc-link" data-chgleave="1">' + esc(T('Aus der Liste entfernen')) + '</button></p>' : '')
             + (chat.showMembers && !g.left ? '<div class="tts-help ch-gmem">' + g.members.map(x => '<div class="nc-row"><span>' + esc(gname(x)) + (x.admin ? ' <small class="muted">(' + esc(T('Admin')) + ')</small>' : '') + '</span>'
                 + (g.is_admin && !x.me ? '<button type="button" class="nc-x" data-chgrm="' + esc(x.uid) + '" title="' + esc(T('Entfernen')) + '" style="margin-left:auto">✕</button>' : '') + '</div>').join('')
-                + (g.is_admin ? '<form class="nc-row ch-gadd"><input type="text" name="add" placeholder="' + esc(T('VRChat-User-ID oder Profil-Link')) + '" list="chFriends" style="flex:1"><button class="btn btn-sm">＋</button></form>'
+                + (g.is_admin ? '<form class="nc-row ch-gadd"><input type="text" name="add" placeholder="' + esc(T('VRChat-User-ID oder Profil-Link')) + '" style="flex:1"><button class="btn btn-sm">＋</button></form>'
                     + '<form class="nc-row ch-gren"><input type="text" name="name" maxlength="40" value="' + esc(g.name) + '" style="flex:1"><button class="btn btn-sm">' + esc(T('Umbenennen')) + '</button></form>' : '')
                 + '<div class="nc-row"><button type="button" class="btn btn-sm btn-danger" data-chgleave="1">🚪 ' + esc(T('Gruppe verlassen')) + '</button></div></div>' : '');
         return '<div class="ch-wrap' + (chat.uid || chat.view ? ' has-open' : '') + '">' + left + '<div class="nc-card ch-conv"><div class="nc-row"><button type="button" class="btn btn-sm ch-back" data-chback="1">←</button><h4 style="margin:0">' + esc(nm) + '</h4>'
@@ -286,6 +299,13 @@
     }
 
     function bind() {
+        // 3.7.3: Freundesliste im Chat beim Tippen filtern (ohne neu zu zeichnen)
+        box.addEventListener('input', e => {
+            if (!e.target.matches('.ch-new [name=uid]')) return;
+            const q = e.target.value.trim().toLowerCase(), isId = /^usr_|vrchat\.com/.test(q);
+            if (q && !isId && !chat.showOff && box.querySelectorAll('.ch-pick .ch-fr').length && ![...box.querySelectorAll('.ch-pick .ch-fr')].some(b => b.dataset.fname.includes(q))) { chat.showOff = true; render(); const inp = box.querySelector('.ch-new [name=uid]'); if (inp) { inp.value = e.target.value; inp.focus(); } }
+            box.querySelectorAll('.ch-pick .ch-fr').forEach(b => { b.hidden = !!q && !isId && !b.dataset.fname.includes(q); });
+        });
         const top = document.getElementById('cmtSub');
         if (top) top.addEventListener('click', e => { const b = e.target.closest('[data-csub]'); if (b) go(b.dataset.csub); });
         if (top) top.addEventListener('change', e => {
@@ -307,6 +327,7 @@
             const rp = t.closest('[data-crep]'); if (rp) { const r = prompt(T('Warum meldest du diesen Beitrag?')); if (!r) return; return api('comm_report', { id: rp.dataset.crep, reason: r }).then(d => toast(d.msg)).catch(x => toast(x.message, true)); }
             const more = t.closest('[data-cmore]'); if (more) return loadFeed(true);
             const co = t.closest('[data-chopen]'); if (co) return chatOpen(co.dataset.chopen);
+            if (t.closest('[data-choff]')) { chat.showOff = !chat.showOff; return render(); }
             if (t.closest('[data-chback]')) { chat.uid = ''; chat.open = null; chat.view = ''; chat.reply = null; chat.editing = null; api('chat_blur').catch(() => {}); return render(); }   // 3.5 Handy: zurück zur Liste
             // ---- 3.4 Chat ----
             const cv = t.closest('[data-chview]');
@@ -389,7 +410,15 @@
             if (f.matches('.cm-pform')) return api('comm_profile_save', Object.assign(profBody(prof), { bio: f.bio.value, pronouns: f.pronouns.value, languages: f.languages.value, interests: f.interests.value, links: f.links.value.split(',').map(x => x.trim()).filter(Boolean) },
                 window.NexusProfile18 ? { facts: JSON.stringify(window.NexusProfile18.readFacts(f)) } : {}))
                 .then(d => { toast(d.msg); const feed = prof.feed; prof = d.profile; prof.feed = feed; profEdit = false; render(); }).catch(x => toast(x.message, true));
-            if (f.matches('.ch-new')) { const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1'); if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(v)) return toast(T('Bitte eine VRChat-User-ID (usr_…) oder einen Profil-Link angeben.'), true); f.reset(); return chatOpen(v.toLowerCase()); }
+            if (f.matches('.ch-new')) {
+                const v = f.uid.value.trim().replace(/^.*\/(usr_[0-9a-f-]{36}).*$/i, '$1');
+                if (!/^(?:usr_[0-9a-f-]{36}|[0-9a-z]{10})$/i.test(v)) {   // 3.7.3: kein ID → genau ein passender Freund? dann den nehmen
+                    const hits = [...box.querySelectorAll('.ch-pick .ch-fr')].filter(b => !b.hidden);
+                    if (v && hits.length === 1) { f.reset(); return chatOpen(hits[0].dataset.chopen); }
+                    return toast(T('Bitte eine VRChat-User-ID (usr_…), einen Profil-Link oder einen Freund aus der Liste wählen.'), true);
+                }
+                f.reset(); return chatOpen(v.toLowerCase());
+            }
             if (f.matches('.ch-gnew')) {
                 const picks = [...f.querySelectorAll('input[name="pick"]:checked')].map(x => x.value);
                 const members = [f.members.value].concat(picks).filter(Boolean).join(',');

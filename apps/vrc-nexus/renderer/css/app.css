@@ -1141,3 +1141,16 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte ‚
 .nv-talk.on { background: #51e57e; color: #0b1a10; }
 .nv-set label { display: block; margin: 6px 0; } .nv-set select { margin-left: 6px; max-width: 100%; }
 .nv-ice { display: flex; flex-wrap: wrap; gap: 6px; } .nv-ice input { flex: 1 1 180px; }
+
+/* 3.7.3 Chat: Freunde w√§hlen */
+.ch-pick { margin: 6px 0 10px; }
+.ch-pick-h { margin: 6px 2px 4px; }
+.ch-pick-l { max-height: 240px; overflow: auto; border: 1px solid var(--line, rgba(255,255,255,.1)); border-radius: 8px; padding: 2px; }
+.ch-fr { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 6px; border: 0; border-radius: 6px; background: transparent; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.ch-fr:hover, .ch-fr:focus-visible { background: rgba(255,255,255,.06); }
+.ch-fr[hidden] { display: none; }
+.ch-fr-img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 26px; font-size: 14px; display: inline-grid; place-items: center; }
+.ch-fr-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-fr-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; }
+.ch-pick-off { margin-top: 6px; width: 100%; }
+.ch-pick-none { margin: 6px; }
