@@ -91,7 +91,8 @@ class NexusApp {
             if (kind === 'public' && s.get('notify.watch_public')) this.tools.alert('🌍 ' + name + ' ist in einer öffentlichen Instanz', world || '');
         };
         this.notify = opts.notify || null;
-        this.plugins = opts.mobile ? null : new (require('./plugins').Plugins)(this);   // 3.6 Plugin-Lader (nur PC)
+        this.plugins = opts.mobile ? null : new (require('./plugins').Plugins)(this);
+        this.voice = opts.mobile ? null : new (require('./voice').Voice)(this, opts.crypt);   // 3.7 Sprachanrufe 1:1 (Signalisierung über den Chat)   // 3.6 Plugin-Lader (nur PC)
         this.mobile = !!opts.mobile;
         this.vrc.nativeCookies = this.mobile;
     }
@@ -211,6 +212,7 @@ class NexusApp {
             if (act.startsWith('deco_')) return await this.deco.action(act, input);
             if (act.startsWith('net_')) { if (!this.vrc.account()) throw new UserError('Erst bei VRChat anmelden.'); return await this.netgraph.action(act, input); }
             if (act === 'win_titlebar') { if (this.tools.host.setTitleBar) this.tools.host.setTitleBar({ color: str(input.color), symbol: str(input.symbol) }); return { ok: true }; }
+            if (act.startsWith('voice_')) { if (!this.voice) throw new UserError('Sprachanrufe gibt es vorerst nur in der Windows-App.'); return await this.voice.action(act, input); }
             if (act.startsWith('plug_')) { if (!this.plugins) throw new UserError('Plugins gibt es nur in der Windows-App.'); return await this.plugins.action(act, input, files); }
             if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input, files); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);

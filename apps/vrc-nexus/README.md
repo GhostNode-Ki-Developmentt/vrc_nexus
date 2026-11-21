@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.7.0 – Voice calls 1:1 (PC)
+
+- 📞 **Voice calls** between two VRC Nexus users (Windows app): the 📞 button in a chat conversation. Ringing with accept/decline, call timer, mute, **push-to-talk** (hold button or key, default V), volume, microphone/speaker choice, noise suppression, echo cancellation and automatic gain.
+- 🔒 End-to-end encrypted: audio via WebRTC (Opus, DTLS-SRTP); call setup goes through the existing end-to-end encrypted chat, so the server cannot tamper with it. Calls, missed and declined calls appear in the chat history; a second caller gets "busy".
+- 🛰 Connections use **only your own STUN/TURN server** (no public servers). The website hands out short-lived TURN credentials; alternatively enter a server under Chat → 📞 Calls. Setup guide: `docs/VOICE-SERVER.md`. Without a server, calls only work within the same network.
+- 📱 Calls on Android come later.
+
 ### New in 3.6.1 – Automatic logout when the session expires
 
 - ⏱ When the VRChat session expires, VRC Nexus now logs you out automatically instead of staying in a half-connected state. The login page tells you why. A single 401 from another endpoint is double-checked first, so you are not logged out by mistake. (Same on the GhostNode website.)

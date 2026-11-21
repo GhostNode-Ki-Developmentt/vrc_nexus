@@ -1185,3 +1185,39 @@ Windows-Hinweise anzeigen	Show Windows notifications	Afficher des notifications 
 Spiel-Ereignisse sehen (Welt betreten, Spieler kommen/gehen)	See game events (world joined, players joining/leaving)	Voir les événements du jeu (monde rejoint, joueurs qui arrivent/partent)	ゲームのイベントを見る（ワールド参加、プレイヤーの出入り）
 Ins Internet verbinden	Connect to the internet	Se connecter à Internet	インターネットに接続
 Plugin entfernt.	Plugin removed.	Plugin supprimé.	プラグインを削除しました。
+ruft dich an …	is calling you …	t'appelle …	から着信中 …
+klingelt …	ringing …	sonne …	呼び出し中 …
+verbindet …	connecting …	connexion …	接続中 …
+Push-to-Talk: nur sprechen, solange die Taste gedrückt ist	Push-to-talk: only transmit while the key is held	Push-to-talk : ne parler que tant que la touche est maintenue	プッシュトゥトーク：キーを押している間だけ送信
+Halten zum Sprechen	Hold to talk	Maintenir pour parler	押して話す
+Auflegen	Hang up	Raccrocher	切る
+Leertaste	Space	Espace	スペース
+Kein Zugriff aufs Mikrofon	No access to the microphone	Pas d'accès au micro	マイクにアクセスできません
+Windows: Einstellungen → Datenschutz → Mikrofon → Desktop-Apps erlauben.	Windows: Settings → Privacy → Microphone → allow desktop apps.	Windows : Paramètres → Confidentialité → Micro → autoriser les applications de bureau.	Windows：設定 → プライバシー → マイク → デスクトップアプリを許可。
+Kein STUN/TURN-Server eingerichtet – Anrufe klappen so nur im selben Netz.	No STUN/TURN server set up – calls only work within the same network.	Aucun serveur STUN/TURN configuré – les appels ne fonctionnent que dans le même réseau.	STUN/TURNサーバーが未設定です – 同じネットワーク内でのみ通話できます。
+Verbindung fehlgeschlagen – STUN/TURN-Server prüfen (Chat → 📞 Anrufe).	Connection failed – check the STUN/TURN server (Chat → 📞 Calls).	Échec de la connexion – vérifie le serveur STUN/TURN (Chat → 📞 Appels).	接続に失敗しました – STUN/TURNサーバーを確認してください（チャット → 📞 通話）。
+Es läuft schon ein Anruf.	A call is already in progress.	Un appel est déjà en cours.	すでに通話中です。
+Niemand hat abgenommen.	No one answered.	Personne n'a répondu.	応答がありませんでした。
+Der Anruf ist nicht mehr da.	The call is no longer available.	L'appel n'est plus disponible.	この通話はもうありません。
+Besetzt.	Busy.	Occupé.	話し中です。
+Anruf abgelehnt.	Call declined.	Appel refusé.	通話が拒否されました。
+Anruf beendet.	Call ended.	Appel terminé.	通話が終了しました。
+Lautsprecher	Speaker	Haut-parleur	スピーカー
+Geräuschunterdrückung	Noise suppression	Suppression du bruit	ノイズ抑制
+Echo-Unterdrückung	Echo cancellation	Annulation d'écho	エコーキャンセル
+Automatische Lautstärke	Automatic gain	Gain automatique	自動音量調整
+Push-to-Talk standardmäßig an	Push-to-talk on by default	Push-to-talk activé par défaut	プッシュトゥトークを既定でオン
+Push-to-Talk-Taste	Push-to-talk key	Touche push-to-talk	プッシュトゥトークのキー
+wirkt, solange VRC Nexus im Vordergrund ist	works while VRC Nexus is in the foreground	fonctionne tant que VRC Nexus est au premier plan	VRC Nexusが前面にある間のみ有効
+STUN/TURN-Server	STUN/TURN server	Serveur STUN/TURN	STUN/TURNサーバー
+Aktiv:	Active:	Actif :	有効：
+Noch kein Server – Anrufe klappen so nur im selben Netz. Die Webseite liefert den Server, sobald er dort eingerichtet ist; oder hier einen eigenen eintragen.	No server yet – calls only work within the same network. The website provides the server once it is set up there; or enter your own here.	Pas encore de serveur – les appels ne fonctionnent que dans le même réseau. Le site fournit le serveur dès qu'il y est configuré ; ou saisis le tien ici.	サーバーがまだありません – 同じネットワーク内でのみ通話できます。ウェブサイト側で設定されるとそのサーバーが使われます。または自分のサーバーをここに入力してください。
+Benutzername (optional)	Username (optional)	Nom d'utilisateur (optionnel)	ユーザー名（任意）
+Passwort (optional)	Password (optional)	Mot de passe (optionnel)	パスワード（任意）
+Anrufe sind Ende-zu-Ende-verschlüsselt (DTLS-SRTP). Der Verbindungsaufbau läuft verschlüsselt über den Chat – auch der TURN-Server sieht nur verschlüsselte Sprachdaten.	Calls are end-to-end encrypted (DTLS-SRTP). Call setup runs encrypted through the chat – even the TURN server only sees encrypted audio.	Les appels sont chiffrés de bout en bout (DTLS-SRTP). L'établissement passe chiffré par le chat – même le serveur TURN ne voit que de l'audio chiffré.	通話はエンドツーエンドで暗号化されています（DTLS-SRTP）。接続の確立はチャット経由で暗号化され、TURNサーバーにも暗号化された音声しか見えません。
+Taste drücken …	Press a key …	Appuie sur une touche …	キーを押してください …
+Eigener Server gespeichert.	Own server saved.	Serveur personnel enregistré.	自分のサーバーを保存しました。
+Es wird der Server der Webseite benutzt.	The website's server is used.	Le serveur du site est utilisé.	ウェブサイトのサーバーを使用します。
+Sprachanruf (Ende-zu-Ende-verschlüsselt)	Voice call (end-to-end encrypted)	Appel vocal (chiffré de bout en bout)	音声通話（エンドツーエンド暗号化）
+Anrufe	Calls	Appels	通話
+Sprachanrufe	Voice calls	Appels vocaux	音声通話

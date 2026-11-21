@@ -205,6 +205,7 @@ class Chat {
                     sess[sk] = r.st;
                     const p = JSON.parse(r.text);
                     if (p.t === 'gctl') { this.groupCtl(m.from, p, mine); continue; }   // 3.5 Gruppen-Verwaltung und Sender-Schlüssel (nur über 1:1-E2E)
+                    if (p.t === 'call') { if (this.app.voice) this.app.voice.signal(m.from, p, mine); continue; }   // 3.7 Sprachanruf-Signalisierung
                     const conv = m.from === mine ? str(p.conv).toLowerCase() : m.from;   // Abgleich von eigenen Geräten
                     if (!UID.test(conv)) continue;
                     if (!p.at) p.at = m.at * 1000;

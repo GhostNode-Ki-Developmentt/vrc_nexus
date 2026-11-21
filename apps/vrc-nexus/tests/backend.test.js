@@ -2556,6 +2556,88 @@ test('3.6.1: abgelaufene VRChat-Sitzung meldet automatisch ab (auch bei 401 von 
     app.tools.stop();
 });
 
+test('3.7: Sprachanrufe 1:1 – Signalisierung E2E über den Briefkasten, Annehmen/Auflegen/Besetzt/Verpasst, TURN nur vom eigenen Server', async () => {
+    const http = require('http'), E = require('../backend/e2ee');
+    const { NexusApp } = require('../backend/app');
+    // ---- Schein-Briefkasten wie nexuschat.php: sieht nur Chiffretext ----
+    const devs = {}, opks = {}, inbox = [], blobs = {}, seen = [];
+    let nid = 1;
+    const srv = http.createServer((req, res) => {
+        let body = ''; req.on('data', c => { body += c; }); req.on('end', () => {
+            const a = new URL(req.url, 'http://x').searchParams.get('a'), in_ = JSON.parse(body), me = in_.token.slice(4);
+            seen.push(body);
+            const out = o => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
+            if (a === 'publish') { const id = E.deviceId(in_.ik_sig); devs[id] = devs[id] || { uid: me, created: 1700000000, last_seen: 1700000000 }; Object.assign(devs[id], { ik_dh: in_.ik_dh, ik_sig: in_.ik_sig, spk: in_.spk }); opks[id] = (opks[id] || []).concat(in_.opks || []); return out({ device: id, opks: opks[id].length }); }
+            if (a === 'devices') return out({ devices: Object.entries(devs).filter(([, d]) => d.uid === in_.uid).map(([id, d]) => Object.assign({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, created: d.created }, in_.uid === me ? { last_seen: d.last_seen } : {})) });
+            if (a === 'bundles') return out({ bundles: Object.entries(devs).filter(([id, d]) => d.uid === in_.uid && !(in_.skip || []).includes(id)).map(([id, d]) => ({ device: id, ik_dh: d.ik_dh, ik_sig: d.ik_sig, spk: d.spk, opk: (opks[id] || []).shift() || null })) });
+            if (a === 'send') { for (const m of in_.msgs) inbox.push({ id: nid++, to: m.dev, from: me, from_dev: in_.device, body: m.body, at: Math.floor(Date.now() / 1000) }); return out({ ok: in_.msgs.length }); }
+            if (a === 'fetch') return out({ msgs: inbox.filter(m => m.to === in_.device).map(m => ({ id: m.id, from: m.from, from_dev: m.from_dev, body: m.body, at: m.at })), opks: (opks[in_.device] || []).length });
+            if (a === 'ack') { for (const id of in_.ids) { const k = inbox.findIndex(m => m.id === id && m.to === in_.device); if (k >= 0) inbox.splice(k, 1); } return out({ ok: true }); }
+            if (a === 'remove') { if (!devs[in_.device] || devs[in_.device].uid !== me) return out({ error: 'Gerät nicht gefunden.' }); delete devs[in_.device]; return out({ ok: true }); }
+            if (a === 'turn') return out({ ice: [{ urls: ['stun:turn.test:3478'] }, { urls: ['turn:turn.test:3478'], username: '1:' + me, credential: 'x' }] });
+            if (a === 'blob_put') { const id = require('crypto').randomBytes(16).toString('hex'); blobs[id] = { data: Buffer.from(in_.data, 'base64'), allow: in_.allow.concat([me]) }; return out({ id }); }
+            if (a === 'blob_get') { const b = blobs[in_.id]; if (!b || !b.allow.includes(me)) return out({ error: 'Bild nicht gefunden oder abgelaufen.' }); res.setHeader('Content-Type', 'application/octet-stream'); return res.end(b.data); }
+            out({ error: 'unbekannt' });
+        });
+    });
+    await new Promise(r => srv.listen(0, '127.0.0.1', r));
+    process.env.NEXUS_CHAT_BASE = 'http://127.0.0.1:' + srv.address().port;
+    const A = 'usr_' + 'a'.repeat(8) + '-1111-2222-3333-444444444444', B = 'usr_' + 'b'.repeat(8) + '-1111-2222-3333-444444444444', C = 'usr_' + 'c'.repeat(8) + '-1111-2222-3333-444444444444';
+    const mk = async uid => {
+        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-chat-')) } });
+        app.game.osc.stopListen();
+        app.account.current = () => ({ token: 'tok:' + uid, account: { vrc_id: uid } });
+        return app;
+    };
+    try {
+        const a = await mk(A), b = await mk(B), c = await mk(C);
+        for (const x of [a, b, c]) await x.post({ act: 'chat_list' }, {});
+        const ice = await a.post({ act: 'voice_ice' }, {});
+        assert.deepStrictEqual(ice.ice[1].urls, ['turn:turn.test:3478'], 'ICE-Server kommt von der Webseite');
+        await assert.rejects(a.post({ act: 'voice_cfg', urls: 'stun:stun.l.google.com:19302 https://x' }, {}), /Ungültige Server-Adresse/);
+        await a.post({ act: 'voice_cfg', urls: 'turn:mein.test:3478', user: 'u', pass: 'geheim' }, {});
+        assert.deepStrictEqual((await a.post({ act: 'voice_ice' }, {})).ice, [{ urls: ['turn:mein.test:3478'], username: 'u', credential: 'geheim' }]);
+        await a.post({ act: 'voice_cfg', urls: '' }, {});
+        // A ruft B an
+        const CALL = '0123456789abcdef', SDP_O = 'v=0 offer-sdp a=fingerprint:sha-256 AA', SDP_A = 'v=0 answer-sdp';
+        await a.post({ act: 'voice_offer', uid: B, call: CALL, sdp: SDP_O }, {});
+        await assert.rejects(a.post({ act: 'voice_offer', uid: B, call: 'fedcba9876543210', sdp: 'x' }, {}), /schon ein Anruf/);
+        let pb = await b.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.strictEqual(pb.ring.from, A); assert.strictEqual(pb.events[0].op, 'ring');
+        assert.strictEqual((await b.post({ act: 'voice_incoming' }, {})).ring.sdp, SDP_O, 'SDP kommt verschlüsselt an');
+        // C ruft B an, während es klingelt → besetzt
+        await c.post({ act: 'voice_offer', uid: B, call: '1111111111111111', sdp: 'x' }, {});
+        await b.post({ act: 'voice_poll', fast: '1' }, {});
+        let pc = await c.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.ok(pc.events.some(e => e.op === 'busy'), 'besetzt');
+        // B nimmt an
+        await b.post({ act: 'voice_accept', call: CALL, sdp: SDP_A }, {});
+        let pa = await a.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.deepStrictEqual(pa.events.find(e => e.op === 'answer'), { op: 'answer', call: CALL, sdp: SDP_A });
+        // A legt nach 42 s auf
+        await a.post({ act: 'voice_hangup', call: CALL, secs: '42' }, {});
+        pb = await b.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.ok(pb.events.some(e => e.op === 'hangup' && e.call === CALL) && !pb.active);
+        assert.ok((await b.post({ act: 'chat_open', uid: A }, {})).messages.some(m => m.sys && m.text === '📞 Anruf · 0:42'), 'Anruf im Verlauf');
+        assert.ok((await a.post({ act: 'chat_open', uid: B }, {})).messages.some(m => m.sys && m.text === '📞 Anruf · 0:42'));
+        // Abgelehnt
+        await a.post({ act: 'voice_offer', uid: B, call: '2222222222222222', sdp: SDP_O }, {});
+        await b.post({ act: 'voice_poll', fast: '1' }, {});
+        await b.post({ act: 'voice_decline', call: '2222222222222222' }, {});
+        pa = await a.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.ok(pa.events.some(e => e.op === 'decline') && !pa.active);
+        // Verpasst: Anrufer bricht ab, bevor B abnimmt
+        await a.post({ act: 'voice_offer', uid: B, call: '3333333333333333', sdp: SDP_O }, {});
+        await b.post({ act: 'voice_poll', fast: '1' }, {});
+        await a.post({ act: 'voice_hangup', call: '3333333333333333', secs: '0' }, {});
+        pb = await b.post({ act: 'voice_poll', fast: '1' }, {});
+        assert.ok(!pb.ring, 'klingelt nicht mehr');
+        assert.ok((await b.post({ act: 'chat_open', uid: A }, {})).messages.some(m => m.text === '📞 Verpasster Anruf'));
+        assert.ok(!seen.some(x => x.includes('offer-sdp') || x.includes('answer-sdp')), 'Briefkasten sieht die SDP nie im Klartext');
+        a.tools.stop(); b.tools.stop(); c.tools.stop();
+    } finally { delete process.env.NEXUS_CHAT_BASE; srv.close(); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

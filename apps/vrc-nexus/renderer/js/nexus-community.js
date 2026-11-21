@@ -107,7 +107,7 @@
             + (list.length ? list.map(c => '<button type="button" class="ch-item' + (c.uid === chat.uid ? ' on' : '') + '" data-chopen="' + esc(c.uid) + '"><b>' + (c.group ? '👥 ' : '') + esc(c.name || names[c.uid] || c.uid.slice(0, 13) + '…') + '</b>' + (c.group ? ' <small class="muted" style="display:inline">· ' + c.members + '</small>' : '')
                 + (c.changed ? ' <span title="' + esc(T('Schlüssel geändert')) + '">⚠</span>' : c.verified ? ' <span title="' + esc(T('verifiziert')) + '">✔</span>' : '') + (c.unread ? ' <span class="vx-badge sm">' + c.unread + '</span>' : '')
                 + '<small>' + esc(c.last ? (c.last.me ? T('Du') + ': ' : '') + String(c.last.text).slice(0, 60) : '') + '</small></button>').join('') : '<p class="small muted">' + esc(T('Noch keine Unterhaltungen.')) + '</p>')
-            + '<div class="nc-row ch-tools"><button type="button" class="btn btn-sm' + (chat.view === 'favs' ? ' btn-gold' : '') + '" data-chview="favs">★ ' + esc(T('Gemerkt')) + '</button><button type="button" class="btn btn-sm' + (chat.view === 'newgroup' ? ' btn-gold' : '') + '" data-chview="newgroup">👥 ' + esc(T('Neue Gruppe')) + '</button><button type="button" class="btn btn-sm' + (chat.view === 'devices' ? ' btn-gold' : '') + '" data-chview="devices">📱 ' + esc(T('Geräte')) + '</button></div>'
+            + '<div class="nc-row ch-tools"><button type="button" class="btn btn-sm' + (chat.view === 'favs' ? ' btn-gold' : '') + '" data-chview="favs">★ ' + esc(T('Gemerkt')) + '</button><button type="button" class="btn btn-sm' + (chat.view === 'newgroup' ? ' btn-gold' : '') + '" data-chview="newgroup">👥 ' + esc(T('Neue Gruppe')) + '</button><button type="button" class="btn btn-sm' + (chat.view === 'devices' ? ' btn-gold' : '') + '" data-chview="devices">📱 ' + esc(T('Geräte')) + '</button>' + (window.NexusVoice ? '<button type="button" class="btn btn-sm' + (chat.view === 'voice' ? ' btn-gold' : '') + '" data-chview="voice">📞 ' + esc(T('Anrufe')) + '</button>' : '') + '</div>'
             + '<p class="small muted">🔒 ' + esc(T('Ende-zu-Ende-verschlüsselt: Nur du und dein Gegenüber können die Nachrichten lesen – auch die GhostNode-Webseite nicht.')) + '</p></div>';
         if (chat.view === 'favs') return '<div class="ch-wrap' + (chat.uid || chat.view ? ' has-open' : '') + '">' + left + '<div class="nc-card ch-conv"><h4><button type="button" class="btn btn-sm ch-back" data-chback="1">←</button> ★ ' + esc(T('Gemerkte Nachrichten')) + '</h4>'
             + (chat.favs ? (chat.favs.length ? chat.favs.map(f => '<div class="ch-fav"><button type="button" class="nc-link" data-chopen="' + esc(f.conv) + '">' + esc(f.name || f.conv.slice(0, 13) + '…') + '</button>' + chMsg(f.msg, null, true) + '</div>').join('') : '<p class="vx-empty">' + esc(T('Noch nichts gemerkt – bei einer Nachricht auf ★ tippen.')) + '</p>') : '<div class="vx-loading">…</div>') + '</div></div>';
@@ -117,6 +117,7 @@
             + (Object.keys(names).length ? '<div class="ch-gpick">' + Object.entries(names).sort((x, y) => String(x[1]).localeCompare(String(y[1]))).map(([id, n]) => '<label class="check small"><input type="checkbox" name="pick" value="' + esc(id) + '"> ' + esc(n) + '</label>').join('') + '</div>' : '')
             + '<p class="small muted">🔒 ' + esc(T('Gruppen sind Ende-zu-Ende-verschlüsselt: Jedes Mitglied bekommt die Schlüssel nur über die verschlüsselten 1:1-Verbindungen. Wird jemand entfernt, entstehen neue Schlüssel – ab dann liest die Person nichts mehr mit. Höchstens 50 Mitglieder.')) + '</p>'
             + '<button class="btn btn-gold">' + esc(T('Gruppe erstellen')) + '</button></form></div></div>';
+        if (chat.view === 'voice') return '<div class="ch-wrap has-open">' + left + '<div class="nc-card ch-conv"><h4><button type="button" class="btn btn-sm ch-back" data-chback="1">←</button> 📞 ' + esc(T('Sprachanrufe')) + '</h4><div id="chVoiceSet"><div class="vx-loading">…</div></div></div></div>';
         if (chat.view === 'devices') return '<div class="ch-wrap' + (chat.uid || chat.view ? ' has-open' : '') + '">' + left + '<div class="nc-card ch-conv"><h4><button type="button" class="btn btn-sm ch-back" data-chback="1">←</button> 📱 ' + esc(T('Meine Chat-Geräte')) + '</h4>'
             + '<p class="small muted">' + esc(T('Jedes Gerät hat eigene Schlüssel. Nachrichten gehen an alle aktiven Geräte. Entferne Geräte, die du nicht mehr nutzt.')) + '</p>'
             + (chat.devs ? chat.devs.items.map(d => '<div class="nc-row ch-dev"><span>' + (d.current ? '💻 <b>' + esc(T('Dieses Gerät')) + '</b>' : '📱 ' + esc(T('Gerät')) + ' <code>' + esc(d.device.slice(0, 10)) + '</code>') + '<small> · ' + esc(T('eingerichtet')) + ' ' + esc(new Date(d.created * 1000).toLocaleDateString(window.nxLoc ? nxLoc() : 'de-DE'))
@@ -134,7 +135,7 @@
                     + '<form class="nc-row ch-gren"><input type="text" name="name" maxlength="40" value="' + esc(g.name) + '" style="flex:1"><button class="btn btn-sm">' + esc(T('Umbenennen')) + '</button></form>' : '')
                 + '<div class="nc-row"><button type="button" class="btn btn-sm btn-danger" data-chgleave="1">🚪 ' + esc(T('Gruppe verlassen')) + '</button></div></div>' : '');
         return '<div class="ch-wrap' + (chat.uid || chat.view ? ' has-open' : '') + '">' + left + '<div class="nc-card ch-conv"><div class="nc-row"><button type="button" class="btn btn-sm ch-back" data-chback="1">←</button><h4 style="margin:0">' + esc(nm) + '</h4>'
-            + (g ? ghead : (o.verified ? '<span class="vx-pill" style="--pc:#51e57e">✔ ' + esc(T('verifiziert')) + '</span>' : '') + '<button type="button" class="nc-link" data-chsafety="1" style="margin-left:auto">🔐 ' + esc(T('Sicherheitsnummer')) + '</button></div>')
+            + (g ? ghead : (o.verified ? '<span class="vx-pill" style="--pc:#51e57e">✔ ' + esc(T('verifiziert')) + '</span>' : '') + (window.NexusVoice && o.ready ? '<button type="button" class="btn btn-sm" data-chcall="1" title="' + esc(T('Sprachanruf (Ende-zu-Ende-verschlüsselt)')) + '" style="margin-left:auto">📞</button>' : '') + '<button type="button" class="nc-link" data-chsafety="1"' + (window.NexusVoice && o.ready ? '' : ' style="margin-left:auto"') + '>🔐 ' + esc(T('Sicherheitsnummer')) + '</button></div>')
             + (o.changed ? '<div class="tts-help">⚠ ' + esc(T('Die Schlüssel dieser Person haben sich geändert (neues Gerät oder neu eingerichtet). Vergleiche die Sicherheitsnummer, bevor du Vertrauliches schreibst.')) + '</div>' : '')
             + (chat.showSafety ? '<div class="tts-help"><b>' + esc(T('Sicherheitsnummer')) + '</b><br><code class="ch-sn">' + esc(o.safety || '–') + '</code><br><span class="small">' + esc(T('Vergleicht die Nummer persönlich (z. B. in VRChat). Stimmt sie überein, liest niemand mit.')) + '</span><div class="nc-row"><button type="button" class="btn btn-sm btn-gold" data-chverify="1">✔ ' + esc(T('Stimmt überein')) + '</button></div></div>' : '')
             + (!o.ready && !g ? '<p class="small bad">' + esc(T('Diese Person hat den Chat noch nicht eingerichtet (muss Community → Chat einmal öffnen).')) + '</p>' : '')
@@ -311,6 +312,7 @@
             const cv = t.closest('[data-chview]');
             if (cv) {
                 chat.view = chat.view === cv.dataset.chview ? '' : cv.dataset.chview; render();
+                if (chat.view === 'voice' && window.NexusVoice) setTimeout(() => { const el = box.querySelector('#chVoiceSet'); if (el) window.NexusVoice.settings(el); }, 0);
                 if (chat.view === 'favs') api('chat_favs').then(d => { chat.favs = d.items; render(); }).catch(x => toast(x.message, true));
                 if (chat.view === 'devices') api('chat_devices').then(d => { chat.devs = d; return api('chat_prefs'); }).then(d => { chat.prefs = d.prefs; render(); }).catch(x => toast(x.message, true));
                 return;
@@ -340,6 +342,7 @@
                 if (!confirm(T('Gruppe verlassen? Der Verlauf wird auf diesem Gerät gelöscht.'))) return;
                 return api('chat_group_leave', { uid: chat.uid }).then(d => { chat.uid = ''; chat.open = null; chat.list = d.items; toast(T(d.msg)); render(); }).catch(x => toast(x.message, true));
             }
+            if (t.closest('[data-chcall]') && window.NexusVoice && chat.open) { const o2 = chat.open; return window.NexusVoice.call(o2.uid, (o2.names || {})[o2.uid] || ((chat.list || []).find(c => c.uid === o2.uid) || {}).name || ''); }
             if (t.closest('[data-chsafety]')) { chat.showSafety = !chat.showSafety; return render(); }
             if (t.closest('[data-chverify]')) return api('chat_verify', { uid: chat.uid }).then(d => { chat.open = d; chat.showSafety = false; render(); chatLoad(); toast(T('Als verifiziert markiert.')); }).catch(x => toast(x.message, true));
             const pe = t.closest('[data-cpedit]'); if (pe) { profEdit = pe.dataset.cpedit === '1'; return render(); }
@@ -411,5 +414,7 @@
             if (box !== el) { box = el; bind(); }
             loadMe().then(() => go(s && subs().some(x => x[0] === s) ? s : sub));
         },
+        /** 3.7: nach einem Anruf den Verlauf neu laden (Anruf-Eintrag) */
+        refreshChat() { if (box && sub === 'chat' && chat.uid) api('chat_open', { uid: chat.uid }).then(d => { chat.open = d; render(); }).catch(() => {}); },
     };
 })();
