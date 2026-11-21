@@ -45,7 +45,7 @@ class NexusApp {
         this.settings = new Settings(opts.db);
         this.vrc = new Vrc(opts.db, opts.crypt);
         this.x = new Extra(this.vrc); this.x.settings = this.settings;
-        this.game = new GameLog(opts.db, { onEvent: e => { if (this.tools) this.tools.onGameEvent(e); if (this.auto) this.auto.onGameEvent(e); if (this.warn) this.warn.onGameEvent(e); if (opts.onGameEvent) opts.onGameEvent(e); } });
+        this.game = new GameLog(opts.db, { onEvent: e => { if (this.tools) this.tools.onGameEvent(e); if (this.auto) this.auto.onGameEvent(e); if (this.plugins) this.plugins.onGameEvent(e); if (this.warn) this.warn.onGameEvent(e); if (opts.onGameEvent) opts.onGameEvent(e); } });
         this.tr = new Translator(opts.db, opts.crypt, this.settings);
         this.link = new DashLink(this);
         this.updater = new Updater(this);
@@ -91,6 +91,7 @@ class NexusApp {
             if (kind === 'public' && s.get('notify.watch_public')) this.tools.alert('🌍 ' + name + ' ist in einer öffentlichen Instanz', world || '');
         };
         this.notify = opts.notify || null;
+        this.plugins = opts.mobile ? null : new (require('./plugins').Plugins)(this);   // 3.6 Plugin-Lader (nur PC)
         this.mobile = !!opts.mobile;
         this.vrc.nativeCookies = this.mobile;
     }
@@ -210,6 +211,7 @@ class NexusApp {
             if (act.startsWith('deco_')) return await this.deco.action(act, input);
             if (act.startsWith('net_')) { if (!this.vrc.account()) throw new UserError('Erst bei VRChat anmelden.'); return await this.netgraph.action(act, input); }
             if (act === 'win_titlebar') { if (this.tools.host.setTitleBar) this.tools.host.setTitleBar({ color: str(input.color), symbol: str(input.symbol) }); return { ok: true }; }
+            if (act.startsWith('plug_')) { if (!this.plugins) throw new UserError('Plugins gibt es nur in der Windows-App.'); return await this.plugins.action(act, input, files); }
             if (act.startsWith('chat_')) { if (!this.chat) throw new UserError('Der verschlüsselte Chat kommt für Android später.'); return await this.chat.action(act, input, files); }
             if (act.startsWith('warn_')) return await this.warn.action(act, input);
             if (act.startsWith('hr_')) { if (!this.heart) throw new UserError('Den Puls gibt es nur in der Windows-App.'); return await this.heart.action(act, input); }

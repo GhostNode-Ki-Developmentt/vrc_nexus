@@ -147,8 +147,9 @@ class Tools {
         if (this.app.media && this.settings.get('media.smtc') !== false) this.app.media.start();
         if (this.app.osctools) this.app.osctools.start();
         if (this.app.osclog && !this.oscLogOn) { this.oscLogOn = true; this.app.osclog.attach(this.app.game.osc); }
+        if (this.app.plugins) this.app.plugins.start();   // 3.6 zuletzt, damit es OSC-Nachrichten mit abgreift
     }
-    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; if (this.app.auto) this.app.auto.stop(); if (this.app.insights) this.app.insights.stop(); if (this.app.osclog) this.app.osclog.stop(); if (this.app.stream) this.app.stream.stop(); if (this.app.chatmods) this.app.chatmods.stop(); if (this.app.heart) this.app.heart.stop(); if (this.app.account) this.app.account.stop(); if (this.app.chat) this.app.chat.stop(); if (this.app.media) this.app.media.stop(); if (this.app.osctools) this.app.osctools.stop(); this.api.stop(); this.rpc.close(); }
+    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; if (this.app.auto) this.app.auto.stop(); if (this.app.insights) this.app.insights.stop(); if (this.app.osclog) this.app.osclog.stop(); if (this.app.stream) this.app.stream.stop(); if (this.app.chatmods) this.app.chatmods.stop(); if (this.app.heart) this.app.heart.stop(); if (this.app.account) this.app.account.stop(); if (this.app.chat) this.app.chat.stop(); if (this.app.media) this.app.media.stop(); if (this.app.osctools) this.app.osctools.stop(); if (this.app.plugins) this.app.plugins.stop(); this.api.stop(); this.rpc.close(); }
     applySettings(changed) {
         const all = changed.includes('*');
         if (all || changed.some(k => k.startsWith('int.api') || k === 'int.obs')) this.api.apply();

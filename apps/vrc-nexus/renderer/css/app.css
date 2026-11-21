@@ -1107,3 +1107,22 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 /* 3.5.2 VRC+-Abzeichen */
 .dc-vrcp { display: inline-block; margin-left: 5px; padding: 0 5px; border-radius: 6px; font-size: 0.68em; font-weight: 700; line-height: 1.5; vertical-align: middle; letter-spacing: .02em;
     color: #1b1300; background: linear-gradient(135deg, #ffd56b, #f0a52c); box-shadow: 0 0 6px rgba(240, 165, 44, .45); }
+
+/* 3.6 Plugins */
+.pl-card { margin-top: 10px; } .pl-card.off { opacity: .7; }
+.pl-top { display: flex; gap: 12px; align-items: flex-start; }
+.pl-ic { font-size: 28px; line-height: 1; }
+.pl-meta { flex: 1; min-width: 0; }
+.pl-perms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.pl-ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.pl-ui { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,.03); border: 1px solid var(--line, rgba(255,255,255,.1)); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pl-ui > .pl-h, .pl-ui > .pl-t, .pl-ui > .pl-hr, .pl-ui > .pl-in, .pl-ui > .pl-list, .pl-ui > .pl-stat { flex: 1 1 100%; margin: 0; }
+.pl-in span { display: block; font-size: .85em; opacity: .8; margin-bottom: 2px; }
+.pl-in input, .pl-in textarea { width: 100%; }
+.pl-hr { border: 0; border-top: 1px solid var(--line, rgba(255,255,255,.1)); }
+.pl-stat { display: flex; justify-content: space-between; }
+.pl-log { max-height: 220px; overflow: auto; margin-top: 8px; font-size: 12px; white-space: pre-wrap; }
+.pl-log .warn { color: #ffc35c; }
+.pl-check { border: 1px solid var(--accent, #d4a64a); }
+.pl-plist { margin: 4px 0 10px 18px; }
+@media (max-width: 760px) { .pl-top { flex-wrap: wrap; } .pl-ctl { justify-content: flex-start; } }

@@ -2475,6 +2475,63 @@ test('3.5.1: AviSeek als Avatar-Datenbank – eigene JSON-API (Suche, Ersteller,
     } finally { global.fetch = orig; app.tools.stop(); }
 });
 
+test('3.6: Plugins (.nxp) – Paket prüfen, Rechte, abgeschotteter Prozess, Chatbox nur mit Recht, keine Umwege, Entfernen', async () => {
+    const { Plugins, checkManifest, cleanUi } = require('../backend/plugins');
+    const { readZip, writeZip } = require('../backend/nxp');
+    // Paketformat
+    const z = writeZip({ 'plugin.json': '{"format":1,"id":"a-b","main":"main.js"}', 'main.js': 'x', 'lib/x.js': 'y' });
+    assert.deepStrictEqual(Object.keys(readZip(z)).sort(), ['lib/x.js', 'main.js', 'plugin.json']);
+    for (const bad of ['../x.js', '/etc/x', 'a\\b.js', 'a/./b.js']) assert.throws(() => readZip(writeZip({ [bad]: 'x' })), /Unerlaubter Dateipfad/, bad);
+    assert.throws(() => readZip(Buffer.from('kein zip, nur text das lang genug ist')), /kein gültiges Plugin/);
+    const broken = Buffer.from(z); broken[44] ^= 0xff; assert.throws(() => readZip(broken), /beschädigt|Prüfsumme/, "Inhalt geprüft");
+    assert.throws(() => checkManifest({ 'plugin.json': Buffer.from('{"format":1,"id":"A!"}') }, '3.6.0'), /Plugin-ID/);
+    assert.throws(() => checkManifest({ 'plugin.json': Buffer.from('{"format":1,"id":"ok","permissions":["root"]}'), 'main.js': Buffer.from('') }, '3.6.0'), /Unbekannte Rechte/);
+    assert.throws(() => checkManifest({ 'plugin.json': Buffer.from('{"format":1,"id":"ok","nexus":">=9.0.0"}'), 'main.js': Buffer.from('') }, '3.6.0'), /braucht VRC Nexus 9/);
+    assert.deepStrictEqual(cleanUi([{ type: 'button', id: 'a<b>', label: '<img>' }, { type: 'script', text: 'x' }]), [{ type: 'button', id: 'ab', label: '<img>' }], 'nur bekannte Bausteine, Text bleibt Text (UI escaped)');
+    // Laufzeit (echter Kindprozess mit Node-Rechtemodell)
+    const settings = {}, sent = [];
+    const ud = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-plug-'));
+    const app = { db: { setting: (k, d) => (k in settings ? settings[k] : d), setSetting: (k, v) => { settings[k] = v; } }, tools: { userData: ud, host: {} },
+        game: { oscSend: async (k, p) => { sent.push([k, p]); }, osc: { params: {} }, state: {}, isPrivate: () => false } };
+    const P = new Plugins(app);
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    try {
+        assert.ok(fs.existsSync(P.example()), 'Beispiel-Plugin liegt bei (npm run: node scripts/plugin-pack.js)');
+        let r = await P.action('plug_inspect', { example: '1' }, {});
+        assert.deepStrictEqual(r.perms.map(x => x.id), ['chatbox']);
+        await P.action('plug_install', { token: r.token }, {});
+        await assert.rejects(P.action('plug_install', { token: r.token }, {}), /abgelaufen/, 'Token nur einmal');
+        await wait(400);
+        let it = P.list().find(x => x.id === 'text-plugin');
+        assert.strictEqual(it.status, 'running', it.error);
+        assert.ok(it.ui.some(w => w.id === 'send'));
+        await P.action('plug_ui', { id: 'text-plugin', type: 'click', el: 'send', values: JSON.stringify({ text: 'Hallo aus dem Plugin' }) }, {});
+        await wait(200);
+        assert.deepStrictEqual(sent[0], ['chatbox', { text: 'Hallo aus dem Plugin', sound: '1', split: '1' }]);
+        // Plugin ohne Rechte versucht Umwege
+        const evil = writeZip({ 'plugin.json': JSON.stringify({ format: 1, id: 'evil', main: 'main.js' }), 'main.js': `
+            nexus.on('start', async () => {
+                const t = { fs: () => require('fs'), gbm: () => process.getBuiltinModule('fs'), mm: () => process.mainModule.require('fs'), fn: () => Function('return 1')(),
+                    imp: () => import('node:https'), net: () => fetch('https://example.invalid'), bind: () => process.binding('fs') };
+                const res = {};
+                for (const [k, f] of Object.entries(t)) { try { const v = f(); if (v && v.then) await v; res[k] = 'offen'; } catch (e) { res[k] = 'zu'; } }
+                try { await nexus.chatbox.send('x'); res.chat = 'offen'; } catch (e) { res.chat = 'zu'; }
+                await nexus.storage.set('res', res);
+                nexus.log('fertig');
+            });` });
+        r = await P.action('plug_inspect', {}, { file: { buffer: evil } });
+        await P.action('plug_install', { token: r.token }, {});
+        for (let i = 0; i < 30 && !(P.store('evil').res); i++) await wait(100);
+        assert.deepStrictEqual(P.store('evil').res, { fs: 'zu', gbm: 'zu', mm: 'zu', fn: 'zu', imp: 'zu', net: 'zu', bind: 'zu', chat: 'zu' });
+        assert.strictEqual(sent.length, 1, 'ohne Recht keine Chatbox');
+        // Absturz wird protokolliert, aus/an, entfernen
+        await P.action('plug_toggle', { id: 'evil', on: '0' }, {});
+        assert.strictEqual(P.list().find(x => x.id === 'evil').status, 'stopped');
+        await P.action('plug_remove', { id: 'evil' }, {});
+        assert.ok(!fs.existsSync(path.join(ud, 'plugins', 'installed', 'evil')) && !P.list().some(x => x.id === 'evil'));
+    } finally { P.stop(); await wait(300); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

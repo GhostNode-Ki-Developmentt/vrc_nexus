@@ -92,6 +92,7 @@
                 <button type="button" class="vx-tabbtn" data-tab="settings" hidden><span>⚙</span><em>Einstellungen</em></button>
             </div></div>
         <button type="button" class="vx-tabbtn" data-tab="stream"><span>📺</span><em>Stream-Bot</em></button>
+        <button type="button" class="vx-tabbtn nc-pc-only" data-tab="plugins"><span>🧩</span><em>Plugins</em></button>
         <button type="button" class="vx-tabbtn ns-tab" data-tab="nsfw" hidden><span>❤️</span><em>NSFW / ERP</em></button>
         <button type="button" class="vx-tabbtn" data-tab="remote" data-mobile><span>🎮</span><em>PC-Fernbedienung</em></button>
         <button type="button" class="vx-tabbtn" data-tab="buttons" data-mobile><span>🎛</span><em>Nexus-Knöpfe</em></button>
@@ -124,6 +125,7 @@
     <div class="vx-error" id="globalErr" hidden></div>
 
     <section class="vx-tab" data-pane="stream" hidden><div id="streamBox"></div></section>
+    <section class="vx-tab" data-pane="plugins" hidden><div id="plugBox"></div></section>
     <section class="vx-tab" data-pane="admin" hidden><div class="panel"><h2 class="ad-title">👑 Admin</h2><div id="adminBox"><div class="vx-loading">Lade …</div></div></div></section>
     <section class="vx-tab" data-pane="nsfw" hidden><div class="panel"><h2 class="ns-title">❤️ NSFW / ERP</h2><div id="nsfwBox"><div class="vx-loading">Lade …</div></div></div></section>
     <section class="vx-tab" data-pane="mod" hidden><div id="modBox"></div></section>
@@ -421,6 +423,7 @@
 <script src="js/nexus-side.js"></script>
 <script src="js/nexus-net.js"></script>
 <script src="js/nexus-space.js"></script>
+<script src="js/nexus-plugins.js"></script>
 <script src="js/nexus-mosc.js"></script>
 <script src="js/nexus-mobile.js"></script>
 <script src="js/nexus-deco.js"></script>

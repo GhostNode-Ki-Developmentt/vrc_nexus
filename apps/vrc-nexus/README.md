@@ -22,6 +22,13 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.6.0 – Plugin system (PC)
+
+- 🧩 **Plugins** (Windows app only): VRC Nexus can now load extensions in its own package format **`.nxp`** (a ZIP with `plugin.json`). The app is only the loader – 🧩 Plugins → 📦 Install plugin.
+- 🔒 Before installing, the app shows name, author and the requested permissions (chatbox, OSC, notifications, game events, internet). Every plugin runs isolated in its own process: only its own folder, no programs, no `eval`, internet only with the `net` permission. Chatbox/OSC/notifications are rate-limited, private mode blocks the chatbox.
+- 🧱 Plugins don't bring their own HTML – they describe their panel (text, buttons, inputs, toggles, stats) and VRC Nexus draws it. Plugin log, on/off, restart and remove per plugin.
+- 📝 Bundled example: **Text-Plugin** (send texts to the chatbox, save texts, rotate them). Developer guide: `docs/PLUGINS.md`, packer: `scripts/plugin-pack.js`.
+
 ### New in 3.5.2 – Banner fallback, VRC+ badge, avtrDB fixed
 
 - 🎀 People without a profile decoration still get a card banner: VRC+ users their own profile picture, everyone else their current avatar image (a real banner always wins; decorations can still be turned off in Appearance).

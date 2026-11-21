@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "id": "text-plugin",
+  "name": "Text-Plugin",
+  "version": "1.0.0",
+  "author": "GHOST NODE",
+  "description": "Example plugin: send texts to the VRChat chatbox, keep a list of saved texts and rotate through them.",
+  "icon": "📝",
+  "main": "main.js",
+  "nexus": ">=3.6.0",
+  "permissions": ["chatbox"]
+}

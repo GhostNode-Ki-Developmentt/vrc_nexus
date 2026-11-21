@@ -1164,3 +1164,24 @@ Aus der Liste entfernen	Remove from list	Retirer de la liste	リストから削�
 Diese Person aus der Gruppe entfernen? Danach gibt es neue Schlüssel.	Remove this person from the group? New keys will be created afterwards.	Retirer cette personne du groupe ? De nouvelles clés seront ensuite créées.	この人をグループから削除しますか？その後、新しい鍵が作られます。
 Gruppe verlassen? Der Verlauf wird auf diesem Gerät gelöscht.	Leave the group? The history on this device will be deleted.	Quitter le groupe ? L'historique sur cet appareil sera supprimé.	グループを退出しますか？この端末の履歴は削除されます。
 Daten von	Data from	Données de	データ提供
+Plugins	Plugins	Plugins	プラグイン
+startet …	starting …	démarrage …	起動中 …
+Neu starten	Restart	Redémarrer	再起動
+Noch keine Einträge.	No entries yet.	Aucune entrée pour l'instant.	まだ記録はありません。
+keine besonderen Rechte	no special permissions	aucune autorisation particulière	特別な権限なし
+Erweiterungen für VRC Nexus im Format .nxp. Jedes Plugin läuft abgeschottet in einem eigenen Prozess und darf nur das, was du bei der Installation erlaubst. Installiere trotzdem nur Plugins aus Quellen, denen du vertraust.	Extensions for VRC Nexus in .nxp format. Every plugin runs isolated in its own process and may only do what you allow during installation. Still, only install plugins from sources you trust.	Extensions pour VRC Nexus au format .nxp. Chaque plugin tourne isolé dans son propre processus et ne peut faire que ce que tu autorises à l'installation. N'installe quand même que des plugins de sources de confiance.	.nxp形式のVRC Nexus拡張機能。各プラグインは独立したプロセスで隔離されて動作し、インストール時に許可したことだけができます。それでも信頼できる提供元のプラグインだけをインストールしてください。
+Plugin installieren (.nxp)	Install plugin (.nxp)	Installer un plugin (.nxp)	プラグインをインストール (.nxp)
+Beispiel: Text-Plugin	Example: Text plugin	Exemple : plugin Texte	サンプル：テキストプラグイン
+ersetzt Version	replaces version	remplace la version	置き換えるバージョン
+Das Plugin möchte:	The plugin wants to:	Le plugin souhaite :	このプラグインが求める権限：
+keine besonderen Rechte (nur eigene Oberfläche und eigener Speicher)	no special permissions (only its own panel and storage)	aucune autorisation particulière (seulement son propre panneau et stockage)	特別な権限なし（自分のパネルと保存領域のみ）
+Erlauben & installieren	Allow & install	Autoriser et installer	許可してインストール
+Noch keine Plugins installiert.	No plugins installed yet.	Aucun plugin installé.	まだプラグインはインストールされていません。
+Eigene Plugins schreiben: siehe docs/PLUGINS.md im Repository.	Write your own plugins: see docs/PLUGINS.md in the repository.	Écrire tes propres plugins : voir docs/PLUGINS.md dans le dépôt.	自作プラグインの作り方：リポジトリの docs/PLUGINS.md を参照。
+Plugin entfernen? Seine gespeicherten Daten werden mit gelöscht.	Remove plugin? Its saved data will be deleted too.	Supprimer le plugin ? Ses données enregistrées seront aussi supprimées.	プラグインを削除しますか？保存データも削除されます。
+Text in die VRChat-Chatbox senden	Send text to the VRChat chatbox	Envoyer du texte dans la chatbox VRChat	VRChatのチャットボックスにテキストを送信
+Avatar-Parameter lesen und setzen (OSC)	Read and set avatar parameters (OSC)	Lire et définir les paramètres d'avatar (OSC)	アバターパラメーターの読み取りと設定（OSC）
+Windows-Hinweise anzeigen	Show Windows notifications	Afficher des notifications Windows	Windowsの通知を表示
+Spiel-Ereignisse sehen (Welt betreten, Spieler kommen/gehen)	See game events (world joined, players joining/leaving)	Voir les événements du jeu (monde rejoint, joueurs qui arrivent/partent)	ゲームのイベントを見る（ワールド参加、プレイヤーの出入り）
+Ins Internet verbinden	Connect to the internet	Se connecter à Internet	インターネットに接続
+Plugin entfernt.	Plugin removed.	Plugin supprimé.	プラグインを削除しました。
