@@ -2168,14 +2168,14 @@ test('3.3: VR-Bewegung – Einstellungen, Befehl an den SteamVR-Helfer (gemockt)
     } finally { Module._load = realLoad; cp.spawn = realSpawn; delete require.cache[require.resolve('../vroverlay')]; }
 });
 
-test('3.4: Multiaccount-Schlüssel – ein NXK1 für mehrere VRChat-IDs, Rechte-Protokoll', async () => {
+test('3.4.2: Schlüssel nur für Supporter/Moderator und je genau ein Konto, Rechte-Protokoll, gilt in allen Profilen dieses Kontos', async () => {
     const { NexusApp } = require('../backend/app');
     const { hashId } = require('../backend/nsfw');
     const id = c => 'usr_' + c.repeat(8) + '-1111-2222-3333-444444444444';
-    const OWNER = id('a'), MAIN = id('b'), ALT = id('d'), OTHER = id('c');
+    const OWNER = id('a'), MAIN = id('b'), ALT = id('d');
     process.env.NEXUS_OWNER_HASH = hashId(OWNER);
-    const mk = async uid => {
-        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: fs.mkdtempSync(path.join(os.tmpdir(), 'nx-340-')) } });
+    const mk = async (uid, dir) => {
+        const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: dir || fs.mkdtempSync(path.join(os.tmpdir(), 'nx-342-')) } });
         app.game.osc.stopListen();
         app.vrc.account = () => ({ vrc_id: uid, me: {} });
         return app;
@@ -2183,28 +2183,19 @@ test('3.4: Multiaccount-Schlüssel – ein NXK1 für mehrere VRChat-IDs, Rechte-
     try {
         const own = await mk(OWNER);
         const kp = await own.post({ act: 'nsfw_admin_keypair' }, {});
-        await assert.rejects(own.post({ act: 'nsfw_admin_issue', uid: MAIN, days: '30', features: 'mod', uids: 'quatsch' }, {}), /keine VRChat-User-ID/);
-        const iss = await own.post({ act: 'nsfw_admin_issue', uid: MAIN, name: 'Main', days: '30', features: 'mod', uids: 'https://vrchat.com/home/user/' + ALT + ', ' + MAIN }, {});
-        assert.deepStrictEqual(iss.items[0].uids, [ALT], 'Zweitkonto gebunden, Haupt-ID nicht doppelt');
-        for (const [uid, ok] of [[MAIN, true], [ALT, true], [OTHER, false]]) {
-            const a = await mk(uid); a.nsfw.trusted.push(kp.pub);
-            if (ok) { const st = await a.post({ act: 'nsfw_unlock', token: iss.token }, {}); assert.ok(st.access.key && st.access.mod && !st.access.owner, uid + ': Rolle, aber nie Besitzer'); }
-            else await assert.rejects(a.post({ act: 'nsfw_unlock', token: iss.token }, {}), /anderen VRChat-Konto/);
-        }
-        // 3.4.1: einmal eintragen reicht – das Zweitkonto in derselben App (eigene Datenbank, gleicher Datenordner) bekommt die Rolle direkt
+        await assert.rejects(own.post({ act: 'nsfw_admin_issue', uid: MAIN, days: '30', features: 'nsfw,toys' }, {}), /Supporter oder Moderator/);
+        const iss = await own.post({ act: 'nsfw_admin_issue', uid: MAIN, name: 'Main', days: '30', features: 'mod', uids: ALT }, {});
+        assert.ok(!iss.items[0].uids, 'kein Multiaccount-Feld mehr');
         const shared = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-share-'));
-        const mkIn = async uid => { const a = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => 'E:' + s, decrypt: s => String(s).replace(/^E:/, '') }, host: { userData: shared } }); a.game.osc.stopListen(); a.vrc.account = () => ({ vrc_id: uid, me: {} }); a.nsfw.trusted.push(kp.pub); return a; };
-        const mainApp = await mkIn(MAIN), altApp = await mkIn(ALT), otherApp = await mkIn(OTHER);
-        assert.ok(!(await altApp.post({ act: 'nsfw_state' }, {})).access.key, 'vorher ohne Schlüssel');
-        await mainApp.post({ act: 'nsfw_unlock', token: iss.token }, {});
-        assert.ok((await altApp.post({ act: 'nsfw_state' }, {})).access.mod, 'Zweitkonto: Rolle direkt, ohne Schlüssel einzugeben');
-        assert.ok(!(await otherApp.post({ act: 'nsfw_state' }, {})).access.key, 'fremdes Konto bekommt nichts');
-        await mainApp.post({ act: 'nsfw_unlock', token: '' }, {});
-        assert.ok(!(await altApp.post({ act: 'nsfw_state' }, {})).access.key, 'entfernen gilt überall');
+        const mainA = await mk(MAIN, shared), mainB = await mk(MAIN, shared), alt = await mk(ALT, shared);
+        for (const a of [mainA, mainB, alt]) a.nsfw.trusted.push(kp.pub);
+        await mainA.post({ act: 'nsfw_unlock', token: iss.token }, {});
+        assert.ok((await mainB.post({ act: 'nsfw_state' }, {})).access.mod, 'gleiches Konto in einem anderen Profil: ohne erneute Eingabe');
+        assert.ok(!(await alt.post({ act: 'nsfw_state' }, {})).access.key, 'anderes Konto bekommt nichts');
+        await assert.rejects(alt.post({ act: 'nsfw_unlock', token: iss.token }, {}), /anderen VRChat-Konto/);
         await own.post({ act: 'nsfw_admin_revoke', id: iss.items[0].id }, {});
         const st = await own.post({ act: 'nsfw_state' }, {});
         assert.deepStrictEqual(st.permlog.map(x => x.what), ['Schlüssel gesperrt', 'Schlüssel erzeugt']);
-        assert.ok(/1 Zweitkonto/.test(st.permlog[1].detail));
     } finally { delete process.env.NEXUS_OWNER_HASH; }
 });
 

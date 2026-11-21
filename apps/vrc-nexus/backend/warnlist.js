@@ -30,7 +30,7 @@ class WarnList {
         const token = this.token();
         if (!token) throw new UserError('Die Warnliste gibt es nur mit Freischalt-Schlüssel (Einstellungen → 🔞 NSFW / Schlüssel).');
         let r;
-        try { r = await fetch(BASE() + '/nexuswarn.php?a=' + encodeURIComponent(a), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ token, as: (this.app.nsfw && this.app.nsfw.myId()) || '' }, body || {})), signal: AbortSignal.timeout(12000) }); }
+        try { r = await fetch(BASE() + '/nexuswarn.php?a=' + encodeURIComponent(a), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ token }, body || {})), signal: AbortSignal.timeout(12000) }); }
         catch (e) { throw new UserError('GhostNode-Webseite nicht erreichbar.'); }
         const d = await r.json().catch(() => ({ error: 'Antwort kein JSON – liegt nexuswarn.php auf der Webseite?' }));
         if (!r.ok || d.error) throw new UserError(str(d.error) || 'Fehler ' + r.status + '.');

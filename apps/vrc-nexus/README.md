@@ -22,14 +22,18 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.4.2 – Keys only for supporter and moderator
+
+- 🔑 Unlock keys are back to one VRChat account each and only for the supporter and moderator roles – the multiaccount field when creating a key is gone. Switching between several VRChat accounts (⇄) works without any key, as before.
+
 ### New in 3.4.1 – Multiaccount without re-entering keys
 
-- 👥 Switching accounts never needed a key – and now an unlock key (supporter/moderator) entered in one account also works directly in your other accounts in VRC Nexus, as long as it is valid for that VRChat ID (e.g. a multiaccount key). Removing it removes it everywhere.
+- 👥 Switching accounts never needed a key. An unlock key entered once also works when the same VRChat account is used in another profile; removing it removes it everywhere.
 
 ### New in 3.4.0 – Multiaccount, more chat, cleaner menu
 
 - 👥 **Multiaccount – several VRChat accounts in VRC Nexus:** click ⇄ in your profile box (top right) to switch accounts or sign in another one. Every account has its **own database** (session, friends, history, favourites, notes, chat keys, Nexus account) – nothing mixes. Switching restarts the app with the other account; the first account keeps all your existing data. New accounts take over your look (theme, language, layout). Passwords are never stored.
-- 🔑 **Multiaccount keys:** one supporter/moderator key can now cover up to 9 additional VRChat IDs of the same person (main + alt accounts). The owner lock is unchanged – a key never makes anyone the owner. Key changes are written to a permission log in Admin.
+- 🔑 Key changes are written to a permission log in Admin.
 - 💬 **Much more chat** (still end-to-end encrypted – the website only ever sees ciphertext):
   - reactions (❤️ 😂 👍 😮 😢 🔥 🦊 🐾), reply with quote, edit and delete your own messages for both sides
   - **read receipts** ✓ / ✓✓ (can be switched off)
