@@ -2670,6 +2670,50 @@ test('3.7.1: Nexus-Konto – abgelaufener/entzogener Zugang (401) meldet in der 
     } finally { global.fetch = orig; app.tools.stop(); }
 });
 
+test('3.8: Plugin-Rechte „vrchat“ (nur eigene Gruppe, nur erlaubte Pfade) und verschlüsselter Token-Speicher', async () => {
+    const { Plugins, vrcAllowed, checkManifest } = require('../backend/plugins');
+    const { writeZip } = require('../backend/nxp');
+    const G = 'grp_12345678-aaaa-4bbb-8ccc-1234567890ab', X = 'grp_00000000-0000-4000-8000-000000000000', U1 = 'usr_11111111-1111-4111-8111-111111111111';
+    assert.ok(vrcAllowed('GET', '/groups/' + G + '/instances', [G]));
+    assert.ok(vrcAllowed('PUT', '/groups/' + G + '/requests/' + U1, [G]));
+    assert.ok(vrcAllowed('POST', '/groups/' + G + '/posts', [G]));
+    assert.ok(!vrcAllowed('GET', '/groups/' + X + '/instances', [G]), 'fremde Gruppe');
+    assert.ok(!vrcAllowed('DELETE', '/groups/' + G, [G]), 'Gruppe löschen nie');
+    assert.ok(!vrcAllowed('POST', '/groups/' + G + '/transfer', [G]), 'übertragen nie');
+    assert.ok(!vrcAllowed('GET', '/auth/user', [G]), 'eigenes Konto nie');
+    assert.ok(!vrcAllowed('PUT', '/users/' + U1, [G]));
+    assert.throws(() => checkManifest({ 'plugin.json': Buffer.from(JSON.stringify({ format: 1, id: 'gx', permissions: ['vrchat'] })), 'main.js': Buffer.from('') }, '3.8.0'), /groups/);
+    const settings = {}, calls = [];
+    const crypt = { encrypt: s2 => 'ENC:' + Buffer.from(s2).toString('base64'), decrypt: s2 => Buffer.from(s2.slice(4), 'base64').toString() };
+    const ud = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-plug8-'));
+    const app = { db: { setting: (k, d) => (k in settings ? settings[k] : d), setSetting: (k, v) => { settings[k] = v; } }, tools: { userData: ud, host: {} }, game: { oscSend: async () => {}, osc: { params: {} }, state: {} },
+        vrc: { crypt, account: () => ({ vrc_id: 'usr_me' }), call: async (acc, m, p, q, b) => { calls.push([m, p, b]); return { ok: true, path: p }; } } };
+    const P = new Plugins(app);
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    try {
+        const pkg = writeZip({ 'plugin.json': JSON.stringify({ format: 1, id: 'club', main: 'main.js', permissions: ['vrchat'], groups: [G] }), 'main.js': `
+            nexus.on('start', async () => {
+                const out = {};
+                out.inst = (await nexus.vrchat.get('/groups/${G}/instances')).path;
+                try { await nexus.vrchat.get('/groups/${X}/instances'); out.foreign = 'offen'; } catch (e) { out.foreign = 'zu'; }
+                try { await nexus.vrchat.delete('/groups/${G}'); out.del = 'offen'; } catch (e) { out.del = 'zu'; }
+                await nexus.secrets.set('discord', 'Bot-Token-123');
+                out.has = await nexus.secrets.has('discord');
+                out.back = (await nexus.secrets.get('discord')) === 'Bot-Token-123';
+                await nexus.storage.set('out', out);
+            });` });
+        let r = await P.action('plug_inspect', {}, { file: { buffer: pkg } });
+        assert.ok(r.perms[0].label.includes(G), 'Installation zeigt die Gruppe');
+        await P.action('plug_install', { token: r.token }, {});
+        for (let k = 0; k < 30 && !P.store('club').out; k++) await wait(100);
+        assert.deepStrictEqual(P.store('club').out, { inst: '/groups/' + G + '/instances', foreign: 'zu', del: 'zu', has: true, back: true });
+        assert.deepStrictEqual(calls.map(c => c[0] + ' ' + c[1]), ['GET /groups/' + G + '/instances'], 'nur der erlaubte Aufruf ging an VRChat');
+        const enc = fs.readFileSync(path.join(ud, 'plugins', 'data', 'club', 'secrets.enc'), 'utf8');
+        assert.ok(enc.startsWith('ENC:') && !enc.includes('Bot-Token'), 'Token verschlüsselt gespeichert');
+        assert.ok(!JSON.stringify(P.list()).includes('Bot-Token'), 'Token nie in der Oberfläche');
+    } finally { P.stop(); await wait(300); }
+});
+
 test('3.0.4: 18+ über /auth/user (ageVerified, „verified“), kurze IDs älterer Konten', async () => {
     const { NexusApp } = require('../backend/app');
     const app = new NexusApp({ db: await openDatabase(null), crypt: { encrypt: s => s, decrypt: s => s }, host: { userData: os.tmpdir() } });

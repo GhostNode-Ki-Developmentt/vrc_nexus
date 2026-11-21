@@ -20,7 +20,9 @@
             case 'toggle': return '<label class="check pl-tg"><input type="checkbox" data-plval="' + id + '" data-pltg="' + id + '"' + (v === true ? ' checked' : '') + '> ' + esc(w.label || '') + '</label>';
             case 'input': return '<label class="pl-in"><span>' + esc(w.label || '') + '</span>' + (w.multiline
                 ? '<textarea rows="3" data-plval="' + id + '" placeholder="' + esc(w.placeholder || '') + '">' + esc(String(v)) + '</textarea>'
+                : w.secret ? '<input type="password" autocomplete="new-password" data-plval="' + id + '" value="" placeholder="' + esc(w.placeholder || '') + '">'
                 : '<input type="text" data-plval="' + id + '" value="' + esc(String(v)) + '" placeholder="' + esc(w.placeholder || '') + '">') + '</label>';
+            case 'select': return '<label class="pl-in"><span>' + esc(w.label || '') + '</span><select data-plval="' + id + '" data-plsel="' + id + '">' + (w.options || []).map(o => '<option value="' + esc(o[0]) + '"' + (String(v) === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select></label>';
             default: return '';
         }
     }
@@ -41,11 +43,13 @@
     }
     function render() {
         if (!box || !d) return;
-        if (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], textarea')) return;   // nicht beim Tippen neu zeichnen
+        if (box.contains(document.activeElement) && document.activeElement.matches('input[type=text], input[type=password], textarea, select')) return;   // nicht beim Tippen neu zeichnen
         box.innerHTML = '<div class="panel pl-head"><h2>🧩 ' + esc(T('Plugins')) + '</h2>'
             + '<p class="small muted">' + esc(T('Erweiterungen für VRC Nexus im Format .nxp. Jedes Plugin läuft abgeschottet in einem eigenen Prozess und darf nur das, was du bei der Installation erlaubst. Installiere trotzdem nur Plugins aus Quellen, denen du vertraust.')) + '</p>'
             + '<div class="nc-row"><label class="btn btn-gold">📦 ' + esc(T('Plugin installieren (.nxp)')) + '<input type="file" accept=".nxp" data-plfile="1" hidden></label>'
-            + (d.example ? '<button type="button" class="btn" data-plexample="1">📝 ' + esc(T('Beispiel: Text-Plugin')) + '</button>' : '') + '</div></div>'
+            + (d.example ? '<button type="button" class="btn" data-plexample="1">📝 ' + esc(T('Beispiel: Text-Plugin')) + '</button>' : '')
+            + '<button type="button" class="btn" data-plopen="1" title="' + esc(d.dir || '') + '">📂 ' + esc(T('Plugin-Ordner öffnen')) + '</button></div>'
+            + (d.dir ? '<p class="small muted">📁 <code>' + esc(d.dir) + '</code></p>' : '') + '</div>'
             + (check ? '<div class="panel pl-check"><h3>' + esc(check.manifest.icon) + ' ' + esc(check.manifest.name) + ' <small class="muted">' + esc(check.manifest.version) + '</small></h3>'
                 + '<p class="small">' + (check.manifest.author ? esc(T('von')) + ' <b>' + esc(check.manifest.author) + '</b> · ' : '') + check.files + ' ' + esc(T('Dateien')) + ' · ' + Math.ceil(check.size / 1024) + ' KB'
                 + (check.update ? ' · ' + esc(T('ersetzt Version')) + ' ' + esc(check.update) : '') + '</p>'
@@ -66,12 +70,14 @@
             const t = e.target, c = t.closest('[data-plid]');
             if (t.matches('[data-plfile]') && t.files && t.files[0]) { const fd = new FormData(); fd.append('act', 'plug_inspect'); fd.append('file', t.files[0]); t.value = ''; return inspect(fd); }
             if (t.matches('[data-pltoggle]') && c) return api('plug_toggle', { id: c.dataset.plid, on: t.checked ? '1' : '0' }).then(upd).catch(x => toast(x.message, true));
+            if (t.matches('[data-plsel]') && c) return api('plug_ui', { id: c.dataset.plid, type: 'change', el: t.dataset.plsel, values: JSON.stringify(values(c)) }).then(upd).catch(x => toast(x.message, true));
             if (t.matches('[data-pltg]') && c) return api('plug_ui', { id: c.dataset.plid, type: 'change', el: t.dataset.pltg, values: JSON.stringify(values(c)) }).then(upd).catch(x => toast(x.message, true));
         });
         box.addEventListener('click', e => {
             const t = e.target, c = t.closest('[data-plid]');
             if (t.closest('[data-plexample]')) { const fd = new FormData(); fd.append('act', 'plug_inspect'); fd.append('example', '1'); return inspect(fd); }
             if (t.closest('[data-plcancel]')) { check = null; return render(); }
+            if (t.closest('[data-plopen]')) return api('plug_open').catch(x => toast(x.message, true));
             if (t.closest('[data-plinstall]') && check && !busy) { busy = true; return api('plug_install', { token: check.token }).then(r => { check = null; upd(r); }).catch(x => toast(x.message, true)).finally(() => { busy = false; }); }
             const b = t.closest('[data-plbtn]');
             if (b && c) return api('plug_ui', { id: c.dataset.plid, type: 'click', el: b.dataset.plbtn, values: JSON.stringify(values(c)) }).then(r => { if (document.activeElement && c.contains(document.activeElement)) document.activeElement.blur(); upd(r); }).catch(x => toast(x.message, true));

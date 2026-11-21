@@ -42,6 +42,7 @@ Limits: max. 200 files, 3 MB per file, 8 MB unpacked, 6 MB packed. No absolute p
 | `main` | no | entry file, default `main.js` |
 | `nexus` | no | minimum VRC Nexus version |
 | `permissions` | no | see below; anything not listed is refused at runtime |
+| `groups` | with `vrchat` | up to 5 VRChat group IDs (`grp_…`) the plugin may manage; shown in the install dialog |
 
 ### Permissions
 
@@ -52,8 +53,15 @@ Limits: max. 200 files, 3 MB per file, 8 MB unpacked, 6 MB packed. No absolute p
 | `notify` | `nexus.notify()` (max. one per 5 s) |
 | `game` | `game` events and `nexus.game.state()` |
 | `net` | `fetch`, `WebSocket` and the `http`/`https`/`net`/`tls`/`dns` modules |
+| `vrchat` | `nexus.vrchat.get/post/put/delete` for the groups listed in `"groups"` (since 3.8.0) |
 
-Storage (`nexus.storage`) and the panel (`nexus.ui`) need no permission.
+Storage (`nexus.storage`), secrets (`nexus.secrets`) and the panel (`nexus.ui`) need no permission.
+
+**`vrchat` endpoints** (only for the listed groups, with the user's VRChat account, max. 20 requests per 10 s):
+`GET /groups/{id}`, `GET …/instances|requests|posts|members|members/{usr}|bans|auditLogs|roles|invites|announcement`,
+`POST …/posts|bans|invites`, `PUT …/requests/{usr}` (`{ "action": "accept" | "reject" }`), `PUT …/members/{usr}`,
+`DELETE …/posts/{gpst}|members/{usr}|bans/{usr}|invites/{usr}`, plus `GET /users/{usr}` and `GET /worlds/{wrld}`.
+Deleting/transferring a group and account endpoints are never allowed.
 
 ## Sandbox
 
@@ -104,6 +112,8 @@ Alternatively `module.exports = { start(nexus) {}, stop(nexus) {} }` or `module.
 | `nexus.osc.params()` | known avatar parameters `{ name: value }` |
 | `nexus.notify(title, body)` | Windows notification |
 | `nexus.storage.get(key, default)` / `set(key, value)` / `all()` | JSON storage, max. 512 KB per plugin; `set(key, null)` deletes |
+| `nexus.secrets.get(key)` / `set(key, value)` / `has(key)` | encrypted storage for tokens/passwords (max. 30); never shown in the UI |
+| `nexus.vrchat.get(path, query)` / `post(path, body)` / `put(path, body)` / `delete(path)` | VRChat API, permission `vrchat` |
 | `nexus.ui.set(items)` | replaces the plugin panel |
 | `nexus.game.state()` | `{ running, world, players }` |
 | `nexus.app.version()` | VRC Nexus version |
@@ -126,7 +136,8 @@ The app draws these itself (no HTML from plugins, all text is escaped); max. 100
 | `stat` | `label`, `value` |
 | `list` | `items` (array of strings) |
 | `button` | `id`, `label`, `style` (`gold`, `danger`) |
-| `input` | `id`, `label`, `value`, `placeholder`, `multiline` |
+| `input` | `id`, `label`, `value`, `placeholder`, `multiline`, `secret` (password field, value never prefilled) |
+| `select` | `id`, `label`, `value`, `options` (`[[value, label], …]`) – sends a `change` event |
 | `toggle` | `id`, `label`, `value` (boolean) |
 
 ## Packing

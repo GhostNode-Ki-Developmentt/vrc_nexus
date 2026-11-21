@@ -76,6 +76,15 @@ const nexus = Object.freeze({
     /** Oberfläche: Liste von Bausteinen, die die App selbst zeichnet (kein eigenes HTML) */
     ui: Object.freeze({ set: items => call('ui.set', items) }),
     game: Object.freeze({ state: () => call('game.state') }),
+    /** 3.8: VRChat-API für Gruppen-Plugins (Recht „vrchat“, nur Gruppen aus plugin.json, nur erlaubte Pfade) */
+    vrchat: Object.freeze({
+        get: (p, query) => call('vrchat', 'GET', String(p), query || {}),
+        post: (p, body) => call('vrchat', 'POST', String(p), {}, body || {}),
+        put: (p, body) => call('vrchat', 'PUT', String(p), {}, body || {}),
+        delete: p => call('vrchat', 'DELETE', String(p), {}),
+    }),
+    /** 3.8: verschlüsselte Zugangsdaten (z. B. Bot-Tokens) – nur dieses Plugin kann sie lesen */
+    secrets: Object.freeze({ get: k => call('secrets.get', String(k)), set: (k, v) => call('secrets.set', String(k), v), has: k => call('secrets.has', String(k)) }),
     app: Object.freeze({ version: () => call('app.version') }),
 });
 

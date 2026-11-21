@@ -1154,3 +1154,4 @@ body.nav-side .i18n-fab.i18n-admin { flex: 0 0 36px; }   /* klein in der Mitte â
 .ch-fr-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; }
 .ch-pick-off { margin-top: 6px; width: 100%; }
 .ch-pick-none { margin: 6px; }
+.pl-in select { width: 100%; }

@@ -22,8 +22,23 @@ const PERMS = {
     notify: ['🔔', 'Windows-Hinweise anzeigen'],
     game: ['🎮', 'Spiel-Ereignisse sehen (Welt betreten, Spieler kommen/gehen)'],
     net: ['🌐', 'Ins Internet verbinden'],
+    vrchat: ['🛡', 'VRChat-Gruppe verwalten – nur die genannte(n) Gruppe(n), mit deinem Konto'],   // 3.8
 };
-const UI_TYPES = new Set(['heading', 'text', 'button', 'input', 'toggle', 'list', 'stat', 'divider']);
+const GRP = /^grp_[0-9a-f-]{36}$/;
+/** 3.8: erlaubte VRChat-Aufrufe für Gruppen-Plugins (nur Gruppen aus plugin.json; nie Gruppe löschen/übertragen, nie Konto-Daten) */
+function vrcAllowed(method, path, groups) {
+    let m;
+    if (method === 'GET' && /^\/users\/usr_[0-9a-f-]{36}$/.test(path)) return true;
+    if (method === 'GET' && /^\/worlds\/wrld_[0-9a-f-]{36}$/.test(path)) return true;
+    if (!(m = /^\/groups\/(grp_[0-9a-f-]{36})(?:\/(.*))?$/.exec(path)) || !groups.includes(m[1])) return false;
+    const sub = m[2] || '';
+    if (method === 'GET') return /^(|instances|requests|posts|members|members\/usr_[0-9a-f-]{36}|bans|auditLogs|roles|invites|announcement)$/.test(sub);
+    if (method === 'POST') return /^(posts|bans|invites)$/.test(sub);
+    if (method === 'PUT') return /^(requests\/usr_[0-9a-f-]{36}|members\/usr_[0-9a-f-]{36})$/.test(sub);
+    if (method === 'DELETE') return /^(posts\/gpst_[0-9a-f-]{36}|members\/usr_[0-9a-f-]{36}|bans\/usr_[0-9a-f-]{36}|invites\/usr_[0-9a-f-]{36})$/.test(sub);
+    return false;
+}
+const UI_TYPES = new Set(['heading', 'text', 'button', 'input', 'toggle', 'list', 'stat', 'divider', 'select']);
 const LOG_KEEP = 200, STORE_MAX = 512 * 1024, RESTARTS = 3;
 
 function versionAtLeast(have, need) {
@@ -45,11 +60,15 @@ function checkManifest(files, appVersion) {
     const perms = [...new Set([].concat(m.permissions || []).map(str))];
     const bad = perms.filter(p => !PERMS[p]);
     if (bad.length) throw new UserError('Unbekannte Rechte: ' + bad.join(', '));
+    const groups = [...new Set([].concat(m.groups || []).map(str))];
+    if (groups.some(g => !GRP.test(g))) throw new UserError('Ungültige Gruppen-ID in plugin.json (grp_…).');
+    if (groups.length > 5) throw new UserError('Höchstens 5 Gruppen je Plugin.');
+    if (perms.includes('vrchat') && !groups.length) throw new UserError('Recht „vrchat“ braucht „groups“: ["grp_…"] in plugin.json.');
     if (m.nexus && !versionAtLeast(appVersion, m.nexus)) throw new UserError('Das Plugin braucht VRC Nexus ' + str(m.nexus).replace(/^>=\s*/, '') + ' oder neuer.');
     return {
         id: str(m.id), name: cut(str(m.name).trim(), 60) || str(m.id), version: cut(str(m.version || '0.0.0'), 20), author: cut(str(m.author).trim(), 60),
         description: cut(str(m.description).trim(), 400), icon: cut(str(m.icon || '🧩'), 4), main, nexus: cut(str(m.nexus || ''), 20), permissions: perms,
-        homepage: /^https:\/\/\S+$/.test(str(m.homepage)) ? cut(str(m.homepage), 200) : '',
+        homepage: /^https:\/\/\S+$/.test(str(m.homepage)) ? cut(str(m.homepage), 200) : '', groups: perms.includes('vrchat') ? groups : [],
     };
 }
 
@@ -63,6 +82,8 @@ function cleanUi(items) {
         if (x.text !== undefined) o.text = cut(str(x.text), 2000);
         if (x.value !== undefined) o.value = typeof x.value === 'boolean' ? x.value : cut(str(x.value), 2000);
         if (x.multiline) o.multiline = true;
+        if (x.secret) o.secret = true;   // 3.8: Passwort-Feld (Wert wird nie angezeigt)
+        if (x.type === 'select' && Array.isArray(x.options)) o.options = x.options.slice(0, 50).map(op => Array.isArray(op) ? [cut(str(op[0]), 100), cut(str(op[1] === undefined ? op[0] : op[1]), 100)] : [cut(str(op), 100), cut(str(op), 100)]);
         if (x.style && ['gold', 'danger', ''].includes(x.style)) o.style = x.style;
         if (Array.isArray(x.items)) o.items = x.items.slice(0, 50).map(i => cut(str(i), 300));
         return o;
@@ -92,7 +113,7 @@ class Plugins {
         this.pending[token] = { files, manifest: m, at: Date.now() };
         const old = this.manifest(m.id);
         return { token, manifest: m, files: Object.keys(files).length, size: Object.values(files).reduce((a, b) => a + b.length, 0),
-            update: old ? old.version : '', perms: m.permissions.map(p => ({ id: p, icon: PERMS[p][0], label: PERMS[p][1] })) };
+            update: old ? old.version : '', perms: m.permissions.map(p => ({ id: p, icon: PERMS[p][0], label: PERMS[p][1] + (p === 'vrchat' ? ': ' + m.groups.join(', ') : '') })) };
     }
     async install(token) {
         const p = this.pending[str(token)];
@@ -114,7 +135,7 @@ class Plugins {
         } catch (e) { fs.rmSync(tmp, { recursive: true, force: true }); throw e; }
         fs.mkdirSync(this.dataDir(m.id), { recursive: true });
         const s = this.state();
-        s[m.id] = { enabled: true, perms: m.permissions, installed: Date.now() };   // Rechte = genau die bestätigten
+        s[m.id] = { enabled: true, perms: m.permissions, groups: m.groups || [], installed: Date.now() };   // Rechte = genau die bestätigten
         this.saveState(s);
         await this.startOne(m.id);
         return m;
@@ -132,7 +153,7 @@ class Plugins {
         return Object.keys(s).map(id => {
             const m = this.manifest(id), r = this.run[id] || {};
             if (!m) return null;
-            return Object.assign({}, m, { enabled: !!s[id].enabled, perms: (s[id].perms || []).map(p => ({ id: p, icon: (PERMS[p] || ['?'])[0], label: (PERMS[p] || ['', p])[1] })),
+            return Object.assign({}, m, { enabled: !!s[id].enabled, perms: (s[id].perms || []).map(p => ({ id: p, icon: (PERMS[p] || ['?'])[0], label: (PERMS[p] || ['', p])[1] + (p === 'vrchat' ? ': ' + (s[id].groups || []).join(', ') : '') })),
                 status: r.child && r.ready ? 'running' : r.child ? 'starting' : r.error ? 'error' : 'stopped', error: r.error || '', ui: r.ui || [] });
         }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
     }
@@ -280,10 +301,42 @@ class Plugins {
                 return true;
             }
             case 'ui.set': r.ui = cleanUi(a[0]); return true;
+            // ---- 3.8: VRChat-Gruppe (nur erlaubte Pfade der eigenen Gruppen) ----
+            case 'vrchat': {
+                this.need(id, 'vrchat');
+                const method = str(a[0]).toUpperCase(), p = str(a[1]).split('?')[0];
+                const groups = (this.state()[id] || {}).groups || [];
+                if (!vrcAllowed(method, p, groups)) throw new Error('VRChat-Aufruf nicht erlaubt: ' + method + ' ' + cut(p, 80));
+                const now = Date.now(); r.vq = (r.vq || []).filter(t => now - t < 10000);
+                if (r.vq.length >= 20) throw new Error('Zu viele VRChat-Anfragen – höchstens 20 in 10 Sekunden.');
+                r.vq.push(now);
+                const acc = this.app.vrc && this.app.vrc.account();
+                if (!acc) throw new Error('Nicht mit VRChat angemeldet.');
+                const q = a[2] && typeof a[2] === 'object' ? Object.fromEntries(Object.entries(a[2]).slice(0, 10).map(([k, v]) => [cut(str(k), 30), cut(str(v), 200)])) : {};
+                const body = a[3] && typeof a[3] === 'object' ? a[3] : null;
+                if (body && JSON.stringify(body).length > 20000) throw new Error('Anfrage zu groß.');
+                return await this.app.vrc.call(acc, method, p, q, body);
+            }
+            // ---- 3.8: verschlüsselter Speicher für Zugangsdaten (Bot-Tokens) – nie in der Oberfläche sichtbar ----
+            case 'secrets.get': return this.secrets(id)[cut(str(a[0]), 60)];
+            case 'secrets.has': return this.secrets(id)[cut(str(a[0]), 60)] !== undefined;
+            case 'secrets.set': {
+                const sec = this.secrets(id), k = cut(str(a[0]), 60);
+                if (a[1] === null || a[1] === undefined || a[1] === '') delete sec[k]; else sec[k] = cut(str(a[1]), 2000);
+                if (Object.keys(sec).length > 30) throw new Error('Höchstens 30 Zugangsdaten je Plugin.');
+                fs.writeFileSync(path.join(this.dataDir(id), 'secrets.enc'), this.crypt().encrypt(JSON.stringify(sec)));
+                return true;
+            }
             case 'game.state': { this.need(id, 'game'); const st = g.state || {}; return { running: !!st.running, world: str(st.world_name || st.world || ''), players: Array.isArray(st.players) ? st.players.length : int(st.players) }; }
             case 'app.version': return this.version();
             default: throw new Error('Unbekannte Funktion: ' + name);
         }
+    }
+    crypt() { const c = this.app.vrc && this.app.vrc.crypt; if (!c) throw new Error('Verschlüsselung nicht verfügbar.'); return c; }
+    secrets(id) {
+        const r = this.run[id] = this.run[id] || { logs: [], restarts: [] };
+        if (!r.sec) { try { r.sec = JSON.parse(this.crypt().decrypt(fs.readFileSync(path.join(this.dataDir(id), 'secrets.enc'), 'utf8'))) || {}; } catch (e) { r.sec = {}; } }
+        return r.sec;
     }
     store(id) {
         const r = this.run[id] = this.run[id] || { logs: [], restarts: [] };
@@ -295,7 +348,13 @@ class Plugins {
     example() { return path.join(__dirname, '..', 'plugins', 'text-plugin.nxp'); }
     async action(act, input, files) {
         switch (act) {
-            case 'plug_list': return { items: this.list(), perms: PERMS, example: fs.existsSync(this.example()) };
+            case 'plug_open': {   // 3.8: Plugin-Ordner im Explorer öffnen
+                const host = this.app.tools && this.app.tools.host, dir = str(input.id) && ID.test(str(input.id)) ? this.codeDir(str(input.id)) : this.base;
+                fs.mkdirSync(dir, { recursive: true });
+                if (host && host.openPath) host.openPath(dir);
+                return { ok: true, path: dir };
+            }
+            case 'plug_list': return { items: this.list(), perms: PERMS, example: fs.existsSync(this.example()), dir: this.base };
             case 'plug_inspect': {
                 let buf = files && files.file && files.file.buffer;
                 if (input.example === '1') buf = fs.readFileSync(this.example());
@@ -328,4 +387,4 @@ class Plugins {
     }
 }
 
-module.exports = { Plugins, checkManifest, cleanUi, PERMS };
+module.exports = { Plugins, checkManifest, cleanUi, PERMS, vrcAllowed };

@@ -22,6 +22,12 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.8.0 – Plugin API for group management
+
+- 🧩 New plugin permission **`vrchat`**: a plugin can manage the VRChat group(s) it names in `plugin.json` (`"groups": ["grp_…"]`) with your account – group info, instances, join requests (accept/decline), posts, members, bans, audit log. Only those groups and only those endpoints; deleting or transferring a group and your own account data are never reachable. The install dialog shows the group IDs.
+- 🔒 **Encrypted secret storage** for plugins (`nexus.secrets`) – e.g. Discord/Telegram bot tokens are stored encrypted and never shown in the UI again.
+- 🧱 Plugin panels can now use **password fields** and **select lists**; 📂 button to open the plugin folder.
+
 ### New in 3.7.3 – Pick friends in the chat
 
 - 💬 Starting a chat: instead of the long list of user IDs, the chat now shows your **online friends** (in game first, then web/app) with picture and status – one click opens the conversation. **Offline friends** appear with a button. Typing filters by name; a direct user ID or profile link still works.
