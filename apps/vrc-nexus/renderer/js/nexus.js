@@ -90,7 +90,15 @@
         s.textContent = '🦊';
         i.replaceWith(s);
     }, true);
-    function showErr(box, msg) { box.hidden = !msg; box.textContent = msg ? '⚠ ' + msg : ''; }
+    function showErr(box, msg) {
+        box.hidden = !msg; box.textContent = msg ? '⚠ ' + msg : '';
+        // 3.7.2: bei Anmelde-Problemen immer einen Abmelde-Knopf anbieten (auch wenn die Profil-Box leer bleibt)
+        if (msg && box.id === 'globalErr' && /sitzung|abgelaufen|anmeld|session|expired|sign in/i.test(msg)) {
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-sm'; b.style.marginLeft = '10px'; b.textContent = '⏻ Abmelden & neu anmelden';
+            b.addEventListener('click', () => api('logout').catch(() => {}).finally(() => location.reload()));
+            box.appendChild(b);
+        }
+    }
     const fail = box => x => { box.innerHTML = '<div class="vx-error">⚠ ' + esc(x.message) + '</div>'; };
     const loading = (box, txt) => { box.innerHTML = '<div class="vx-loading">' + esc(txt || 'Lade …') + '</div>'; };
 

@@ -14,7 +14,7 @@ const SYNC_MIN = 45;
 const OFFLINE_SYNC = 900;
 const FEED_KEEP_DAYS = 180;
 const UID = 1;   // die App hat genau ein Konto
-const VERSION = '3.7.1';
+const VERSION = '3.7.2';
 
 class Vrc {
     /**
@@ -207,7 +207,8 @@ class Vrc {
         db.prepare('UPDATE accounts SET last_sync = ? WHERE user_id = ?').run(now(), UID);
 
         const me = await this.call(acc, 'GET', '/auth/user');
-        if (!me.id) throw new VrcAuthError('Die VRChat-Sitzung ist abgelaufen – bitte neu anmelden.');
+        // 200 ohne Benutzer (z. B. „requiresTwoFactorAuth“) heißt ebenfalls: Sitzung nicht mehr gültig → abmelden
+        if (!me.id) { this.expire(); throw new VrcAuthError('Die VRChat-Sitzung ist abgelaufen – du wurdest abgemeldet. Bitte neu anmelden.'); }
         const set = a => new Set(arr(a));
         const onlineIds = set(me.onlineFriends), activeIds = set(me.activeFriends), offlineIds = set(me.offlineFriends), allIds = set(me.friends);
 

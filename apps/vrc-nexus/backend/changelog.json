@@ -1,5 +1,10 @@
 [
  {
+  "version": "3.7.2",
+  "title": "Fix: stuck \"session expired\"",
+  "body": "- 🐞 Fixed: after an expired VRChat session the app could stay half signed in (\"⚠ Session expired\", empty profile box, no logout button). Old leftover errors are now re-checked on start, a VRChat answer without user (2FA required again) also counts as expired, and the error bar always offers \"⏻ Sign out & sign in again\"."
+ },
+ {
   "version": "3.7.1",
   "title": "Automatic logout for every session",
   "body": "- ⏱ **Nexus account:** if the website no longer accepts your Nexus sign-in (signed out elsewhere, device removed, account blocked), the app now signs you out automatically and shows why – Community, chat and NSFW fall back cleanly instead of failing with errors.\n- ⏱ **GhostNode website:** open pages now notice when your login expires (12 h without activity, or 30 days with \"stay signed in\", or signed out on another device) and send you to the login automatically – with a warning 2 minutes before and a \"Stay signed in\" button. After signing in again you return to the same page.\n- The VRChat session already logs out automatically since 3.6.1."

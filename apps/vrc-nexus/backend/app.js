@@ -402,6 +402,12 @@ class NexusApp {
             case 'logout': await v.disconnect(true); return { ok: true };
             case 'state': {
                 let sync = { synced: false, wait: 0 }, error = '';
+                // 3.7.2: alter Fehler „Sitzung abgelaufen“ aus früheren Versionen (Konto blieb hängen) → jetzt einmal echt prüfen
+                if (/Sitzung abgelaufen/.test(str(acc.last_error))) {
+                    const me = await v.call(acc, 'GET', '/auth/user');   // 401 → meldet automatisch ab (VrcAuthError)
+                    if (!me.id) { v.expire(); throw new VrcAuthError('Die VRChat-Sitzung ist abgelaufen – du wurdest abgemeldet. Bitte neu anmelden.'); }
+                    db.prepare("UPDATE accounts SET last_error = '' WHERE user_id = ?").run(UID); acc.last_error = '';
+                }
                 if (truthy(input.refresh)) {
                     try { sync = await v.sync(truthy(input.force)); }
                     catch (e) { if (e instanceof VrcAuthError) throw e; error = e.message; db.prepare('UPDATE accounts SET last_error = ? WHERE user_id = ?').run(error, UID); }

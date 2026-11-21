@@ -22,6 +22,10 @@ All data stays on your PC. Screenshots and downloads: see the [main README](../.
 
 ## Changelog
 
+### New in 3.7.2 – Fix: stuck "session expired"
+
+- 🐞 Fixed: after an expired VRChat session the app could stay half signed in ("⚠ Session expired", empty profile box, no logout button). Old leftover errors are now re-checked on start, a VRChat answer without user (2FA required again) also counts as expired, and the error bar always offers "⏻ Sign out & sign in again".
+
 ### New in 3.7.1 – Automatic logout for every session
 
 - ⏱ **Nexus account:** if the website no longer accepts your Nexus sign-in (signed out elsewhere, device removed, account blocked), the app now signs you out automatically and shows why – Community, chat and NSFW fall back cleanly instead of failing with errors.

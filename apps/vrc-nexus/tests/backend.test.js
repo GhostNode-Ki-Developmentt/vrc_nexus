@@ -2550,6 +2550,20 @@ test('3.6.1: abgelaufene VRChat-Sitzung meldet automatisch ab (auch bei 401 von 
     assert.strictEqual(v.account(), null, 'automatisch abgemeldet');
     assert.strictEqual(db.setting('vrc_logout_reason', ''), 'expired');
     assert.ok(/class="vx-expired" >/.test(app.page()), 'Hinweis auf der Anmeldeseite sichtbar');
+    // 3.7.2: VRChat antwortet 200, aber ohne Benutzer (2FA nötig) → ebenfalls abmelden
+    connect(); v.http = async () => [200, { requiresTwoFactorAuth: ['totp'] }];
+    db.prepare('UPDATE accounts SET last_sync = 0 WHERE user_id = 1').run();
+    await assert.rejects(v.sync(true), U.VrcAuthError);
+    assert.strictEqual(v.account(), null, '2FA-Zwischenstand meldet ab');
+    // 3.7.2: alter Fehler „Sitzung abgelaufen“ aus früheren Versionen → beim nächsten Laden echt prüfen
+    connect(); db.prepare("UPDATE accounts SET last_error = 'Sitzung abgelaufen' WHERE user_id = 1").run();
+    v.http = async (jar, m, p) => (p === '/auth/user' ? [401, {}] : [200, {}]);
+    await assert.rejects(app.post({ act: 'state' }, {}), U.VrcAuthError);
+    assert.strictEqual(v.account(), null, 'hängendes Konto wird abgemeldet');
+    connect(); db.prepare("UPDATE accounts SET last_error = 'Sitzung abgelaufen' WHERE user_id = 1").run();
+    v.http = async (jar, m, p) => (p === '/auth/user' ? [200, { id: 'usr_x' }] : [200, {}]);
+    await app.post({ act: 'state' }, {}).catch(() => {});
+    assert.ok(v.account() && !v.account().last_error, 'Sitzung doch gültig → Fehler weg, bleibt angemeldet');
     connect(); await v.disconnect(false);
     assert.strictEqual(db.setting('vrc_logout_reason', ''), '', 'normales Abmelden ohne Hinweis');
     assert.ok(/class="vx-expired" hidden/.test(app.page()));
